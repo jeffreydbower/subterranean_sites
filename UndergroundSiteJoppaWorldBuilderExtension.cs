@@ -1,5 +1,4 @@
 using XRL;
-using XRL.UI;
 using XRL.World;
 using XRL.World.WorldBuilders;
 
@@ -10,45 +9,44 @@ namespace SubterraneanSites
     {
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
-            
-            Popup.Show("Subterranean Sites loaded.");
-
-            string targetZoneId = "JoppaWorld.11.22.0.1.11";
-
-            The.ZoneManager.SetZoneName(
-                targetZoneId,
-                "test runtime underground site",
-                Proper: false
-            );
-
-            The.Game.RequireSystem<ZoneEntryBuilderInjectionSystem>();
+            // Register the runtime system after world generation.
+            // The system will apply the target zone builder when the zone is first built.
+            The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
         }
     }
 
-    public class ZoneEntryBuilderInjectionSystem : IGameSystem
+    public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
+        private const string TargetZoneName = "subterranean test site";
+        private const string ZoneBuilderName = "SnapjawStockadeMaker";
+
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
+            // BeforeZoneBuiltEvent fires early enough to mutate the zone directly.
+            // AddZoneBuilder is too late here because the zone builder list has already been consumed.
             registrar.Register(BeforeZoneBuiltEvent.ID);
         }
 
-        public override bool HandleEvent(BeforeZoneBuiltEvent zoneEvent)
+        public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
-            string targetZoneId = "JoppaWorld.11.22.0.1.11";
-
-            if (zoneEvent.Zone.ZoneID == targetZoneId)
+            if (zoneBuildEvent.Zone.ZoneID != TargetZoneId)
             {
-                The.ZoneManager.SetZoneName(
-                    targetZoneId,
-                    "before zone built hook fired",
-                    Proper: false
-                );
-
-                ZoneManager.ApplyBuilderToZone(
-                    "SnapjawStockadeMaker",
-                    zoneEvent.Zone
-                );
+                return true;
             }
+
+            // Set a readable test name so the target zone is easy to confirm in-game.
+            The.ZoneManager.SetZoneName(
+                TargetZoneId,
+                TargetZoneName,
+                Proper: false
+            );
+
+            // Apply the builder directly to the zone currently being built.
+            ZoneManager.ApplyBuilderToZone(
+                ZoneBuilderName,
+                zoneBuildEvent.Zone
+            );
 
             return true;
         }
