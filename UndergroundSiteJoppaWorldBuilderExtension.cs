@@ -1,23 +1,56 @@
 using XRL;
+using XRL.UI;
 using XRL.World;
 using XRL.World.WorldBuilders;
 
-namespace UndergroundSiteDev
+namespace SubterraneanSites
 {
     [JoppaWorldBuilderExtension]
     public class UndergroundSiteJoppaWorldBuilderExtension : IJoppaWorldBuilderExtension
     {
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
-            string zoneID = "JoppaWorld.11.22.0.1.11";
+            
+            Popup.Show("Subterranean Sites loaded.");
 
-            The.ZoneManager.AddZoneBuilder(zoneID, 6000, "Mines2");
+            string targetZoneId = "JoppaWorld.11.22.0.1.11";
 
             The.ZoneManager.SetZoneName(
-                zoneID,
-                "test sultan dungeon",
+                targetZoneId,
+                "test runtime underground site",
                 Proper: false
             );
+
+            The.Game.RequireSystem<ZoneEntryBuilderInjectionSystem>();
+        }
+    }
+
+    public class ZoneEntryBuilderInjectionSystem : IGameSystem
+    {
+        public override void Register(XRLGame game, IEventRegistrar registrar)
+        {
+            registrar.Register(BeforeZoneBuiltEvent.ID);
+        }
+
+        public override bool HandleEvent(BeforeZoneBuiltEvent zoneEvent)
+        {
+            string targetZoneId = "JoppaWorld.11.22.0.1.11";
+
+            if (zoneEvent.Zone.ZoneID == targetZoneId)
+            {
+                The.ZoneManager.SetZoneName(
+                    targetZoneId,
+                    "before zone built hook fired",
+                    Proper: false
+                );
+
+                ZoneManager.ApplyBuilderToZone(
+                    "SnapjawStockadeMaker",
+                    zoneEvent.Zone
+                );
+            }
+
+            return true;
         }
     }
 }
