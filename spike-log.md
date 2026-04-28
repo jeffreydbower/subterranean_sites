@@ -87,3 +87,43 @@ Key patterns:
 - connectivity enforcement
 - path carving
 Decision: SKIP (but extract patterns)
+
+ApegodCave
+Type: PARTIAL  
+Behavior: noise-based vegetation + ground paint; adds daylight  
+Decision: SKIP
+
+BananaGrove
+Type: PARTIAL (rich)
+Behavior: noise-based trees; supports underground mode; overlays terrain
+Decision: TEST PASS (overlay layer candidate)
+
+Test 1:
+- Direct builder call (Underground = true)
+- Applied during BeforeZoneBuiltEvent
+- No clearing (overlay test)
+Result:
+- Grove generated successfully underground
+- Overlaid on existing cave terrain
+- No guaranteed pathing; may block access without digging
+
+BananaGrove
+Type: PARTIAL (rich)
+
+Behavior: noise-based vegetation; supports underground; no wall/structure generation
+
+Test 1 (overlay):
+- Applied without clearing
+Result:
+- Grove layered over cave
+- Terrain mismatch; pathing not guaranteed
+
+Test 2 (clean):
+- Cleared zone, then applied builder
+Result:
+- Full-screen grove
+- No walls / enclosure
+- Default zone creatures (no population control)
+
+Decision:
+USE (situational)

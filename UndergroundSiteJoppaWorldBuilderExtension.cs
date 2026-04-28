@@ -10,7 +10,6 @@ namespace SubterraneanSites
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
             // Register the runtime system after world generation.
-            // The system will apply the target zone builder when the zone is first built.
             The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
         }
     }
@@ -18,12 +17,10 @@ namespace SubterraneanSites
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
         private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
-        private const string TargetZoneName = "banana grove test";
-        //private const string ZoneBuilderName = "SnapjawStockadeMaker";
+        private const string TargetZoneName = "banana grove clean test";
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
-            // BeforeZoneBuiltEvent fires early enough to mutate the zone directly.
             registrar.Register(BeforeZoneBuiltEvent.ID);
         }
 
@@ -34,25 +31,44 @@ namespace SubterraneanSites
                 return true;
             }
 
-            // Set a readable test name so the target zone is easy to confirm in-game.
+            // Set test name
             The.ZoneManager.SetZoneName(
                 TargetZoneId,
                 TargetZoneName,
                 Proper: false
             );
 
-            // --- ORIGINAL (commented out for this test) ---
+            // --- PATTERN: String-based builder invocation ---
+            // Use this for builders that:
+            // - do not require parameters
+            // - are designed to be invoked by name
+            // Example: SnapjawStockadeMaker
             /*
             ZoneManager.ApplyBuilderToZone(
-                ZoneBuilderName,
+                "SnapjawStockadeMaker",
                 zoneBuildEvent.Zone
             );
             */
 
-            // --- TEST 1: Direct BananaGrove builder ---
+            // --- TEST 1 (overlay BananaGrove) ---
+            /*
             var builder = new XRL.World.ZoneBuilders.BananaGrove();
-            builder.Underground = true; // enable underground behavior
+            builder.Underground = true;
             builder.BuildZone(zoneBuildEvent.Zone);
+            */
+
+            // --- TEST 2: clear zone first, then apply BananaGrove ---
+            var Z = zoneBuildEvent.Zone;
+
+            // Clear all cells (terrain + objects)
+            foreach (var cell in Z.GetCells())
+            {
+                cell.Clear();
+            }
+
+            var cleanBuilder = new XRL.World.ZoneBuilders.BananaGrove();
+            cleanBuilder.Underground = true;
+            cleanBuilder.BuildZone(Z);
 
             return true;
         }
