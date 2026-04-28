@@ -17,7 +17,7 @@ namespace SubterraneanSites
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
         private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
-        private const string TargetZoneName = "banana grove clean test";
+        private const string TargetZoneName = "basic lair default clean test";
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
@@ -55,20 +55,31 @@ namespace SubterraneanSites
             var builder = new XRL.World.ZoneBuilders.BananaGrove();
             builder.Underground = true;
             builder.BuildZone(zoneBuildEvent.Zone);
-            */
-
+            
             // --- TEST 2: clear zone first, then apply BananaGrove ---
             var Z = zoneBuildEvent.Zone;
-
             // Clear all cells (terrain + objects)
             foreach (var cell in Z.GetCells())
             {
                 cell.Clear();
             }
-
             var cleanBuilder = new XRL.World.ZoneBuilders.BananaGrove();
             cleanBuilder.Underground = true;
             cleanBuilder.BuildZone(Z);
+            */
+
+            // --- Basic Lair Test Defaults Clear Screen ---
+            var Z = zoneBuildEvent.Zone;
+            // Clear all cells (terrain + objects)
+            foreach (var cell in Z.GetCells())
+            {
+                cell.Clear();
+            }
+            var lair = new XRL.World.ZoneBuilders.BasicLair();
+            lair.Table = "";        // default
+            lair.Adjectives = "";   // no modifiers
+            lair.Stairs = "";       // no stairs
+            lair.BuildZone(Z);
 
             return true;
         }

@@ -109,21 +109,37 @@ Result:
 
 BananaGrove
 Type: PARTIAL (rich)
-
 Behavior: noise-based vegetation; supports underground; no wall/structure generation
-
 Test 1 (overlay):
 - Applied without clearing
 Result:
 - Grove layered over cave
 - Terrain mismatch; pathing not guaranteed
-
 Test 2 (clean):
 - Cleared zone, then applied builder
 Result:
 - Full-screen grove
 - No walls / enclosure
 - Default zone creatures (no population control)
-
 Decision:
 USE (situational)
+
+BananaSky
+Type: CONTEXT (surface/exterior)
+Behavior: places tomb exterior wall prefabs + air + daylight; depends on spindle adjacency
+Decision: SKIP
+
+BasicLair
+Type: FULL
+Behavior: SultanDungeon wrapper; generates lair-style layout with zone-appropriate materials
+Test:
+- cleared zone first
+- Table="", Adjectives="", Stairs=""
+Result:
+- generated valid lair structure
+- used appropriate underground materials
+- default zone monsters remained
+- no west-side access from entry
+- layout occupied only part of zone, likely random/segmentation-dependent
+Decision:
+TEST PASS (primary full-layout candidate)
