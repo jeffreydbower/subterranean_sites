@@ -43,3 +43,47 @@ Runtime builder application must be done via ApplyBuilderToZone
 ## Current Capability
 - Deterministic runtime injection into specific underground zone
 - Verified for at least one builder
+
+## ZoneBuilder DEfinition Tests from XLR.World.ZoneBuilders
+
+AddBlueprintBuilder
+Type: PARTIAL
+Behavior: places 1 object randomly in empty cell
+Use: content injection only
+Decision: SKIP (not layout)
+
+AddLocationFinder
+Type: SYSTEM
+Behavior: registers a hidden location/secret marker
+Use: internal tracking
+Decision: SKIP
+
+AddObjectBuilder
+Type: CONTEXT
+Behavior: places cached object instance
+Dependency: requires object to be pre-cached
+Decision: SKIP
+
+AddPresetAtLocation
+Type: STRUCTURE
+Behavior: places predefined map chunk at fixed location
+Use: anchor rooms / special structures
+Decision: MAYBE (later)
+
+AddWidgetBuilder
+Type: CONTEXT
+Behavior: ensures specific object/blueprint exists at (0,0)
+Use: system/controller objects, not visible content
+Dependency: often relies on cached objects or specific pipelines
+Decision: SKIP
+
+AgolgotColumn
+Type: FULL (specialized, multi-layer)
+Behavior: Girsh lair generator with vertical structure
+Key patterns:
+- depth-based logic
+- terrain carving (ClearWalls + RequireObject)
+- region population
+- connectivity enforcement
+- path carving
+Decision: SKIP (but extract patterns)

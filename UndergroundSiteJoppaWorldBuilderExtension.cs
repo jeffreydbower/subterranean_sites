@@ -18,13 +18,12 @@ namespace SubterraneanSites
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
         private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
-        private const string TargetZoneName = "subterranean test site";
-        private const string ZoneBuilderName = "SnapjawStockadeMaker";
+        private const string TargetZoneName = "banana grove test";
+        //private const string ZoneBuilderName = "SnapjawStockadeMaker";
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
             // BeforeZoneBuiltEvent fires early enough to mutate the zone directly.
-            // AddZoneBuilder is too late here because the zone builder list has already been consumed.
             registrar.Register(BeforeZoneBuiltEvent.ID);
         }
 
@@ -42,11 +41,18 @@ namespace SubterraneanSites
                 Proper: false
             );
 
-            // Apply the builder directly to the zone currently being built.
+            // --- ORIGINAL (commented out for this test) ---
+            /*
             ZoneManager.ApplyBuilderToZone(
                 ZoneBuilderName,
                 zoneBuildEvent.Zone
             );
+            */
+
+            // --- TEST 1: Direct BananaGrove builder ---
+            var builder = new XRL.World.ZoneBuilders.BananaGrove();
+            builder.Underground = true; // enable underground behavior
+            builder.BuildZone(zoneBuildEvent.Zone);
 
             return true;
         }
