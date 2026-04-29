@@ -76,7 +76,8 @@ namespace SubterraneanSites
                 cell.Clear();
             }
             var lair = new XRL.World.ZoneBuilders.BasicLair();
-            lair.Table = "";        // default
+            //lair.Table = "";        // default
+            lair.Table = "GenericLairOwner";        // test arguments
             lair.Adjectives = "";   // no modifiers
             lair.Stairs = "";       // no stairs
             lair.BuildZone(Z);
