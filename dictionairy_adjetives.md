@@ -331,3 +331,23 @@ Which properties have real Lairs_ table support?
 Which properties affect layout versus only decoration or population?
 Which adjective combinations produce good underground lair sites?
 Can we enumerate Lairs_ tables directly from population XML or compiled population data?
+
+## Testing update
+## BasicLair Adjective Support (Tested)
+BasicLair uses the Lairs_ table prefix. In testing, most high-level thematic adjectives (e.g., soldier, temple, market, stars, tinker) did not produce observable changes and appear to fall back to default tables.
+The following adjectives are confirmed or highly likely to be supported (non-default behavior observed or strongly implied by table presence):
+workshop
+armorer
+chef
+glover
+gunsmith
+haberdasher
+hatter
+ichormerchant
+modernscribe
+shoemaker
+gemcutter
+gutsmonger
+These appear to be primarily vendor/workshop-oriented and tend to produce increased container/loot presence (e.g., chests) and merchant/vendor-style furnishing patterns.
+Conclusion:
+BasicLair adjective support is limited and specialized. It is not suitable for broad thematic control of dungeon style and is better suited for merchant/outpost-style lairs.

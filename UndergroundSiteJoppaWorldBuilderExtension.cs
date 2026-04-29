@@ -77,9 +77,9 @@ namespace SubterraneanSites
             }
             var lair = new XRL.World.ZoneBuilders.BasicLair();
             //lair.Table = "";        // default
-            lair.Table = "GenericLairOwner";        // test arguments
-            lair.Adjectives = "";   // no modifiers
-            lair.Stairs = "";       // no stairs
+            lair.Table = "DynamicInheritsTable:Creature:Tier5";        // test creature table 
+            lair.Adjectives = "workshop";   // test adjetive
+            lair.Stairs = "D";       // down stairs stairs
             lair.BuildZone(Z);
 
             return true;
