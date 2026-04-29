@@ -30,6 +30,8 @@ Sites must be deterministic:
 ---
 
 ## Navigation System Direction
+***Decided to not use this systen at all****
+***DEveloping natural paths to entrance is the replacement***
 Use:
 - gradient-based compass (closer/further)
 - attunement stones as anchors
@@ -38,15 +40,26 @@ Avoid:
 - direct coordinate systems
 - impossible discovery chains (e.g., deep-only clues)
 
+## Path generation feature
+- Each site will have an outward and upward path that connets an arbitrary point to the entrance
+- Path will createan easy way to traverse to the site if the player finds one
+- Pathing will be based / co-opted from shug'ruith's cradel path and other path based quests like amaranthine prism, the path to Klang, and the Path at Bey Lah.
+- Spawn desnity will be tunes to allow apprpriate rate of dicsovery.
+- sites randomly closer to the surface can connect to an unused or non-inportant zone making a surface entrance
+- Developing the paths is expected to be a coding challenge
+
+
+
 ---
 
 ## Site Structure (Tentative)
 Target:
-- 3×3 parasang layout
-- single Z-level per site
+- Traditional stacked layout 3 to 7 sones connected by stairs or holes. entry layer will be subteranean always.
+- (out)3×3 parasang layout
+- (out) single Z-level per site
 
 Open question:
-- whether builders align cleanly across zones
+- (out) whether builders align cleanly across zones
 
 ---
 

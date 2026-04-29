@@ -132,7 +132,7 @@ Decision: SKIP
 BasicLair
 Type: FULL
 Behavior: SultanDungeon wrapper; generates lair-style layout with zone-appropriate materials
-Test:
+Tests:
 - cleared zone first
 - Table="", Adjectives="", Stairs=""
 Result:
@@ -141,5 +141,9 @@ Result:
 - default zone monsters remained
 - no west-side access from entry
 - layout occupied only part of zone, likely random/segmentation-dependent
+Notes:
+- Tables argument is creature tables
+- Adjectives argument flavors the zone based on 2 descriptors (clever/insane original designers here)
+- detailed info on tables and adjetice arguments are in disctionary_creatureTables.md and dictioary_adjetives.md 
 Decision:
 TEST PASS (primary full-layout candidate)
