@@ -48,6 +48,19 @@ Avoid:
 - sites randomly closer to the surface can connect to an unused or non-inportant zone making a surface entrance
 - Developing the paths is expected to be a coding challenge
 
+## Design Note – Vertical Movement Strategy
+- Sites will imply stairs exist; no need to explicitly place or control them
+- Path system will use holes instead of stairs
+Rationale:
+- holes are more visually distinct and attention-grabbing
+- better signal to player that they are on a path
+- more consistent with “unnatural” guided traversal
+Implications:
+- need a PathHole builder (simple, controlled pit/hole)
+- path material (dirt/resin/etc.) should lead to hole within zone
+- even when dropping in from above, local path material should still be present
+- paths and holes should stand out vs normal subterranean terrain
+
 
 
 ---
