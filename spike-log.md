@@ -584,3 +584,39 @@ Observation:
 - not aligned with site/path goals
 Decision:
 SKIP
+
+EmptyGround
+Type: NO-OP / PLACEHOLDER
+Behavior:
+- does nothing
+Observation:
+- likely used as a placeholder or default builder
+- no effect on zone content
+Decision:
+SKIP
+
+FactionEncounters
+Type: ENCOUNTER INJECTION
+Behavior:
+- randomly selects a faction from a population table
+- spawns a faction encounter group (leader + squad)
+- equips members based on zone tier
+- filters members based on zone level
+- may add faction-related objects
+Arguments:
+- Population: population table used to select faction (default GenericFactionPopulation)
+- Chance: percent chance per roll
+- Rolls: number of attempts (each success spawns one encounter)
+Observation:
+- additive; does not clear or override existing layout
+- produces coherent faction groups (leader + followers)
+- can spawn legendary leaders with squads
+- scaling is tied to zone level/tier but may feel strong in early zones
+- works cleanly when layered after other builders
+Decision:
+USE
+Notes:
+- good for adding ambient faction encounters to sites and paths
+- keep Chance low in final implementation to avoid overcrowding
+- may want custom population table later for tighter control
+- useful for adding variability without defining full site population

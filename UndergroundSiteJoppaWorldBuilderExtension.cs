@@ -82,6 +82,12 @@ namespace SubterraneanSites
             lair.Stairs = "D";       // down stairs stairs
             lair.BuildZone(Z);
 
+            var factionEncounters = new XRL.World.ZoneBuilders.FactionEncounters();
+            factionEncounters.Chance = 100;
+            factionEncounters.Rolls = 1;
+            factionEncounters.Population = "GenericFactionPopulation";
+            factionEncounters.BuildZone(Z);
+
             return true;
         }
     }
