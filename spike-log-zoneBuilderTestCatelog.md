@@ -49,20 +49,6 @@ Decision: SKIP
 
 BananaGrove
 Type: PARTIAL (rich)
-Behavior: noise-based trees; supports underground mode; overlays terrain
-Decision: TEST PASS (overlay layer candidate)
-
-Test 1:
-- Direct builder call (Underground = true)
-- Applied during BeforeZoneBuiltEvent
-- No clearing (overlay test)
-Result:
-- Grove generated successfully underground
-- Overlaid on existing cave terrain
-- No guaranteed pathing; may block access without digging
-
-BananaGrove
-Type: PARTIAL (rich)
 Behavior: noise-based vegetation; supports underground; no wall/structure generation
 Test 1 (overlay):
 - Applied without clearing
@@ -579,11 +565,9 @@ FindA...DynamicQuest (group)
 Type: QUEST / DYNAMIC CONTENT
 Behavior:
 - quest-specific generation and event handling
-
 Observation:
 - tied to dynamic quest systems
 - not reusable for general procedural generation
-
 Decision:
 SKIP
 
@@ -596,7 +580,6 @@ Observation:
 - not relevant to current generation goals
 Decision:
 SKIP
-
 
 FlowerFields
 Type: DECORATOR / SURFACE
@@ -1188,35 +1171,526 @@ Observation:
 Decision:
 MAYBE
 
+TYPE:
+POPULATION / OBJECT PLACEMENT
+Arguments:
+- Table: population table to generate from
+- Density: present but not used in this BuildZone method
+Behavior:
+- Checks that Table exists in PopulationManager
+- Generates objects from Table using zonetier = NewZone.NewTier
+- Expands population results into GameObjects
+- Sorts possible placement cells into:
+  - liquid cells
+  - wall cells
+  - reachable empty solid-free cells
+- Places aquatic/liquid-start objects in liquid if available
+- Places wall-living creatures on walls if available
+- Places normal objects in reachable empty cells
+- Falls back to any cell if no preferred cells exist
+Observation:
+- This is very similar in role to PopTableZoneBuilder.
+- It is a direct population overlay, not a layout builder.
+- Density appears misleading here because it is declared but unused.
+- Useful for adding creatures/objects after a structure builder has already made reachable space.
+- Because it relies on IsReachable(), it likely works better after a connectivity pass or after the base builder has already built reachability.
+- It does not clear the zone or alter geometry.
+- If Table is invalid, it logs an error but does not crash.
+- Supplemental site population after BasicLair/SultanDungeon/custom site generation
+- Controlled object/creature placement from a known valid population table
+Decision:
+MAYBE USE
+
+PopulationLayout
+TYPE: Utility / region layout data object
+ARGS: zone, InfluenceMapRegion, innerRect, optional position
+BEHAVIOR: Stores region/layout placement context: inside/outside cells, wall/corner lists, seed index, rect, and position. Position setter updates the InfluenceMap seed.
+OBSERVATION: Not a builder. Support object for region-aware furnishing/population systems, likely related to InfluenceMap-based placement.
+DECISION: REFERENCE ONLY
 
 
+PowerGrid
+TYPE: Infrastructure / pathfinding-based system builder
+ARGS: DamageChance, DamageIsBreakageChance, ConduitBlueprint, ConduitModPart, MissingConsumers, MissingProducers, charge rates, location specs, flags (PreferWalls, AvoidWalls, Noise, debug flags)
+BEHAVIOR: Scans zone for power producers/consumers, optionally spawns missing ones, then uses pathfinding to connect them via conduits (either modifying walls or placing PowerLine objects). Applies weights to map, routes connections, may damage/break segments. Uses ElectricalPowerTransmission system.
+OBSERVATION: This is a full system builder, not flavor. It constructs a functional electrical network across the zone. Uses pathfinding + weighted maps to route connections intelligently (prefers walls, avoids obstacles, etc). Can modify existing objects or place new conduits. Has debug visualization options. Very heavy and specialized.
+DECISION: IGNORE (for current project)
 
 
+PulldownLocation
+TYPE: Metadata / zone property setter
+ARGS: x, y
+BEHAVIOR: Stores a coordinate string ("x,y") in the zone property "PullDownLocation".
+OBSERVATION: Does not modify geometry or population. Likely used by other systems (UI, events, or special interactions) that read this property. No standalone effect.
+DECISION: IGNORE
+
+QasQonLair
+TYPE: Structure + multi-zone vertical lair (Girsh system)
+ARGS: Nephal flag
+BEHAVIOR: Builds pit-based multi-level lair using Pitted + connection type "CysticPit". Links pits across Z-levels via ZoneConnections. Generates cyst rooms, populates with QasQonCyst, spawns bosses (Qas/Qon) at depth. Applies additional effects (hologram walls, mutations).
+OBSERVATION: Same core pattern as Shug: pits + connection types = vertical traversal. Uses PopulateCysticPitConnections to sync holes across levels. More advanced: depth scaling (# of pits), multi-entity boss, environmental effects (holograms). :contentReference[oaicite:0]{index=0}
+DECISION: REFERENCE (important pattern, but Shug already sufficient for path system)
+
+RandomAmbientStabilization
+TYPE: Environmental / zone effect setter
+ARGS: Strength (string roll spec)
+BEHAVIOR: Adds AmbientStabilization part to zone and sets its strength via roll.
+OBSERVATION: Does not affect geometry or population. Likely influences ambient/environmental effects (possibly psychic/reality stability mechanics). Very lightweight.
+DECISION: IGNORE
+
+RazedGoatfolkVillage
+TYPE: Structure (wrapper for VillageMaker preset)
+ARGS: none (hardcoded VillageMaker parameters)
+BEHAVIOR: Builds a razed/destroyed goatfolk village using VillageMaker with specific wall, layout, and population templates.
+OBSERVATION: Thin wrapper around VillageMaker. Not a new system—just a preset configuration (theme + population + structures). VillageMaker itself is the real reusable system.
+DECISION: IGNORE (unless VillageMaker becomes relevant later)
+
+Reachability*Edge (East/South/West + typo variant)
+TYPE: Utility / reachability map builder
+ARGS: ClearFirst (bool)
+BEHAVIOR: Clears and rebuilds zone reachability map starting from one edge (east/south/west), marking accessible tiles.
+OBSERVATION: Duplicate typo class exists (ReachabilitEastEdge). Used to ensure zones are navigable from map edges. Does not modify geometry—only pathing metadata.
+DECISION: IGNORE (unless debugging reachability issues)
+
+RedrockOutcrop
+TYPE: Structure (minor terrain feature)
+ARGS: none (sets Blueprint = "Shale")
+BEHAVIOR: Inherits WallOutcrop and places shale outcrop terrain.
+OBSERVATION: Simple themed terrain feature. Not important beyond indicating how biome flavor is applied.
+DECISION: IGNORE
+
+Redrock
+TYPE: Full structure / multi-layer dungeon generator
+ARGS: none
+BEHAVIOR: Builds Redrock canyon dungeon using noise maps, tunnels, pools, and influence maps. Adds stairs, connects regions, and injects special structures (stockade, cave city, fort, river) depending on depth. Populates encounters by tier. :contentReference[oaicite:0]{index=0}
+OBSERVATION: Major example of:
+- NoiseMap-based terrain carving
+- InfluenceMap region logic
+- Multi-builder orchestration (StockadeMaker, CaveCity, RiverBuilder)
+- Depth-based feature switching
+- Post-process connectivity enforcement
+DECISION: REFERENCE (good for patterns, not direct reuse)
+
+RedrockStockadeMaker
+TYPE: Structure (compound building generator)
+ARGS: many (wall type, populations, room sizes, etc.)
+BEHAVIOR: Generates fortified compound:
+- creates outer box walls
+- subdivides into rooms
+- places populations per room (including legendary chance)
+- cuts doors, arrow slits, entrances
+- ensures connectivity and populates interior/exterior zones :contentReference[oaicite:1]{index=1}
+OBSERVATION: Strong reusable pattern for:
+- “site within a zone”
+- room subdivision + population tables
+- guaranteed boss/legendary placement logic
+- defensive layouts
+DECISION: REFERENCE (useful for later site structuring ideas)
+
+Reef
+TYPE: Full procedural biome generator (noise + multi-system)
+ARGS: many (noise seeds, internal configs)
+BEHAVIOR: Generates entire zone using multiple layout systems (reef, cave, random walk), blends them via noise, assigns wall types by weighted depth-dependent selection, places biome objects (coral, pools, etc), paints tiles, then connects zones using a global 3D maze system. :contentReference[oaicite:0]{index=0}
+OBSERVATION: Extremely complex. Combines:
+- noise-driven layout selection
+- weighted material selection by depth
+- deterministic seeded noise (world-seed based)
+- global 3D maze for cross-zone connectivity
+- post-pass reachability + path carving
+DECISION: IGNORE (but extract patterns)
+
+RegionPopulator
+TYPE: Debug / influence-map region generator
+ARGS: RegionSize=100
+BEHAVIOR: Generates an InfluenceMap using FurthestPoint seed strategy and draws it.
+OBSERVATION: Does not populate despite the name. Looks like a visualization/debug helper for region partitioning.
+DECISION: IGNORE
+
+RermadonLair
+TYPE: Structure / multi-zone vertical lair (Girsh system)
+ARGS: Nephal flag
+BEHAVIOR: Builds pit/cyst-based lair using Pitted and connection type "CysticPit". Surface gets pits + cysts. Underground levels reuse/extend pit connections, add more cysts by depth, populate with RermadonCyst, and spawn Rermadon asleep when Nephal=true. Applies RermadonCradle template and connectivity fix.
+OBSERVATION: Same reusable pattern as QasQon: CysticPit connections + Pitted + cyst rooms + depth-scaled pit count. Main difference is theme: algal water, Rermadon wall/cyst populations, plasmatic cultist mutation/corpse behavior.
+DECISION: REFERENCE ONLY
+
+River*Mouth
+TYPE: Connection builders / path endpoints
+ARGS: none
+BEHAVIOR: RiverEast/North/South/West create edge mouths via IConnectionBuilder.ConnectionMouth("River", direction). RiverStartMouth creates an internal start point via ConnectionStart("River").
+OBSERVATION: Same mouth pattern as Shug/FungalTrail/Canyon. Defines endpoints only; RiverBuilder consumes them.
+DECISION: REFERENCE
+
+RiverBuilder
+TYPE: Path / liquid trail builder
+ARGS: Puddle, Pairs, HardClear; constructor can set VillageMode
+BEHAVIOR: Reads River connections from ZoneConnectionCache and ZoneManager, chooses terrain-appropriate liquid, pathfinds between river endpoints, clears terrain, places liquid along path, widens river, optionally bridges village floors, and sets river ambience.
+OBSERVATION: Strong reusable pattern for visible path rendering. Similar to ShugBurrowBuilder but simpler and liquid-based. Important separation: mouth builders define where river enters/exits; RiverBuilder renders how the river looks locally.
+DECISION: REFERENCE HIGH VALUE
+
+Road*Mouth
+TYPE: Connection builders / path endpoints
+ARGS: none
+BEHAVIOR: RoadEast/North/South/West create edge mouths via IConnectionBuilder.ConnectionMouth("Road", direction). RoadStartMouth creates an internal start point via ConnectionStart("Road").
+OBSERVATION: Same connection-mouth pattern as River/Shug/FungalTrail/Canyon. Defines endpoints only; RoadBuilder renders the road.
+DECISION: REFERENCE
+
+RoadBuilder
+TYPE: Path / terrain trail builder
+ARGS: HardClear, ClearSolids=true, ClearAdjacent=true, Noise=true, BeforePlacement action
+BEHAVIOR: Reads Road connections, pathfinds between start/edge points, clears terrain/solids as configured, places DirtRoad along path and adjacent cells, bridges non-blood liquids, optionally places DirtPath patch near RoadStart. 
+OBSERVATION: Very relevant simple path renderer. Unlike RiverBuilder, it paints a dry traversable path. BeforePlacement hook is interesting for custom preprocessing. Good model for dirt/stone path material.
+DECISION: REFERENCE HIGH VALUE
+
+RoomData
+TYPE: Utility / room data container (serialization)
+ARGS: Left, Right, Top, Bottom, Width, Height, Size, Room[int[,] grid]
+BEHAVIOR: Stores rectangular room bounds and a 2D grid, supports serialization/deserialization.
+OBSERVATION: Not a builder. Used by systems that generate/subdivide rooms (e.g., dungeon/compound makers). Pure data holder.
+DECISION: IGNORE
+
+RuinedWharf
+TYPE: Structure / maze-like ruin layout
+ARGS: none
+BEHAVIOR: Fills zone with Limestone, generates a deterministic 20x6 recursive-backtracker maze keyed by "WharfMaze" + ZoneID, clears maze corridors, clears random non-overlapping box rooms, clears some fixed rectangular areas, then builds reachable map.
+OBSERVATION: Standalone structure generator. Interesting only because it uses a zone-keyed maze seed for deterministic local layout. Otherwise too specific and not aligned with underground site/path goals.
+DECISION: REFERENCE ONLY
+
+Ruiner
+TYPE: Destructive post-processor / ruin decorator
+ARGS: RuinAmount=50; RuinZone also accepts RuinLevel, bUnderground, SurfaceExplosionForce, UndergroundExplosionForce
+BEHAVIOR: Applies random explosions across the zone, clears connection points, cleans narrow diagonal chokepoints, removes orphan doors, then rebuilds reachability. Returns false if it cannot find a reachable area >400 cells.
+OBSERVATION: Useful as a generic “damage this generated structure” pass. It preserves/clears connection points after explosions, so it is safer than random destruction alone. Could be interesting later for ruined site variants, but not core.
+DECISION: MAYBE LATER
+
+RuinPowerGrids
+TYPE: Infrastructure post-processor / damaged utility networks
+ARGS: DamageChance, missing producer/consumer chances/counts for electrical/hydraulic/mechanical systems, HydraulicLiquid/Table, PreferWalls, AvoidWalls
+BEHAVIOR: Rolls shared damage chance, then applies PowerGrid, Hydraulics, and MechanicalPower builders with optional missing producers/consumers. Rebuilds reachability afterward.
+OBSERVATION: Wrapper/orchestrator for ruined infrastructure systems. Too specialized unless making technological ruin variants.
+DECISION: IGNORE / MAYBE LATER FOR TECH RUINS
+
+Ruins
+TYPE: Structure / multi-zone ruin generator
+ARGS: RuinLevel=100, ZonesWide="1d3", ZonesHigh="1d2"
+BEHAVIOR: Creates or reuses a BuildingZoneTemplate stored as a zone-column property, assigns semantic tags to cells from the template map, adds ruin semantic tags from population tables, builds the template, then applies Ruiner destruction and rebuilds reachability.
+OBSERVATION: Important pattern: shared zone-column template lets multiple Z-level zones in the same column use consistent ruin structure/semantics. Uses semantic tags heavily for later replacement/decoration. Strong system, but probably too building/ruin-specific for current vertical site/path work.
+DECISION: REFERENCE
+
+Rustwells
+TYPE: Structure / vertical pit dungeon
+ARGS: none
+BEHAVIOR: Builds a large single pit/well using Pitted, adds patterned Fulcrete rings/spokes around it, carves extra underground voids with NoiseMap, places stairs up/down, firms pit edges, ensures void connectivity, and adds bottom-pool population at Z=13.
+OBSERVATION: Specialized fixed-depth dungeon pattern. Useful as another reference for large vertical pit structures and pit-edge cleanup, but less relevant than Shug/QasQon/Rermadon because it is a named static dungeon and not path-oriented.
+DECISION: REFERENCE ONLY
+
+SaltDunes
+TYPE: Surface terrain painter / biome decorator
+ARGS: none
+BEHAVIOR: Adds DaylightWidget, paints cells with salt dune/desert tiles, occasionally places HighSaltDune objects, then rebuilds reachability from (0,0).
+OBSERVATION: Simple visual/terrain biome builder. Uses cosmetic randomness heavily. Not useful for underground sites except as a basic example of tile painting.
+DECISION: IGNORE
+
+ShugBurrow*Mouth
+TYPE: Connection builders / path endpoints (vertical + horizontal)
+ARGS: none (Range=3 for directional mouths)
+BEHAVIOR: Ascending/Descending use ConnectionStart with type "ShugBurrow" + suffix. East/North/South/West use ConnectionMouth to create edge endpoints.
+OBSERVATION: Slightly richer than River/Road because it includes vertical start points (ascending/descending), not just horizontal edges. Defines full 3D path endpoints.
+DECISION: REFERENCE HIGH VALUE
+
+ShugBurrowBuilder
+TYPE: Path / tunnel builder (3D burrow system)
+ARGS: Wall="BaseNephilimWall_Shug'rith", Pairs, HardClear
+BEHAVIOR: Reads ShugBurrow connections (including ascending/descending), pathfinds between them, clears terrain in a radius to form tunnels, replaces walls with themed material, decorates sparsely, and creates special vertical features:
+- Ascending: clears/open cavern
+- Descending: places LazyPit (downward connection), blocks stairs with blockers
+Applies ShugruithTunnel template at end. :contentReference[oaicite:0]{index=0}
+OBSERVATION: This is the most directly relevant builder so far:
+- uses connection system (your core mechanic)
+- renders visible traversable paths
+- supports vertical transitions explicitly
+- separates endpoint definition (mouths) from rendering (builder)
+DECISION: REFERENCE CRITICAL
+
+ShugLair
+TYPE: Structure / vertical Girsh lair
+ARGS: l (lair level/depth index)
+BEHAVIOR: Builds Shug'ruith lair level with cyst-like wall clusters, sludge pits via Pitted, ShugruithTunnel template, FirmPitEdges, connectivity cleanup, cyst populations, and boss placement when l == 3.
+OBSERVATION: Complements ShugBurrowBuilder but is more “site/boss lair” than “path system.” Useful pattern: level index controls complexity and final boss placement. MutateObject gives cultists burrowing, trail-leaving, icon color, and adjective.
+DECISION: REFERENCE
+
+SixDayTents
+TYPE: Structure / multi-zone settlement generator
+ARGS: Noise flag
+BEHAVIOR: Defines fixed path segments per world-grid position, builds paths, generates InfluenceMap regions, places tents/fences/fields/populations per region using directional templates, and ensures reachability.
+OBSERVATION: Complex handcrafted settlement system (Stilt). Mixes fixed layout + region-based placement + population tables. Not procedural in the way you need—more content scripting than generative system design. :contentReference[oaicite:0]{index=0}
+DECISION: IGNORE
+
+Sky
+TYPE: Surface/environment filler
+ARGS: none
+BEHAVIOR: Adds DaylightWidget, fills every cell with Air, rebuilds reachability from (0,0).
+OBSERVATION: Simple environment builder. No structure, path, population, or useful reusable logic.
+DECISION: IGNORE
+
+SlimePools
+TYPE: Environmental feature / noise-based liquid placement
+ARGS: none
+BEHAVIOR: Generates a NoiseMap (seeded partly by zone connections), places SlimePuddle on cells where noise > threshold and cell is empty.
+OBSERVATION: Simple example of noise-driven feature placement. Connections slightly influence layout via ExtraNodes. Not structurally important.
+DECISION: IGNORE
+
+SmokingArea*
+TYPE: Special encounter / directional hazard setup
+ARGS: none
+BEHAVIOR: Randomly samples 600 cells; if a sampled cell has liquid and it is not blood, mixes blood into that liquid. Then places three directional Smokecaster objects along one map edge, aimed inward.
+OBSERVATION: Hardcoded directional hazard/ambush setup. Interesting only as an example of liquid mutation + fixed edge emitters. Not reusable for current site/path system.
+DECISION: IGNORE
+
+SnapjawFortMaker / SnapjawStockadeMaker
+TYPE: Structure wrappers (preset builders)
+ARGS: none (hardcoded FortMaker / StockadeMaker params)
+BEHAVIOR: Thin wrappers that call FortMaker or StockadeMaker with Snapjaw-specific materials and globals.
+OBSERVATION: Same pattern as other “*Maker” classes — just themed presets over generic structure systems. No new mechanics.
+DECISION: IGNORE
+
+SolidEarth
+TYPE: Terrain filler / reset
+ARGS: none
+BEHAVIOR: Clears every cell and fills the entire zone with Shale.
+OBSERVATION: Hard reset to solid rock. Likely used as a base layer before carving (e.g., tunnels/pits). Simple but conceptually important as a “blank slate” initializer.
+DECISION: REFERENCE (low)
+
+Spire
+TYPE: Structure / vertical ruin template generator
+ARGS: ZonesWide="1", ZonesHigh="1", RuinLevel computed
+BEHAVIOR: Creates or reuses a SpireZoneTemplate stored on the zone column, generates rooms based on depth, retries until connections are valid, builds the template, applies Ruiner with decreasing ruin level by depth, then rebuilds reachability from stairs or first open cell.
+OBSERVATION: Similar to Ruins but spire-specific. Important pattern: shared column template + per-depth room generation + connection validation retry loop. More relevant as reference architecture than direct reuse.
+DECISION: REFERENCE
+
+StairConnector
+TYPE: Connectivity fixer / stair path carver
+ARGS: none
+BEHAVIOR: Finds StairsUp and StairsDown, pathfinds between them using Drillbot, clears walls and impassable objects along the path.
+OBSERVATION: Simple and potentially useful utility. Ensures vertical traversal is possible after generation. Less sophisticated than ForceConnections, but very direct.
+DECISION: REFERENCE
+
+StairsDown / StairsUp
+TYPE: Vertical connection builders
+ARGS:
+- Number
+- x, y coordinate/range specs
+- Reachable
+- StairsDown also has EmptyOnly
+BEHAVIOR: Places stair objects, respects existing ZoneManager stair connections, avoids conflicting stair/pit/blocker objects, chooses reachable/empty cells when possible, and caches reciprocal zone connections:
+- StairsDown caches "d" -> StairsUp
+- StairsUp caches "u" -> StairsDown
+Also caches local "Connection" marker.
+OBSERVATION: Core vertical traversal utility. Important: stairs are not just objects; they also create cached zone connections to the adjacent Z-level. This explains why later builders can read ZoneConnections and why forced connectivity can target them.
+DECISION: REFERENCE HIGH VALUE
+
+RuinPowerGrids
+TYPE: Infrastructure post-processor / damaged utility networks
+ARGS: DamageChance, missing producer/consumer chances/counts for electrical/hydraulic/mechanical systems, HydraulicLiquid/Table, PreferWalls, AvoidWalls
+BEHAVIOR: Rolls shared damage chance, then applies PowerGrid, Hydraulics, and MechanicalPower builders with optional missing producers/consumers. Rebuilds reachability afterward.
+OBSERVATION: Wrapper/orchestrator for ruined infrastructure systems. Too specialized unless making technological ruin variants.
+DECISION: IGNORE / MAYBE LATER FOR TECH RUINS
 
 
+Ruins
+TYPE: Structure / multi-zone ruin generator
+ARGS: RuinLevel=100, ZonesWide="1d3", ZonesHigh="1d2"
+BEHAVIOR: Creates or reuses a BuildingZoneTemplate stored as a zone-column property, assigns semantic tags to cells from the template map, adds ruin semantic tags from population tables, builds the template, then applies Ruiner destruction and rebuilds reachability.
+OBSERVATION: Important pattern: shared zone-column template lets multiple Z-level zones in the same column use consistent ruin structure/semantics. Uses semantic tags heavily for later replacement/decoration. Strong system, but probably too building/ruin-specific for current vertical site/path work.
+DECISION: REFERENCE
+Key note: this is another example of shared generated structure stored at column scope, unlike your preferred deterministic recomputation model. Useful pattern, but not necessary yet.
 
+Rustwells
+TYPE: Structure / vertical pit dungeon
+ARGS: none
+BEHAVIOR: Builds a large single pit/well using Pitted, adds patterned Fulcrete rings/spokes around it, carves extra underground voids with NoiseMap, places stairs up/down, firms pit edges, ensures void connectivity, and adds bottom-pool population at Z=13.
+OBSERVATION: Specialized fixed-depth dungeon pattern. Useful as another reference for large vertical pit structures and pit-edge cleanup, but less relevant than Shug/QasQon/Rermadon because it is a named static dungeon and not path-oriented.
+DECISION: REFERENCE ONLY
+Important small note:
+ 
 
+ShugBurrow*Mouth
+TYPE: Connection builders / path endpoints (vertical + horizontal)
+ARGS: none (Range=3 for directional mouths)
+BEHAVIOR: Ascending/Descending use ConnectionStart with type "ShugBurrow" + suffix. East/North/South/West use ConnectionMouth to create edge endpoints.
+OBSERVATION: Slightly richer than River/Road because it includes vertical start points (ascending/descending), not just horizontal edges. Defines full 3D path endpoints.
+DECISION: REFERENCE HIGH VALUE
+ShugBurrowBuilder
+TYPE: Path / tunnel builder (3D burrow system)
+ARGS: Wall="BaseNephilimWall_Shug'rith", Pairs, HardClear
+BEHAVIOR: Reads ShugBurrow connections (including ascending/descending), pathfinds between them, clears terrain in a radius to form tunnels, replaces walls with themed material, decorates sparsely, and creates special vertical features:
+- Ascending: clears/open cavern
+- Descending: places LazyPit (downward connection), blocks stairs with blockers
+Applies ShugruithTunnel template at end. :contentReference[oaicite:0]{index=0}
+OBSERVATION: This is the most directly relevant builder so far:
+- uses connection system (your core mechanic)
+- renders visible traversable paths
+- supports vertical transitions explicitly
+- separates endpoint definition (mouths) from rendering (builder)
+DECISION: REFERENCE CRITICAL
+One important clarification (this is worth locking in)
+You now have the full pattern:
 
+1) Mouth builders → define endpoints (deterministic, cross-zone)
+2) Builder (ShugBurrowBuilder) → renders the path locally
+This is exactly what you are building.
 
+Why this is better than River/Road for you
+Shug adds:
 
++ vertical connections (ascending / descending)
++ tunnel geometry (not just surface path)
++ environmental theming
++ controlled stair behavior (LazyPit + blockers)
+That maps almost perfectly to:
 
+ShugLair
+TYPE: Structure / vertical Girsh lair
+ARGS: l (lair level/depth index)
+BEHAVIOR: Builds Shug'ruith lair level with cyst-like wall clusters, sludge pits via Pitted, ShugruithTunnel template, FirmPitEdges, connectivity cleanup, cyst populations, and boss placement when l == 3.
+OBSERVATION: Complements ShugBurrowBuilder but is more “site/boss lair” than “path system.” Useful pattern: level index controls complexity and final boss placement. MutateObject gives cultists burrowing, trail-leaving, icon color, and adjective.
+DECISION: REFERENCE
 
+SixDayTents
+TYPE: Structure / multi-zone settlement generator
+ARGS: Noise flag
+BEHAVIOR: Defines fixed path segments per world-grid position, builds paths, generates InfluenceMap regions, places tents/fences/fields/populations per region using directional templates, and ensures reachability.
+OBSERVATION: Complex handcrafted settlement system (Stilt). Mixes fixed layout + region-based placement + population tables. Not procedural in the way you need—more content scripting than generative system design. :contentReference[oaicite:0]{index=0}
+DECISION: IGNORE
+Quick sanity note (worth stating once)
+You’re now seeing two distinct categories very clearly:
 
+Sky
+TYPE: Surface/environment filler
+ARGS: none
+BEHAVIOR: Adds DaylightWidget, fills every cell with Air, rebuilds reachability from (0,0).
+OBSERVATION: Simple environment builder. No structure, path, population, or useful reusable logic.
+DECISION: IGNORE
 
+SlimePools
+TYPE: Environmental feature / noise-based liquid placement
+ARGS: none
+BEHAVIOR: Generates a NoiseMap (seeded partly by zone connections), places SlimePuddle on cells where noise > threshold and cell is empty.
+OBSERVATION: Simple example of noise-driven feature placement. Connections slightly influence layout via ExtraNodes. Not structurally important.
+DECISION: IGNORE
+ 
 
+SmokingArea*
+TYPE: Special encounter / directional hazard setup
+ARGS: none
+BEHAVIOR: Randomly samples 600 cells; if a sampled cell has liquid and it is not blood, mixes blood into that liquid. Then places three directional Smokecaster objects along one map edge, aimed inward.
+OBSERVATION: Hardcoded directional hazard/ambush setup. Interesting only as an example of liquid mutation + fixed edge emitters. Not reusable for current site/path system.
+DECISION: IGNORE
 
+SnapjawFortMaker / SnapjawStockadeMaker
+TYPE: Structure wrappers (preset builders)
+ARGS: none (hardcoded FortMaker / StockadeMaker params)
+BEHAVIOR: Thin wrappers that call FortMaker or StockadeMaker with Snapjaw-specific materials and globals.
+OBSERVATION: Same pattern as other “*Maker” classes — just themed presets over generic structure systems. No new mechanics.
+DECISION: IGNORE
 
+Spire
+TYPE: Structure / vertical ruin template generator
+ARGS: ZonesWide="1", ZonesHigh="1", RuinLevel computed
+BEHAVIOR: Creates or reuses a SpireZoneTemplate stored on the zone column, generates rooms based on depth, retries until connections are valid, builds the template, applies Ruiner with decreasing ruin level by depth, then rebuilds reachability from stairs or first open cell.
+OBSERVATION: Similar to Ruins but spire-specific. Important pattern: shared column template + per-depth room generation + connection validation retry loop. More relevant as reference architecture than direct reuse.
+DECISION: REFERENCE
+Small note:
 
+Useful pattern: template.EnsureConnections(Z) retry loop before committing build.
 
+StairConnector
+TYPE: Connectivity fixer / stair path carver
+ARGS: none
+BEHAVIOR: Finds StairsUp and StairsDown, pathfinds between them using Drillbot, clears walls and impassable objects along the path.
+OBSERVATION: Simple and potentially useful utility. Ensures vertical traversal is possible after generation. Less sophisticated than ForceConnections, but very direct.
+DECISION: REFERENCE
+Useful later if a generated site level has both stairs but the builder leaves them disconnected.
 
+StairsDown / StairsUp
+TYPE: Vertical connection builders
+ARGS:
+- Number
+- x, y coordinate/range specs
+- Reachable
+- StairsDown also has EmptyOnly
+BEHAVIOR: Places stair objects, respects existing ZoneManager stair connections, avoids conflicting stair/pit/blocker objects, chooses reachable/empty cells when possible, and caches reciprocal zone connections:
+- StairsDown caches "d" -> StairsUp
+- StairsUp caches "u" -> StairsDown
+Also caches local "Connection" marker.
+OBSERVATION: Core vertical traversal utility. Important: stairs are not just objects; they also create cached zone connections to the adjacent Z-level. This explains why later builders can read ZoneConnections and why forced connectivity can target them.
+DECISION: REFERENCE HIGH VALUE
+Important practical note:
+If you manually place custom stairs/pits later, you need to think about both:
+1) the visible object in the cell
+2) the cached zone connection
+This is directly relevant to your vertical site design.
 
+StarappleFarm / StarappleFarmMaker
+TYPE: Structure / surface settlement-farm generator
+ARGS: ClearCombatObjectsFirst, WallObject, ZoneTable, Widgets (mostly unused here)
+BEHAVIOR: Generates 1–3 large farm boxes, clears/
+DECISION: SKIP
 
+Stillvine
+TYPE: Biome/environment decorator
+ARGS: Underground flag
+BEHAVIOR: Adds daylight/dirty or pale dirty, creates noise maps, uses world-seeded large-scale WatervineNoise, places SaltyWaterPuddle and Stillvine objects based on noise. Underground mode only decorates passable cells.
+OBSERVATION: Relevant pattern: cached world-scale noise creates continuity across zones. Otherwise just biome decoration.
+DECISION: REFERENCE LOW
 
+StockadeMaker
+TYPE: Structure (compound builder)
+BEHAVIOR:
+- Builds walled compound
+- Subdivides into rooms
+- Populates rooms (can include leader/loot)
+- Cuts entrances + arrowslits
+- Ensures connectivity
+OBSERVATION:
+Standard “site pattern”: enclosure → rooms → populate → fix paths
+DECISION:
+REFERENCE (not needed now)
 
-
-
-
-
+Strata
+TYPE: Full terrain + connectivity builder
+CATEGORY: Generic subterranean cave/strata generator
+BEHAVIOR:
+- Selects primary and secondary wall/material types by depth, weighted tables, and world-seeded noise.
+- Sets zone DefaultWall to the strongest selected material.
+- Chooses cave layout algorithm based on selected material:
+  - Oolite/Marl: box-filter cave
+  - Black Marble: pillars
+  - Halite/Gypsum/Porous Coral Rag: porous
+  - Limestone/Coral Rag: random-walk cave
+  - Serpentinite/Sandstone: windy
+  - Quartzite: blocky
+  - fallback: cellular cave
+- Blends primary/secondary layouts using zone-scale noise.
+- Places walls/detail liquids/materials and paints floor colors from selected wall materials.
+- Uses a static world-seeded 3D Maze3D to add cross-zone cave connections.
+- Carves tunnels between connection points using FindPath + Drillbot.
+- Optionally places stairs up/down when maze cell has U/D links.
+- Sometimes replaces the zone with a SultanDungeon-style pocket, then adds ForceConnections if stairs are enabled.
+ARGS:
+- Noise: declared, not obviously central here
+- Stairs=true: controls whether U/D maze links create StairsUp/StairsDown and ForceConnections
+OBSERVATION:
+- This is very similar to Reef, but for generic underground strata rather than palladium reef biome.
+- Very important reference for how Qud’s normal deep underground terrain is built.
+- Confirms a high-value pattern:
+  world seed + named noise key + global coordinates + depth → stable local terrain variation.
+- Also confirms another high-value pattern:
+  global 3D maze → local edge/stair connections → local path carving.
+- Not a good direct builder for your special sites because it is the normal background cave generator.
+- Useful to understand what your path/site system will be interrupting or overlaying.
+- `Stairs=false` could be relevant if testing terrain generation without extra vertical links.
+DECISION:
+REFERENCE HIGH VALUE
 
 
 ## ZoneBuilder Evaluation – SultanDungeon / SultanDungeonArgs
@@ -1268,3 +1742,457 @@ Notes:
 - test known adjective themes like temple, soldier, tinker, stars, waste, market, residential
 - verify which SultanDungeons_ tables actually exist before heavy testing
 - this may become the main theme-control layer for major sites
+
+SurfaceCave
+TYPE: Terrain builder
+CATEGORY: Simple surface cave / noise terrain
+BEHAVIOR:
+- Adds DaylightWidget.
+- Generates a NoiseMap.
+- Places Sandstone on cells where noise > 1.
+- Clears and rebuilds reachability from (0,0).
+- Returns true only if reachable area is at least 400 cells.
+ARGS:
+- none
+OBSERVATION:
+- Simple terrain decorator/carver compared with Cave or Strata.
+- Surface-oriented because it adds daylight.
+- No path endpoint system, no vertical behavior, no population.
+- Not useful for your subterranean path/site system except as a basic NoiseMap example.
+DECISION:
+IGNORE
+
+Tarland
+TYPE: Terrain builder
+CATEGORY: Surface biome / cellular terrain
+BEHAVIOR:
+- Generates two CellularGrids with different seed chances (55 and 45).
+- For each cell:
+  - If grid1 == open → place AsphaltPuddle (tar-like terrain).
+  - Else if grid2 == open → place Shale.
+- Leaves remaining cells unchanged (implicit base terrain).
+- Adds Dirty at (0,0).
+- Does NOT enforce reachability.
+ARGS:
+- none
+OBSERVATION:
+- Layered cellular approach → produces patchy tar + rock regions.
+- No connectivity guarantees → may produce fragmented zones.
+- Purely cosmetic/terrain shaping; no paths, stairs, or structure logic.
+- Good minimal example of combining multiple cellular fields for biome variation.
+DECISION:
+IGNORE (but minor reference for layered cellular terrain patterns)
+
+TileBuilding / TileManager / TileType
+TYPE: Structure / tile-template building generator
+CATEGORY: Modular prefab-like structure system
+BEHAVIOR:
+- Loads 6x6 building tiles from BuildingTiles.txt and modded BuildingTiles files.
+- TileManager can add mirrored, reversed, and rotated variants of each tile.
+- TileBuilding assembles a larger building from compatible tiles.
+- Supports marker ranges for selecting tile sets:
+  - TileStartMarker / TileEndMarker
+  - VaultStartMarker / VaultEndMarker
+  - second vault set also supported
+- Can insert special vault regions before filling the rest of the tile grid.
+- Enforces edge compatibility between neighboring tiles.
+- Converts tile symbols into TileType values:
+  - Open
+  - OpenConnect
+  - LittleChest
+  - BigChest
+  - Creature1
+  - Wall
+  - Door
+  - Liquid
+  - Garbage
+  - Any
+  - Custom
+- Builds actual zone content from tile types:
+  - WallMaterial for walls
+  - Door
+  - Locker2 / MedLocker
+  - Boosterbot
+  - ConvalessencePuddle / RedTile
+  - MedScrap
+  - SpawnBlocker for vault regions
+- Supports CustomCharMap for mapping custom template chars to objects or wall clearing.
+- Optional Shell adds hollow outer boxes around the generated building.
+- Clears local cached connection cells.
+- Runs ForceConnections and Connecter after building.
+ARGS:
+- WallMaterial
+- ShellMaterial
+- Shell
+- Wide / High
+- XCorner / YCorner
+- TileStartMarker / TileEndMarker
+- NumberOfVaults / ChancePerVault / VaultWidth / VaultHeight / VaultStartMarker / VaultEndMarker
+- NumberOfVaults2 / ChancePerVault2 / VaultWidth2 / VaultHeight2 / VaultStartMarker2 / VaultEndMarker2
+- CustomCharMap
+OBSERVATION:
+- This is a serious modular building generator, not just a decorator.
+- It is closer to wave-function/tile assembly than simple room generation.
+- Useful pattern: template assembly → content interpretation → connectivity cleanup.
+- It is probably too specialized and tile-file-dependent for the current subterranean path/site system.
+- Could become useful later for fixed “constructed” site interiors, vaults, ruins, or tech structures.
+- The post-build ForceConnections + Connecter pass is another confirmation that Qud builders often generate first and repair connectivity afterward.
+DECISION:
+REFERENCE (later structured/constructed sites)
+
+Torchposts
+TYPE: Decorator / path-adjacent object placement
+CATEGORY: Lighting / trail decoration
+BEHAVIOR:
+- Picks a start point:
+  - prefers existing StairsUp or StairsDown if found
+  - otherwise starts near a random north/south edge
+- Pathfinds from that start point to a random east/west-ish edge target.
+- Walks along the found path.
+- Every 3–5 steps, places two Torchpost objects on nearby adjacent cells.
+ARGS:
+- none
+OBSERVATION:
+- Does not carve the path; it only decorates along an existing/pathfindable route.
+- Interesting small pattern for placing repeated markers along a route.
+- Could be adapted later for path-side signage, lights, bones, cairns, resin nodules, etc.
+- Not core path generation.
+DECISION:
+REFERENCE LOW / MAYBE DECORATOR LATER
+
+TunnelMaker
+TYPE: Utility / abstract tunnel path generator
+CATEGORY: Path topology support
+BEHAVIOR:
+- Creates a 2D string map representing tunnel connectivity.
+- Constructor takes:
+  - Width
+  - Height
+  - StartY roll string
+  - EndY roll string
+  - Directions string
+- Tunnel always runs horizontally from one side to the other:
+  - default: west → east
+  - if Directions contains "W": east → west
+- Randomly steps through allowed Directions until it reaches EndX/EndY.
+- Stores direction strings in each map cell:
+  - current cell gets outgoing direction
+  - destination cell gets opposite direction
+- Retries up to 100 full attempts if it fails.
+- Each step gets up to 10 direction attempts before abandoning that full attempt.
+ARGS:
+- Width
+- Height
+- StartY
+- EndY
+- Directions
+OBSERVATION:
+- This does not modify a Zone directly.
+- It generates a symbolic tunnel route/map for another builder to interpret.
+- Useful pattern for precomputing constrained paths before rendering them.
+- Much simpler than FindPath-based builders.
+- Could be relevant if you want deterministic “path plan first, render later” logic for your site paths.
+- Limitation: it is grid/path-topology oriented and horizontally biased, not a full 3D path system.
+DECISION:
+REFERENCE
+
+UpperBethesdaElevator
+TYPE: Special structure
+CATEGORY: Unique vertical transport
+BEHAVIOR:
+- Clears fixed area, places OpenShaft + ElevatorSwitch.
+- Links two Z-levels via switch (TopLevel / FloorLevel).
+- Adds Platform on top level.
+- Ensures reachability.
+OBSERVATION:
+- Hardcoded Bethesda feature.
+- Example of non-stair vertical travel.
+DECISION:
+IGNORE
+
+VillageOver
+TYPE: Special structure / village upper layer
+CATEGORY: Aerie / above-ground village support
+BEHAVIOR:
+- Clears zone, fills with Air, adds DaylightWidget.
+- Looks for cached/current ZoneConnections of type "aerie".
+- Around each aerie point, places WFC building/platform floor pieces.
+- Replaces the aerie point with StairsDown marked IdleStairs.
+- Sets relaxedbiomes=true.
+OBSERVATION:
+- Specific support layer for aerie-style villages.
+- Interesting because it uses connection points as anchors for structures.
+- Not useful directly, but relevant pattern: connection → local structure/platform.
+DECISION:
+REFERENCE LOW
+
+VillageUnder
+TYPE: Special structure / village lower layer
+CATEGORY: Burrow / underground village support
+BEHAVIOR:
+- Sets DisableForcedConnections and relaxedbiomes.
+- Clears combat objects.
+- Finds cached/current connections whose type starts with "burrow".
+- For each burrow point:
+  - clears a box around it
+  - builds InfluenceMap regions around burrow anchors
+  - walls borders with local wall material
+  - populates building interiors from associated population table
+  - places StairsUp marked IdleStairs at burrow anchor.
+- Later applies village faction/abandoned/infrastructure logic.
+OBSERVATION:
+- More relevant than VillageOver because it is underground and anchor-driven.
+- Uses burrow connections as underground dwelling anchors.
+- Still village-specific, but confirms a useful pattern:
+  connection point → clear local chamber → regionize → populate → add vertical return.
+DECISION:
+REFERENCE
+
+VillageBase / Village
+TYPE: Full settlement framework
+CATEGORY: Dynamic village generation
+BEHAVIOR:
+- Generates village identity, faction, villagers, mayor, warden, merchants, domesticated animals, conversations, signature food/liquid/items, buildings, roads, farms, gardens, ponds, huts, tents, burrows, aeries, infrastructure, music, checkpoint, and discovery widgets.
+- Uses HistoricEntitySnapshot heavily.
+- Uses InfluenceMap regions and PopulationLayout to place buildings/content.
+- Can call RiverBuilder/RoadBuilder if present.
+- Adds PowerGrid, Hydraulics, MechanicalPower with damage/missing component chances.
+- Handles abandoned villages, ruins, replacement of original plants/creatures/furniture/items.
+OBSERVATION:
+- Huge content framework, not a simple reusable builder.
+- Valuable only architecturally:
+  - region → building layout
+  - village identity → population/content
+  - generate first → cleanup/connectivity/infrastructure after
+- Too tied to village history/factions/conversations for your current subterranean site work.
+DECISION:
+REFERENCE LOW / IGNORE DIRECT
+
+VillageCodaBase / VillageCoda
+TYPE: Full settlement framework variant
+CATEGORY: Coda-specific village system
+BEHAVIOR:
+- Variant of Village/VillageBase for Coda quest/state logic.
+- Similar village framework but with Coda-specific game states, plague/ruin/despised flags, guaranteed merchant/tinker/apothecary chances, Coda history/event strings, and quest-specific content.
+- Uses eligible villagers/faction members and similar villager preprocessing/conversation systems.
+OBSERVATION:
+- Even more quest-specific than Village.
+- Not relevant to procedural path/site generation.
+- Only useful as another example of how Qud forks large builder frameworks for special narrative contexts.
+DECISION:
+IGNORE
+
+VillageMaker
+TYPE: Structure / simple village preset builder
+CATEGORY: Huts + roads + optional feature
+BEHAVIOR:
+- Optionally clears combat objects.
+- Places a rolled number of huts.
+- Avoids placing huts too close to existing connection points.
+- Adds hut doors to a road-point list.
+- Uses RoadBuilder to connect hut doors / connections.
+- Can add feature such as cistern.
+- Places hut contents and optional zone/global populations/widgets.
+ARGS:
+- bRoads
+- WallObject
+- RoundBuildings
+- Huts
+- Features
+- HutTable
+- ZoneTable
+- Widgets
+- ClearCombatObjectsFirst
+OBSERVATION:
+- Much simpler than full Village.
+- Useful pattern: place small structures → collect door points → RoadBuilder connects them.
+- Still surface/village-oriented.
+DECISION:
+REFERENCE LOW
+
+VillageOutskirts
+TYPE: Structure / dynamic village outskirts
+CATEGORY: Village extension / partial settlement
+BEHAVIOR:
+- Extends VillageBase.
+- Resolves building contents through dynamic semantic tables.
+- Builds initial structures using SultanDungeon-style segments:
+  Full, mirrored full, BSP, rings, blocks, circles, towers, etc.
+- Uses village tech tier and population semantics for content.
+- Handles farms/gardens/outskirt structures and village-flavored placement.
+OBSERVATION:
+- Interesting hybrid of VillageBase + SultanDungeon segment concepts.
+- Too village-specific, but it reinforces that Qud reuses Sultan-style region segmentation outside dungeons.
+DECISION:
+REFERENCE LOW
+
+WallOutcrop
+TYPE: Terrain / obstruction generator
+CATEGORY: Noise-based terrain feature
+BEHAVIOR:
+- Uses two NoiseMaps:
+  - Local 20×20 cluster near an anchor (often stairs)
+  - Global spread across entire zone
+- Places specified Blueprint (wall type) where noise > threshold.
+- If StairsDown exists:
+  - anchors outcrop around it
+  - preserves stairs and forces reachability
+- If no stairs:
+  - attempts to place StairsDown in reachable empty cell near center
+  - falls back to anywhere if needed
+- Rebuilds reachability aggressively (multi-pass search)
+ARGS:
+- Blueprint (wall object to place, e.g., Shale, etc.)
+OBSERVATION:
+- Dual-scale noise = clustered feature + ambient scatter.
+- Strong pattern:
+  terrain generation → then enforce connectivity → then fix/insert stairs.
+- Good example of “generate first, fix playability after”.
+DECISION:
+REFERENCE
+
+Waterlogged
+TYPE: Terrain modifier
+CATEGORY: Environmental effect
+BEHAVIOR:
+- Adds water/liquid to existing terrain (likely via noise or conditions).
+- Converts areas into wet/marsh-like zones.
+OBSERVATION:
+- Post-process modifier rather than structural generator.
+DECISION:
+IGNORE
+Watervine / Stillvine (combined pattern)
+TYPE: Terrain + global noise system
+CATEGORY: Large-scale biome generator
+BEHAVIOR:
+- Uses large precomputed global noise (1200×375 space).
+- Combines:
+  - local NoiseMap
+  - global Perlin noise
+- Places:
+  - water puddles
+  - plants (Stillvine / Watervine)
+- Anchors to world coordinates → consistent large-scale biome patterns.
+OBSERVATION:
+- Important pattern: global noise tied to world coordinates.
+- Enables biome continuity across zones.
+- Not needed for your current path/site system, but useful conceptually.
+DECISION:
+REFERENCE LOW
+
+Watervine / Stillvine (combined pattern)
+TYPE: Terrain + global noise system
+CATEGORY: Large-scale biome generator
+BEHAVIOR:
+- Uses large precomputed global noise (1200×375 space).
+- Combines:
+  - local NoiseMap
+  - global Perlin noise
+- Places:
+  - water puddles
+  - plants (Stillvine / Watervine)
+- Anchors to world coordinates → consistent large-scale biome patterns.
+OBSERVATION:
+- Important pattern: global noise tied to world coordinates.
+- Enables biome continuity across zones.
+- Not needed for your current path/site system, but useful conceptually.
+DECISION:
+REFERENCE LOW
+
+Waterway
+TYPE: Connection / terrain feature
+CATEGORY: Linear water path
+BEHAVIOR:
+- Likely similar to RiverBuilder but simpler.
+- Creates water-based connection across zone.
+OBSERVATION:
+- Another example of “connection builder” pattern.
+DECISION:
+REFERENCE LOW
+
+WideHive
+TYPE: Structure / hive variant
+CATEGORY: Creature lair
+BEHAVIOR:
+- Variant of Hive builder with wider/open layout.
+- Likely uses region + population + tunnels.
+OBSERVATION:
+- Same pattern as other lairs (Girsh, Qonqas, etc.).
+DECISION:
+REFERENCE LOW
+
+WildWatervineMerchant
+TYPE: Encounter / population injector
+CATEGORY: Special NPC placement
+BEHAVIOR:
+- Spawns merchant tied to Watervine biome.
+OBSERVATION:
+- Pure population logic, no structural value.
+DECISION:
+IGNORE
+
+Weald
+TYPE: Terrain / biome painter
+CATEGORY: Overworld vegetation
+BEHAVIOR:
+- Uses NoiseMap to scatter vegetation/terrain (dense plant biome).
+- Fills cells with plant objects depending on noise thresholds.
+- Likely preserves connectivity or relies on base terrain being passable.
+OBSERVATION:
+- Standard biome painter.
+- Not structurally interesting for dungeon/site work.
+DECISION:
+IGNORE
+
+ZoneBuilderSandbox
+TYPE: Core utility base class / builder helper library
+CATEGORY: Foundational methods used by many builders
+BEHAVIOR:
+Provides shared helper methods for:
+- deterministic seeded values
+- path carving
+- void/region connectivity
+- WFC building templates
+- hut/rect construction
+- object/population placement
+- placement hints
+- bridges over pits
+- zone-column properties
+- terrain lookup / default wall lookup
+KEY METHODS / PATTERNS:
+- getMatchedEdgeConnectionLocation(...)
+  - deterministic edge connection placement across neighboring zones.
+- TunnelTo(...)
+  - pathfinds between two points and clears walls along route.
+- EnsureAllVoidsConnected(...)
+  - finds separated open regions and carves connections between them.
+- EnsureCellReachable(...)
+  - carves from a target cell to nearest reachable area.
+- GetOracleIntColumn(...)
+  - deterministic per-column value using world seed + zone column.
+- GetOracleLocationForZone(...)
+  - deterministic per-zone location.
+- GetSeededRand / GetSeededRange(...)
+  - world-seeded randomness by string key.
+- BuildPath / BuildPathWithObject / BuildSimplePathWithObject(...)
+  - reusable path-rendering helpers.
+- PlacePopulationInRegion / Rect / Cells(...)
+  - population placement with zonetier.
+- PlaceObjectInArea(...)
+  - major placement engine using hints like AlongWall, Center, Aquatic, LivesOnWalls, Adjacent, Border, Nonborder, etc.
+- BridgeOver(...)
+  - places bridges over pit-like objects.
+- getWfcBuildingTemplate(...)
+  - generates and caches WFC building chunks.
+OBSERVATION:
+This is absolutely core. It is less a “builder” and more the shared toolbox many builders rely on. For your mod, the most important pieces are:
+- deterministic oracle helpers
+- TunnelTo
+- EnsureAllVoidsConnected
+- EnsureCellReachable
+- BuildPathWithObject / BuildSimplePathWithObject
+- PlacePopulationInRegion
+- BridgeOver
+This also confirms that your deterministic matrix/site plan is aligned with existing Qud patterns: the engine already uses world-seeded helper methods for stable per-zone/per-column decisions. :contentReference[oaicite:0]{index=0}
+DECISION:
+REFERENCE CRITICAL
