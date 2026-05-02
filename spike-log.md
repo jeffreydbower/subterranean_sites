@@ -620,3 +620,697 @@ Notes:
 - keep Chance low in final implementation to avoid overcrowding
 - may want custom population table later for tighter control
 - useful for adding variability without defining full site population
+
+FindA...DynamicQuest (group)
+Type: QUEST / DYNAMIC CONTENT
+Behavior:
+- quest-specific generation and event handling
+
+Observation:
+- tied to dynamic quest systems
+- not reusable for general procedural generation
+
+Decision:
+SKIP
+
+FlagInside
+Type: UTILITY / FLAGGING
+Behavior:
+- likely marks interior cells or regions
+Observation:
+- low-level helper
+- not relevant to current generation goals
+Decision:
+SKIP
+
+
+FlowerFields
+Type: DECORATOR / SURFACE
+Behavior:
+- adds flower field terrain/features
+Observation:
+- surface aesthetic builder
+- not relevant to subterranean sites
+Decision:
+SKIP
+
+ForceConnections
+Type: CONNECTIVITY / FIX-UP
+Behavior:
+- collects all connection points (stairs, zone connections, etc.)
+- ensures all points are reachable from each other
+- uses pathfinding with noise to carve tunnels if needed
+- clears walls along carved paths
+- optionally widens paths (CaveLike behavior)
+Observation:
+- general-purpose “make everything connected” pass
+- similar to Canyon/Shug carving but used as a safety/fix layer
+- works on any zone regardless of how it was generated
+Decision:
+REFERENCE (high value)
+Notes:
+- very relevant for path/holes system
+- can be used after generation to guarantee connectivity
+- likely useful for fixing unreachable holes or path segments
+- CaveLike option gives natural-looking tunnels
+
+ForceConnectionsPlus
+Type: CONNECTIVITY / FIX-UP
+Behavior:
+- finds all passable cells in the zone
+- builds reachability from the first passable cell
+- for any isolated passable cell, carves a path to connect it
+- clears walls along paths
+- optionally widens paths with CaveLike behavior
+Observation:
+- more aggressive than ForceConnections
+- connects all passable regions, not just stairs/connections
+- useful for preventing isolated pockets
+- may over-carve zones if used casually
+Decision:
+REFERENCE
+Notes:
+- ForceConnections is probably better for path/hole endpoints
+- ForceConnectionsPlus is a broader safety pass
+- use cautiously; may erase intended separation between areas
+
+FortMaker
+Type: STRUCTURE (surface/fort layout)
+Behavior:
+- generates large boxed fort structure
+- creates walls, rooms, and doors using templates
+- fills interior with floor
+- places additional objects from population tables
+- optionally clears combat objects first
+Observation:
+- builds structured, rectangular, aboveground-style layouts
+- not aligned with natural cave/path systems
+- not relevant to subterranean site/path goals
+Decision:
+SKIP
+
+Type: DECORATOR / PLANT GROWTH
+Behavior:
+- plants Fracti at a point
+- grows outward over allowed floor types
+Observation:
+- localized vegetation growth
+- not relevant to path or site structure
+Decision:
+SKIP
+
+FungalJungle
+Type: FULL BIOME / GLOBAL STRUCTURE
+Behavior:
+- generates large-scale maze structure across zones
+- uses maze to define cross-zone connections (river mouths)
+- builds rivers between zones
+- populates fungal terrain and vegetation via influence maps + noise
+- ensures reachability
+Observation:
+- another example of global multi-zone structure (like Catacombs)
+- uses connections to define traversal between zones
+- heavy biome + decoration logic
+- not aligned with targeted path + vertical site system
+Decision:
+REFERENCE (low)
+Notes:
+- confirms connection-based multi-zone layout pattern
+- not needed for current path/holes implementation
+
+FungalTrailBuilder
+Type: PATH / TRAIL BUILDER
+Behavior:
+- reads FungalTrail zone connections
+- uses connection mouths/start points as endpoints
+- uses FindPath to connect endpoints inside the zone
+- paints the path with FungalTrailBrick
+- paints adjacent cells too, making the trail visually broad
+- if only one connection exists, generates a local patch of trail material
+Observation:
+- very close to planned path rendering system
+- simpler than ShugBurrowBuilder
+- good reference for non-hole path materials
+- shows how Qud creates a visible multi-zone trail players can follow
+Decision:
+REFERENCE (high value)
+Notes:
+- strong model for dirt/stone/resin path rendering
+- likely useful for horizontal path segments
+- does not handle vertical holes by itself
+- pair with ShugBurrow-style descending/ascending logic for holes
+
+---
+
+FungalTrailNorthMouth / SouthMouth / EastMouth / WestMouth
+Type: CONNECTION BUILDER
+Behavior:
+- creates FungalTrail edge mouths
+Observation:
+- same mouth/endpoint pattern as Canyon, Cave, and ShugBurrow
+Decision:
+REFERENCE
+
+FungalTrailStartMouth
+Type: CONNECTION BUILDER
+Behavior:
+- creates FungalTrail start point
+Observation:
+- useful model for path origin / terminal points
+Decision:
+REFERENCE
+
+FungalTrailExileCorpse / FungalTrailKlanqHut
+Type: QUEST CONTENT
+Behavior:
+- places trail-related quest endpoint content
+Observation:
+- specific to Klanq/fungal trail quest
+Decision:
+SKIP
+
+GenericChutes
+Type: VERTICAL SYSTEM / STRUCTURED DESCENT
+Behavior:
+- generates chute structures across multiple Z-levels
+- uses predefined tile patterns (N/S/E/W, turns, starts/ends)
+- aligns vertical transitions using zone properties (StartY/EndY)
+- builds continuous vertical pathways between layers
+- places SlimyShaft (vertical drop), conveyors, and traps
+- alternates layout patterns by depth (Z parity)
+Observation:
+- explicit example of multi-layer (Z) connectivity system
+- uses deterministic per-column properties to align vertical paths
+- separates:
+    - global structure (chute template across layers)
+    - per-zone rendering (tiles applied locally)
+- enforces continuity between zones above/below via stored properties
+Decision:
+REFERENCE (high value)
+Notes:
+- strong reference for vertical path alignment across Z levels
+- relevant to hole/path consistency between stacked zones
+- shows how to persist alignment data across zones (ZoneProperty)
+- more structured/grid-based than desired organic path system
+- not directly usable, but conceptually important for vertical continuity
+
+GenericChutes
+Type: VERTICAL SYSTEM / STRUCTURED DESCENT
+Behavior:
+- generates chute structures across multiple Z-levels
+- uses predefined tile patterns (N/S/E/W, turns, starts/ends)
+- aligns vertical transitions using zone properties (StartY/EndY)
+- builds continuous vertical pathways between layers
+- places SlimyShaft (vertical drop), conveyors, and traps
+- alternates layout patterns by depth (Z parity)
+Observation:
+- explicit example of multi-layer (Z) connectivity system
+- uses deterministic per-column properties to align vertical paths
+- separates:
+    - global structure (chute template across layers)
+    - per-zone rendering (tiles applied locally)
+- enforces continuity between zones above/below via stored properties
+Decision:
+REFERENCE (high value)
+Notes:
+- strong reference for vertical path alignment across Z levels
+- relevant to hole/path consistency between stacked zones
+- shows how to persist alignment data across zones (ZoneProperty)
+- more structured/grid-based than desired organic path system
+- not directly usable, but conceptually important for vertical continuity
+
+GenericSolid
+Type: UTILITY / FILL
+Behavior:
+- optionally clears every cell
+- fills entire zone with one material
+Arguments:
+- Material: wall/object blueprint to fill with (default Shale)
+- ClearFirst: whether to clear cells before filling
+Observation:
+- simple full-zone fill utility
+- useful for controlled tests or blank solid starting conditions
+- not a site/path builder
+Decision:
+MAYBE (utility)
+Notes:
+- could be useful before testing custom carving/path builders
+- not needed for final procedural generation unless a fully solid test zone is desired
+
+## ZoneBuilder Evaluation – GirshLairMakerBase
+
+GirshLairMakerBase
+Type: SPECIALIZED DUNGEON FRAMEWORK (GIRSH / NEPHILIM)
+Behavior:
+- wrapper around dungeon generation (often calls SultanDungeon internally)
+- sets metadata (name, XP, secrets, etc.)
+- delegates layout to BuildLair() in subclasses (e.g., ShugLair)
+- applies thematic mutation to creatures (burrowing, faction flavor, visuals)
+- adds special features (holy places, bosses, pits, etc.)
+Observation:
+- not a generator itself; framework + post-processing layer
+- subclasses define highly specific dungeon layouts and behaviors
+- tightly coupled to Girsh/Nephilim content and quest systems
+Decision:
+REFERENCE (low priority)
+Notes:
+- useful example of how to wrap a generator with theme + mutation logic
+- not suitable as a general site generator
+- keep in mind for:
+    - boss site variants
+    - special “deep site” mutations
+- otherwise prefer SultanDungeon for flexibility
+
+## ZoneBuilder Evaluation – Skipped Set
+
+GoatfolkQlippothYurts / GoatfolkYurts
+Type: FACTION CAMP
+Decision: SKIP
+Notes:
+- surface encampments
+- not relevant to subterranean/path system
+
+GolgathaChutes / GolgathaTemplate
+Type: SPECIAL DUNGEON (GOLGOTHA)
+Decision: SKIP (already reviewed core chute system)
+Notes:
+- specific to Golgotha mechanics
+
+HamilcrabShop
+Type: SPECIAL LOCATION / SHOP
+Decision: SKIP
+Notes:
+- one-off content
+
+Hills
+Type: SURFACE TERRAIN
+Decision: SKIP
+
+HindrenClues
+Type: QUEST LOGIC
+Decision: SKIP
+
+Hive
+Type: FACTION-SPECIFIC STRUCTURE
+Decision: SKIP
+Notes:
+- potentially interesting pattern-wise, but out of scope for now
+
+Hydrolics
+Type: SPECIAL FEATURE / MECHANIC
+Decision: SKIP
+Notes:
+- likely environmental/industrial feature, not core to path/site system
+
+IConnectionBuilder
+Type: CONNECTION UTILITY / BASE CLASS
+Behavior:
+- creates local zone connection points
+- creates matching opposite-side connection points in neighboring zones
+- supports edge mouths and internal start points
+- clears the mouth cell when placing the connection
+- avoids duplicate connections if one already exists
+Key methods:
+- ConnectionMouth(...)
+    creates an edge connection for North/South/East/West paths
+- ConnectionStart(...)
+    creates an internal start point
+- MatchConnection(...)
+    checks neighboring built zones for matching opposite connection
+Observation:
+- this is the shared base system behind Cave, Canyon, FungalTrail, and ShugBurrow mouths
+- confirms how Qud makes cross-zone path continuity
+- mouth builders do more than mark the current zone; they also cache the matching connection in the adjacent zone
+Decision:
+REFERENCE (high value)
+Notes:
+- very relevant for custom path mouths
+- custom path system may either use this pattern directly or implement a simplified version
+- key pattern: create current mouth + matching opposite mouth in neighboring zone
+
+## ZoneBuilder Evaluation – InfluenceMapSeedStrategy
+
+InfluenceMapSeedStrategy
+Type: ENUM / REGION SEEDING STRATEGY
+Behavior:
+- defines how seed points are chosen in an InfluenceMap
+- used for region generation, partitioning, and layout logic
+
+Options:
+- FurthestPoint
+    → spreads seeds as far apart as possibl (max separation)
+- LargestRegion
+    → biases toward largest available region
+- RandomPointFurtherThan4 / FurtherThan1
+    → random but enforces minimum distance
+- RandomPoint
+    → fully random
+Observation:
+- used in dungeon/layout builders (Sultan, CaveCity, etc.)
+- controls how regions/rooms/clusters are distributed spatially
+- affects layout structure indirectly via seed placement
+Decision:
+REFERENCE (low–medium value)
+Notes:
+- not directly needed for path system
+- potentially useful later for:
+    - distributing rooms within a site
+    - placing sub-features (chambers, hubs, etc.)
+- FurthestPoint could be useful for evenly spaced key features
+
+InsertPresetFromPopulation
+Type: PRESET / MAP CHUNK PLACEMENT
+Behavior:
+- rolls a blueprint from a population table
+- creates that object
+- checks for MapChunkPlacement or MultiMapChunkPlacement size
+- attempts to place it in the zone away from stairs
+- runs ForceConnections after placement
+Observation:
+- useful for inserting premade map chunks or structures
+- population-driven, so it can randomly select from a set of presets
+- not directly useful for path generation
+- may be useful later for special fixed features or entrance structures
+Decision:
+MAYBE (later)
+Notes:
+- possible use for handcrafted site rooms or landmark inserts
+- ForceConnections after placement is a useful pattern
+- not needed for current path/vertical-site system
+
+## ZoneBuilder Evaluation – InteractWithAnObject... (Quest Builders)
+
+Type: QUEST / INTERACTION LOGIC
+Behavior:
+- places or configures quest-specific objects
+- ties objects to interaction events or triggers
+- used for scripted quest progression
+Observation:
+- not related to terrain, layout, or pathing
+- operates at gameplay/interaction layer, not generation layer
+Decision:
+SKIP
+Notes:
+- ignore for world generation work
+- relevant only if adding custom quests later
+
+InteriorGround
+Type: BASE TERRAIN / INTERIOR FILL
+Behavior:
+- clears reachable map
+- fills every cell with InteriorVoid
+- paints terrain using Rocky.Paint (stone floor/wall styling)
+Observation:
+- creates a uniform interior baseline terrain
+- similar to GenericSolid but uses InteriorVoid + terrain paint instead of a single material object
+- used as a foundation for interior-style zones
+Decision:
+SKIP (for now)
+
+IsCheckpoint
+Type: GAMEPLAY FLAG / CHECKPOINT
+Behavior:
+- places a CheckpointWidget at (0,0)
+- assigns a checkpoint key string
+- marks the zone as a checkpoint location
+Observation:
+- not related to terrain or generation
+- purely gameplay/system-level marker
+- likely used for respawn, fast travel, or progression tracking
+Decision:
+SKIP
+
+
+ISultanDungeonSegment
+Type: GENERATION SHAPE
+Summary:
+- defines a region/shape inside a dungeon (rectangle, circle, etc.)
+- used during generation to decide where things go
+- not stored data, just used while building the layout
+Decision:
+SKIP
+
+## ZoneBuilder Evaluation – Skipped Set
+
+JoppaOutskirts / JoppaOutskirtsRuins
+Type: START AREA / SCRIPTED CONTENT
+Decision: SKIP
+Notes:
+- tightly tied to Joppa start region
+- not reusable for generic generation
+
+JungleRuins
+Type: BIOME-SPECIFIC RUINS
+Decision: SKIP
+Notes:
+- surface/biome-specific content
+- not aligned with subterranean system
+
+LakeOfTheDamned
+Type: UNIQUE LOCATION
+Decision: SKIP
+Notes:
+- one-off special zone
+- not relevant to general generation system
+
+## ZoneBuilder Evaluation – LiquidPools
+
+LiquidPools
+Type: DECORATOR / LIQUID FEATURE
+Behavior:
+- creates liquid pools using NoiseMap
+- biases pool generation around existing zone connections
+- only places liquid in empty cells
+- can replace nearby plants using a population table
+- can set some pools on fire/heated
+Observation:
+- useful environmental decorator
+- not a structure or path builder
+- connection-aware, but only for liquid placement
+Decision:
+MAYBE (decorator)
+Notes:
+- possible use for special site variants
+- not core to path/vertical-site system
+
+## ZoneBuilder Evaluation – MapBuilder
+
+MapBuilder
+Type: PRESET MAP PLACEMENT
+Behavior:
+- loads a map file by ID
+- places the map into the current zone
+- can clear cells before placement
+- can clear chasms
+- can require target cells to be empty
+- optionally rebuilds reachability after placement
+Arguments:
+- ID / FileName: map file to place
+- X / Y: placement origin
+- Width / Height: placement size
+- ClearBeforePlace: clear cells before applying map
+- ClearChasms: remove chasm material
+- CheckEmpty: only place into empty cells
+- BuildReachability: rebuild reachability after placement
+Observation:
+- useful for handcrafted maps or fixed set pieces
+- not procedural by itself
+- appears in specialized builders as a way to place predefined layouts
+Decision:
+MAYBE (later)
+Notes:
+- possible use for special entrances, boss rooms, or rare fixed site variants
+- not core to path generation
+
+Mines/Mines2
+Type: TERRAIN / NOISE CARVING
+Behavior:
+- builds a NoiseMap using zone connections as extra nodes
+- clears cells in generated noise regions
+- places AsphaltPuddle in deeper noise nodes
+- rebuilds reachability from the largest generated region
+Observation:
+- connection-aware terrain decorator/carver
+- not a full structure or path builder
+- may create mine-like open areas but does not provide path logic
+Decision:
+SKIP\\## ZoneBuilder Evaluation – Skipped Set
+
+MinorRazedGoatfolkVillage
+Type: FACTION / SURFACE EVENT
+Decision: SKIP
+
+MoonStair
+Type: UNIQUE REGION / WORLD FEATURE
+Decision: SKIP
+Notes:
+- interesting style but not part of generic dungeon system
+- unlikely reusable via SultanDungeon directly
+
+Music
+Type: AUDIO
+Decision: SKIP
+
+Odditorium
+Type: UNIQUE LOCATION
+Decision: SKIP
+
+Omonporch / OmonporchGroveBuilder
+Type: UNIQUE LOCATION
+Decision: SKIP
+
+OverlandAlgeaLake / OverlandRuins / OverlandWater
+Type: SURFACE TERRAIN
+Decision: SKIP
+
+Pharmacorium
+Type: UNIQUE LOCATION
+Decision: SKIP
+
+PigFarm / PigFarmMaker
+Type: FACTION / SURFACE STRUCTURE
+Decision: SKIP
+
+Pitted
+Type: UTILITY (PIT / HOLE CREATION)
+Decision: REFERENCE (high value)
+Notes:
+- used in Girsh/Shug builders
+- directly relevant for hole placement
+- worth revisiting when implementing vertical transitions
+
+PlaceAClam
+Type: DECORATOR
+Decision: SKIP
+
+PlaceRelicBuilder
+Type: LOOT / RELIC PLACEMENT
+Behavior:
+- places a relic object into the zone
+- prefers objects tagged RelicContainer
+- otherwise may place relic in:
+    - random container
+    - inventory of combat creature
+    - empty reachable cell
+- marks relic holder/object as important
+- optionally adds cybernetics credit wedges based on zone tier
+Observation:
+- useful for rewarding major sites
+- already integrated with SultanDungeon relic generation
+- not a layout or path builder
+Decision:
+MAYBE (site reward system)
+
+## ZoneBuilder Evaluation – Skipped Set
+
+PlaceWedgeBuilder1 / PlaceWedgeBuilder2 / PlaceWedgeBuilder3 / PlaceWedgeBuilder4 / PlaceWedgeBuilder5 / PlaceWedgeBuilder6
+Type: LOOT / CREDIT WEDGE PLACEMENT
+Decision: SKIP
+Notes:
+- narrow reward placement helpers
+- PlaceRelicBuilder already covers the more relevant reward pattern
+
+Plains
+Type: SURFACE TERRAIN
+Decision: SKIP
+
+PopTableZoneBuilder
+Type: POPULATION / OBJECT PLACEMENT
+Behavior:
+- generates objects from a population table
+- places aquatic objects in liquid when possible
+- places wall-living objects on walls when possible
+- otherwise places objects in reachable empty cells
+- can apply the zone faction to spawned objects
+Arguments:
+- Table: population table to generate from
+- Density: present but appears unused here
+- bApplyZoneFactionToObjects: if true, makes brain-bearing objects use the zone faction
+Observation:
+- useful generic population placement helper
+- additive; does not build terrain
+- more direct and flexible than full faction encounters
+- could be useful for supplementing sparse site populations
+Decision:
+MAYBE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## ZoneBuilder Evaluation – SultanDungeon / SultanDungeonArgs
+
+SultanDungeon
+Type: FULL DUNGEON GENERATOR
+Behavior:
+- generates structured dungeon layouts using SultanDungeonArgs
+- supports random historic-entity-driven generation
+- supports explicit argument-driven generation via BuildRandomZoneWithArgs
+- uses segmentation, WFC templates, walls, floors, objects, furnishings, halls, cubbies, encounters, and preconnect encounters
+- connects regions internally
+- places stairs when requested
+- runs ForceConnections after generation
+- can optionally place relics
+Observation:
+- likely the main flexible generator for historic-style sites
+- much more general than BasicLair
+- BasicLair is effectively a thin wrapper around SultanDungeon with the Lairs_ prefix
+- SultanDungeons_ prefix should expose the broader thematic adjective system
+- good candidate for generating major site levels
+Decision:
+TEST / HIGH PRIORITY
+Notes:
+- most likely builder for “real” subterranean sites
+- use as site generator, not path generator
+- test explicit arguments first using BuildRandomZoneWithArgs
+- compare SultanDungeons_ behavior to limited Lairs_ behavior
+- keep path system separate and let path lead to SultanDungeon-generated sites
+
+---
+
+SultanDungeonArgs
+Type: ARGUMENT / THEME RESOLUTION SYSTEM
+Behavior:
+- translates adjectives/properties into internal theme names
+- checks for matching population tables under a table prefix
+- fills lists for walls, templates, objects, segmentation, furnishings, halls, cubbies, encounters, and preconnect encounters
+- falls back to default tables when no matching theme table exists
+- can mutate template choices to increase variation
+Observation:
+- same argument system used by BasicLair
+- power depends heavily on tablePrefix
+- Lairs_ support was vendor/workshop-limited
+- SultanDungeons_ is likely much broader and worth testing
+Decision:
+REFERENCE / TEST WITH SULTANDUNGEON
+Notes:
+- test known adjective themes like temple, soldier, tinker, stars, waste, market, residential
+- verify which SultanDungeons_ tables actually exist before heavy testing
+- this may become the main theme-control layer for major sites
