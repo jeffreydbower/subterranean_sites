@@ -139,3 +139,28 @@ When a zone is entered:
 STATUS:
 - Concept validated
 - Implementation pending (after adjective testing and builder exploration)
+
+## Deterministic Site Definition RNG
+
+Decision:
+Use a deterministic seed to generate site definitions before applying any zone builders.
+Validated concept:
+Stable input string -> StableHash or GetWorldSeed(key) -> System.Random -> repeatable rolls.
+Current test used:
+ZoneID only.
+Final intended use:
+world seed + matrix ID
+Preferred final API if available:
+XRLCore.Core.Game.GetWorldSeed("SubterraneanSites:" + matrixId)
+Reason:
+- Ties generated content to the world seed
+- Gives stable per-matrix deterministic values
+- Avoids storing generated site definitions unless caching is useful later
+Important distinction:
+- Our deterministic layer controls decisions like:
+  - whether a site exists
+  - site type
+  - site depth
+  - path variant
+  - selected theme/table
+- Existing Qud builders may still use internal RNG unless we explicitly control or avoid that.

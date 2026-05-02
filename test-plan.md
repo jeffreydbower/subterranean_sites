@@ -31,6 +31,37 @@ Success Criteria:
 
 ---
 
+## Phase 2B — Deterministic RNG Selection Test
+
+Goal:
+Confirm that deterministic rolls can be reproduced from stable zone input.
+
+Steps:
+- Use ZoneID as seed input
+- Hash ZoneID into an integer seed
+- Create System.Random(seed)
+- Roll one or more values
+- Write those values into the generated zone name
+- Test the same traversed zones across two separate new games
+
+Success Criteria:
+- Same zone IDs produce same rolls
+- Same zones are selected for modification
+- Zone names match across games
+
+Result:
+PASS
+
+Observed:
+- Out of 4 tested zones, the same 2 zones were selected in both new games
+- Selected zones had matching deterministic names/rolls
+
+Limitation:
+- Did not test whether the BasicLair layout itself is deterministic.
+- This only tested deterministic pre-builder selection logic.
+
+
+
 ## Phase 3 — Multi-Zone Injection (Immediate Next Step)
 
 Goal:

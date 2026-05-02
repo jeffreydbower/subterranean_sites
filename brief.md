@@ -38,3 +38,15 @@ These sites:
 - Develop generative multi-zone stacked structure
 - Establish stable runtime generation pattern
 - (out)Validate multi-zone injection (starting with 1 → 2 zones)
+
+## Current Technical Status
+Confirmed:
+- Runtime injection through BeforeZoneBuiltEvent works.
+- Generated zones persist after re-entry.
+- Multi-zone deterministic selection works.
+- Stable ZoneID-based RNG produces repeatable decisions across separate new games.
+
+Next technical direction:
+- Continue cataloging useful zone builders.
+- Later replace ZoneID-only test seed with matrix-based deterministic site definition:
+  world seed + matrix ID -> site definition.
