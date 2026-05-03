@@ -1,52 +1,92 @@
-# Subterranean Sites
+Subterranean Sites
 
-## Overview
+Overview
 Subterranean Sites is a Caves of Qud mod that introduces deterministic, multi-zone underground “sites” that players can discover through exploration.
 
 These sites:
 - are generated when the player first encounters their zones
 - exist at arbitrary depths
-- (Current Idea) Consist of traditional stacked dungeon layout of 3-7 layers (old idea)consist of structured multi-zone layouts (target: 3×3 parasangs)
+- consist of traditional stacked dungeon layouts of 3–7 layers (vertical column structure)
 - use existing zone builders where possible
-- (new idea) each site will have a generated path that will go outward and upward for ~30-40 zones (water, dirt, brick, grish resin)
+- each site will have a generated path that extends outward and upward for ~30–40 zones (water, dirt, brick, Girsh resin)
 
-## Core Mechanics (Planned)
+CRITICAL NOTE:
+- Sites are vertical structures (same X/Y, varying Z), not multi-parasang layouts.
 
-### Site Generation
+
+
+Core Mechanics (Planned)
+
+Site Generation
 - Sites are injected at runtime using BeforeZoneBuiltEvent
 - Builders are applied directly to zones using:
   ZoneManager.ApplyBuilderToZone(...)
 
-### Navigation
-- Players will need to discover the sites organically. 
-- an outward and upward path of 30-40 zones (current guess of best length) generated path will create an easy traversal path player can also discover that will lead them to the site.
-- Site generation density will be sufficiently dense to allow discovery, but not completely dominate every move through the under ground. Perhaps this can be a tunable setting. 
-- (Not moving forward)Players locate sites using a compass system
-- (Not Moving forward) Compass indicates whether movement is closer or further from a site center
-- (Not moving forward)Attunement stones act as anchors for navigation
+CRITICAL NOTE:
+- Generation must occur before vanilla builders finalize the zone.
+- Site membership must be computed deterministically for every zone entered.
 
-### Progression
-- No explicit prgression besides finding the site and getting tothe bottom of it where the artifact and maybe a boss (legendary npc) is.
-- (out)Site centers may contain:
-  - (out)attunement stones
-  - (out)navigation clues (directions or riddles)
-  - (out) recoiler-like mechanics (e.g., consumable pebble)
 
-## Current Focus
-- Identify usable zone builder (ongoing)
-- Understand zonebuilding parameters (creaturetables, adjetives) (ongoing)
-- Develop generative multi-zone stacked structure
+
+Navigation
+- Players will discover sites organically
+- An outward and upward path of ~30–40 zones will provide a discoverable traversal route to the site
+- Site generation density will allow discovery without dominating all underground exploration (potentially tunable)
+
+Removed:
+- Compass system
+- Directional feedback system
+- Attunement stones
+
+CRITICAL NOTE:
+- Path system must be deterministic and reconstructible from the same seed as the site.
+- Paths are separate from site generation and should not depend on zone builder behavior.
+
+
+
+Progression
+- No explicit progression system
+- Player goal is to find the site and reach the bottom layer
+- Bottom layer contains:
+  - artifact reward
+  - potential boss (legendary NPC)
+
+- Potential future addition:
+  - rare legendary merchant sites
+
+CRITICAL NOTE:
+- Reward placement must be deterministic and tied to site definition, not per-zone randomness.
+
+
+
+Current Focus
+- Understand zone builder parameters (creature tables, adjectives) (ongoing)
+- Develop generative multi-zone stacked structure connected via game systems (not just visual stacking)
 - Establish stable runtime generation pattern
-- (out)Validate multi-zone injection (starting with 1 → 2 zones)
 
-## Current Technical Status
+Completed:
+- Identify usable zone builder (BasicLair)
+
+
+
+Current Technical Status
+
 Confirmed:
-- Runtime injection through BeforeZoneBuiltEvent works.
-- Generated zones persist after re-entry.
-- Multi-zone deterministic selection works.
-- Stable ZoneID-based RNG produces repeatable decisions across separate new games.
+- Runtime injection through BeforeZoneBuiltEvent works
+- Generated zones persist after re-entry
+- Multi-zone deterministic selection works
+- Stable ZoneID-based RNG produces repeatable decisions across separate new games
+- Constructed static-location multi-layer site
+- Deterministic layer count implemented
+- Bottom-layer boss (legendary NPC) successfully placed
 
-Next technical direction:
-- Continue cataloging useful zone builders.
-- Later replace ZoneID-only test seed with matrix-based deterministic site definition:
-  world seed + matrix ID -> site definition.
+CRITICAL NOTE:
+- Current system must ensure all layers agree on site parameters (seed must not vary by layer)
+
+
+
+Next Technical Direction
+- Link layers using game systems (stairs, holes, or custom connections)
+- Control or eliminate lateral exits introduced by BasicLair
+- Integrate deterministic path generation
+- Evaluate use of SultanDungeon for more complex, themed site generation

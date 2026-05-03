@@ -1,113 +1,44 @@
-# Test Plan
+Development Phases
 
-## Phase 1 — Builder Identification
+1. Runtime Injection POC
+- Prove the mod can intercept zone generation
+- Confirm BeforeZoneBuiltEvent is the correct hook
+- Confirm generated zones persist after re-entry
 
-Goal:
-Identify which builders can be applied standalone.
+2. Source Code Catalog + Builder Testing
+- Review relevant vanilla builders
+- Identify usable builders vs reference-only builders
+- Test builders in controlled zones
 
-Steps:
-- Apply builder to known test zone
-- Observe:
-  - full layout vs partial decoration
-  - stability (no broken zones)
+3. Procedural Generation POC
+- Validate deterministic selection
+- Validate stable seeded decisions
+- Confirm zones can independently recompute their role
 
-Success Criteria:
-- Builder produces consistent, usable zone
+4. Stacked Site Development
+- Generate vertical multi-layer sites
+- Use BasicLair/SultanDungeon-style builders
+- Confirm stairs and bottom-layer content
+- Control unwanted lateral exits
 
----
+5. Path Development
+- Generate deterministic discovery paths
+- Render path mouths and path materials
+- Add holes / vertical path transitions as needed
+- Connect paths to site entrances
 
-## Phase 2 — Single Zone Injection
+6. Matrix Development
+- Partition underground space into deterministic matrices
+- Assign at most one site per matrix
+- Ensure sites and paths remain within intended bounds
 
-Goal:
-Confirm stable runtime injection
+7. Safeguards / Base Game Protection
+- Avoid overwriting story sites, quest zones, historical sites, and special content
+- Reject risky matrices or zones
+- Prefer skipping mod content over damaging vanilla content
 
-Steps:
-- Inject one zone using ApplyBuilderToZone
-- Enter zone
-
-Success Criteria:
-- Zone generates correctly
-- No crashes or artifacts
-
----
-
-## Phase 2B — Deterministic RNG Selection Test
-
-Goal:
-Confirm that deterministic rolls can be reproduced from stable zone input.
-
-Steps:
-- Use ZoneID as seed input
-- Hash ZoneID into an integer seed
-- Create System.Random(seed)
-- Roll one or more values
-- Write those values into the generated zone name
-- Test the same traversed zones across two separate new games
-
-Success Criteria:
-- Same zone IDs produce same rolls
-- Same zones are selected for modification
-- Zone names match across games
-
-Result:
-PASS
-
-Observed:
-- Out of 4 tested zones, the same 2 zones were selected in both new games
-- Selected zones had matching deterministic names/rolls
-
-Limitation:
-- Did not test whether the BasicLair layout itself is deterministic.
-- This only tested deterministic pre-builder selection logic.
-
-
-
-## Phase 3 — Multi-Zone Injection (Immediate Next Step)
-
-Goal:
-Validate multiple independent injections
-
-Steps:
-- Add a second target zone
-- Apply same or different builder
-
-Success Criteria:
-- Both zones generate correctly
-- No cross-interference
-
----
-
-## Phase 4 — Adjacency Test
-
-Goal:
-Test interaction between nearby zones
-
-Steps:
-- Place two injected zones adjacent
-- Traverse between them
-
-Success Criteria:
-- No broken transitions
-- No invalid geometry
-
----
-
-## Phase 5 — Site Prototype (Later)
-
-Goal:
-Test small multi-zone structure
-
-Steps:
-- Define small cluster (e.g., 2–4 zones)
-- Apply builders
-
-Success Criteria:
-- Zones feel connected
-- No major layout conflicts
-
----
-
-## Notes
-
-- Do NOT optimize or generalize early
-- Focus on proving behavior before scaling
+8. Final Tuning and Gameplay Decisions
+- Tune site density
+- Tune path length and visibility
+- Tune rewards, bosses, merchants, factions, and difficulty
+- Decide what feels fun and Qud-like
