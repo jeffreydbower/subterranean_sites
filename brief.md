@@ -90,3 +90,14 @@ Next Technical Direction
 - Control or eliminate lateral exits introduced by BasicLair
 - Integrate deterministic path generation
 - Evaluate use of SultanDungeon for more complex, themed site generation
+
+
+Architecture Update
+
+The project still uses a runtime system registered through JoppaWorldBuilderExtension. However, the runtime system is shifting from direct zone mutation to pre-registration.
+
+The runtime system will eventually:
+- detect current matrix / nearby matrix boundaries
+- generate deterministic site definitions
+- register builders for future site/path zones
+- avoid directly building the current zone except as a fallback

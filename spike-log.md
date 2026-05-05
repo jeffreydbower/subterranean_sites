@@ -110,3 +110,16 @@ Notes
 - Correct API:
   XRLCore.Core.Game.GetWorldSeed()
 - World seed is constant across a given game
+
+
+
+Builder Registration Timing Test
+
+Observation:
+- Registering a builder with ZoneManager.AddZoneBuilder during BeforeZoneBuiltEvent does not affect the current zone already being built.
+- The same registration does affect future zones that have not yet been built.
+- Zone metadata such as names/properties can still update immediately.
+
+Conclusion:
+- Direct BuildZone calls work for the current zone, but can produce behavior that differs from vanilla registered builders.
+- Future site generation should prefer pre-registering builders before the player enters generated zones.

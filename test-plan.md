@@ -15,6 +15,19 @@ Development Phases
 - Validate stable seeded decisions
 - Confirm zones can independently recompute their role
 
+3.5. Phase — Runtime Pre-Registration Test (happens during stacked site dev)
+Goal:
+Test the preferred architecture where generated site builders are registered before the player reaches the zones.
+Steps:
+- Run a one-time registration trigger near game start
+- Register the fixed stacked test site using ZoneManager.AddZoneBuilder
+- Do not directly call BasicLair.BuildZone
+- Enter the registered zones and observe whether they build correctly
+Success Criteria:
+- Registered zones build correctly when entered
+- Current-zone direct build is not required
+- Site layers retain intended stair behavior
+
 4. Stacked Site Development
 - Generate vertical multi-layer sites
 - Use BasicLair/SultanDungeon-style builders
