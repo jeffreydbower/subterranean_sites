@@ -4,6 +4,7 @@ using XRL;
 using XRL.Core;
 using XRL.World;
 using XRL.World.WorldBuilders;
+using XRL.Rules;
 
 namespace SubterraneanSites
 {
@@ -23,37 +24,15 @@ namespace SubterraneanSites
         private const string InitFlag = "SubterraneanSites_TestSiteRegistered";
 
         /*
-        Site Safety / Ownership Model
-
-        Problem:
-        Subterranean Sites may eventually use the same builders as vanilla content,
-        especially SultanDungeon. Therefore, checking only whether a zone has a
-        SultanDungeon builder is not enough. It may be vanilla content, or it may
-        be one of our generated sites.
-
-        Decision:
-        When Subterranean Sites registers a zone builder, it must also mark the zone with:
-
-        SubterraneanSites_Owner = Yes
-
-        Safety rule:
-        - If a candidate zone has important existing builders and is not marked as ours,
-          reject the whole candidate site.
-        - If a candidate zone is marked as ours, it can be safely recognized as already
-          assigned by this mod.
-        - Prefer skipping a generated site over overwriting vanilla or quest content.
-
         Current test strategy:
-        - Simulate future matrix-adjacent pre-registration by registering the fixed test site once.
-        - The first time this system sees any zone build, it registers the test site.
-        - After that, the system exits cheaply and does not recompute registration every zone.
+        - Register a fixed stacked BasicLair site once.
+        - Let ZoneManager build the site naturally when entered.
+        - Add ordinary mobs with a custom builder using creature blueprint Level.
+        - Keep FactionEncounters on the bottom layer as the special encounter.
 
-        Future build strategy:
-        - Detect current matrix from player/current zone position.
-        - If current zone is on a matrix edge, register the adjacent matrix.
-        - If current zone is on a matrix corner, register the two side-adjacent matrices
-          and the diagonal matrix.
-        - Surface zones are not site zones, but they can trigger underground matrix registration.
+        Future strategy:
+        - Replace one-time registration with matrix-adjacent registration.
+        - Use tier/depth to scale ordinary mobs and special encounters.
         */
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
@@ -76,7 +55,8 @@ namespace SubterraneanSites
             int rawSeed = XRLCore.Core.Game.GetWorldSeed();
             int zoneSeed = XRLCore.Core.Game.GetWorldSeed(TargetZoneId + rawSeed);
             System.Random rng = new System.Random(zoneSeed);
-            int layers = rng.Next(2, 7);
+
+            int layers = rng.Next(3, 7);
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
 
@@ -130,13 +110,18 @@ namespace SubterraneanSites
 
                 if (IsClaimedByOtherContent(zoneId))
                 {
-                    // skip this layer only
+                    // Current temporary behavior:
+                    // skip only this layer.
+                    // Later we may reject the whole site if any critical collision exists.
                     continue;
                 }
 
                 The.ZoneManager.ClearZoneBuilders(zoneId);
                 The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-                if(i != 0)
+
+                // Let top layer keep normal terrain builders for now.
+                // Lower levels suppress ordinary terrain generation.
+                if (i != 0)
                 {
                     The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
                 }
@@ -148,31 +133,27 @@ namespace SubterraneanSites
 
                 The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
 
-                The.ZoneManager.AddZoneBuilder(
+                // Layout / chests / stairs.
+                The.ZoneManager.AddZonePostBuilder(
                     zoneId,
-                    6000,
                     "BasicLair",
-                    "Table", "DynamicInheritsTable:Creature:Tier" + tier,
-                    //"Table", "",
+                    "Table", "",
                     "Adjectives", "",
                     "Stairs", stairs
                 );
 
-                /*The.ZoneManager.AddZoneBuilder(
+                // Ordinary mobs.
+                // This custom builder chooses creature blueprints by Level.
+                // Tier is passed in; the builder rolls a random creature level
+                // inside that tier's level band for each mob.
+                The.ZoneManager.AddZonePostBuilder(
                     zoneId,
-                    6000,
-                    "Population",
-                    "Table", "Lairs_Tier" + tier
-                );*/
+                    "SubterraneanSiteMobs",
+                    "Count", "12",
+                    "Tier", tier.ToString()
+                );
 
-                /*The.ZoneManager.AddZoneBuilder(
-                    zoneId,
-                    6000,
-                    "Population",
-                    "Table", "DynamicInheritsTable:Creature:Tier" + tier,
-                    "Density", "medium"
-                );*/
-
+                // Bottom-layer special encounter.
                 if (i == siteZoneIds.Count - 1)
                 {
                     The.ZoneManager.AddZoneBuilder(
@@ -192,58 +173,6 @@ namespace SubterraneanSites
                 );
             }
         }
-
-        /*private bool RegisterWholeSiteIfSafe(List<string> siteZoneIds)
-        {
-            foreach (string zoneId in siteZoneIds)
-            {
-                if (IsClaimedByOtherContent(zoneId))
-                {
-                    return false;
-                }
-            }
-
-            for (int i = 0; i < siteZoneIds.Count; i++)
-            {
-                string zoneId = siteZoneIds[i];
-
-                The.ZoneManager.ClearZoneBuilders(zoneId);
-                The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-                The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
-
-                string stairs = GetStairsForLayer(i, siteZoneIds.Count);
-
-                The.ZoneManager.AddZoneBuilder(
-                    zoneId,
-                    6000,
-                    "BasicLair",
-                    //"Table" = "DynamicInheritsTable:Creature:Tier" + Z.NewTier,
-                    "Table", "",
-                    "Adjectives", "",
-                    "Stairs", stairs
-                );
-
-                
-                if (currentLayer == siteZoneIds.Count - 1)
-                {
-                    var factionEncounters = new XRL.World.ZoneBuilders.FactionEncounters();
-                    factionEncounters.Chance = 100;
-                    factionEncounters.Rolls = 1;
-                    factionEncounters.Population = "GenericFactionPopulation";
-                    factionEncounters.BuildZone(Z);
-                }
-                
-
-                The.ZoneManager.SetZoneName
-                (
-                    zoneId,
-                    "Stacked Lair Test: Layer " + (i + 1) + " of " + siteZoneIds.Count,
-                    Proper: false
-                );
-            }
-
-            return true;
-        }*/
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
         {
@@ -291,6 +220,7 @@ namespace SubterraneanSites
 
             return false;
         }
+
         private int GetTierFromZ(int z)
         {
             int tier = 1;
@@ -304,6 +234,85 @@ namespace SubterraneanSites
             if (tier > 8) tier = 8;
 
             return tier;
+        }
+    }
+}
+
+namespace XRL.World.ZoneBuilders
+{
+    using Qud.API;
+    using XRL.Rules;
+    using XRL.World;
+
+    public class SubterraneanSiteMobs : ZoneBuilderSandbox
+    {
+        public int Count = 6;
+        public int Tier = 1;
+
+        public bool BuildZone(Zone Z)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                Cell cell = GetRandomEmptyReachableCell(Z);
+
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                int targetLevel = GetRandomCreatureLevelFromTier(Tier);
+
+                GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+
+                if (mob != null)
+                {
+                    cell.AddObject(mob);
+                }
+            }
+
+            return true;
+        }
+
+        private int GetRandomCreatureLevelFromTier(int tier)
+        {
+            if (tier < 1) tier = 1;
+            if (tier > 8) tier = 8;
+
+            int minLevel;
+            int maxLevel;
+
+            if (tier == 1)
+            {
+                minLevel = 1;
+                maxLevel = 4;
+            }
+            else
+            {
+                minLevel = ((tier - 1) * 5);
+                maxLevel = minLevel + 4;
+            }
+
+            return Stat.Random(minLevel, maxLevel);
+        }
+
+        private Cell GetRandomEmptyReachableCell(Zone Z)
+        {
+            List<Cell> candidates = new List<Cell>();
+
+            foreach (Cell cell in Z.GetCells())
+            {
+                if (cell.IsReachable() && cell.IsEmptyOfSolid() && !cell.HasSpawnBlocker())
+                {
+                    candidates.Add(cell);
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
+
+            return candidates[Stat.Random(0, candidates.Count - 1)];
         }
     }
 }
