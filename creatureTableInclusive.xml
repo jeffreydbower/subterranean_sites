@@ -1,0 +1,1219 @@
+This XML file does not appear to have any style information associated with it. The document tree is shown below.
+<populations>
+Subterranean Sites Master NPC / Creature Source List Revision: tier/source annotated and sorted by inferred tier within each category. Inclusion rule: concrete NPC/creature-like Blueprint entries; no deliberate loot/armor/ammo/furniture/inventory-object tables. Tier inference rule: tier comments are derived from population table names such as Tier4CavePopulation, Tier4RuinsCreatures, etc. If an entry appeared only in non-tiered tables, it is marked unknown/non-tiered. All entries remain Weight="1" so this remains a cut/edit master source list, not a balanced final table. -->
+<population Name="SubterraneanSites_Master_AllNPCsAndCreatures">
+<group Name="AllNPCsAndCreatures" Style="pickone">
+<!--  CATEGORY: VENDORS_GENERIC_LAIROWNER (11 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Armorer" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chef" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gemcutter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glover" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gunsmith" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gutsmonger" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Haberdasher" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Hatter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="IchorMerchant" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Scribe" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Shoemaker" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<!--  CATEGORY: LAIR_OWNERS_ALL_TERRAIN (161 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Albino ape" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Aloe Porta" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6,T7,T8  -->
+<object Blueprint="Beetlebum" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="Bloated Leech" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Boar" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Electrofuge" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="GiantDragonfly" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Glowmoth" Weight="1"/>
+<!--  T1,T2,T3,T4  -->
+<object Blueprint="Hide-Sheathed Hermit" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Honey Skunk" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Horned Chameleon" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Salamander" Weight="1"/>
+<!--  T1,T2  -->
+<object Blueprint="Slumberling" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="ChaingunTurret" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Chitinous Puma" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Leech" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Quillipede" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Seed-Spitting Vine" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Two-Headed Boar" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Electric Snail" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Fire ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Fire Ant Queen" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Giant Beetle" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="LaserTurret" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Spitting Slug" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Traipsing Mortar" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Worker ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Breather" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Chaingun Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Juice Sap" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Lagroot" Weight="1"/>
+<!--  T4,T5,T6,T7,T8  -->
+<object Blueprint="Livid Creeper" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Low-Light Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Miner Mk II" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Sawhander" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="Aloe Fugues" Weight="1"/>
+<!--  T5,T7  -->
+<object Blueprint="Bloated Pearlfrog" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Elder Breather" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Fulcrete Catapult" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Gelatinous Cupola" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Greater Voider" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="High Dervish of the Sightless Way" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Life Sap" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Miner Mk III" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Random Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Trash Abbot" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Vantabud" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Deep Slumberling" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Eigenturret Tinker" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Interdictor" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Memory Eater" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Ogre Ape" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Purple Jell" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Stat Sap" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Trining Lamprey" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Astral Tabby" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Elder Lagroot" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Galgal" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Chrome Pyramid" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Leering Stalker" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="acidLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Adiyy" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Armorer" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="asphaltLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Barkbiter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Cannibal" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="ChainLaserEmplacement" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chef" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="ciderLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Conjoined Girshling" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Conservator" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="CorrosiveBreather" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Croc" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Crypt Ferret" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Crypt Sitter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Cryptic Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Cyclopean Gibbon" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dawnglider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dawning Ape" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dog" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dream Wren" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dreamcrungle" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="ElderCorrosiveBreather" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Enigma Snail" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Equimax" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="FungusPuffer1" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="FungusPuffer2" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="FungusPuffer3" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="FungusPuffer4" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="gelLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gemcutter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Ghost Perch" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Giant Clam" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glover" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowcrow" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowfish" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowpad" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goat" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Goatfolk Qlippoth" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Graverobber" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gunsmith" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gutsmonger" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gyre Wight Apotheote" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Haberdasher" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Hatter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="honeyLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Ice frog" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="IchorMerchant" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="inkLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Irritable Palm" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="IrritableTortoise" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Issachari Raider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Issachari Rifler" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Jilted Lover" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Junk Dollar" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Kaleidoslug" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="lavaLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Madpole" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Mechanimist Pilgrim" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Monad" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="MopangoCharioteer" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="MopangoTombdweller" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="n-Dimensional Starshell" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="oilLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Plasma Jelly" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Plasmatic Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Polarized Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Prism Perch" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Quatravolt Glider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Qudzu" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Rank Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Red Death Dacca" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Reef Hermit" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Salthopper" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="saltLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Saltwurm" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="sapLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Scorpiock" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Scribe" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Shoemaker" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="slimeLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="SoupSludgeSpawnerTier5" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="SoupSludgeSpawnerTier6" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="SoupSludgeSpawnerTier7" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="SoupSludgeSpawnerTier8" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Star Kraken" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Strip Fly" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Sultan Croc" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Svardym Eld" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Svardym Hatchling" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Svardym Jut" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Svardym Scrounge" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Tongue Tyrant" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Unimax" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Urn Porter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="waterLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="waxLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="White Esh" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="wineLichen" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Woodsprog" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Zero Jell" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<!--  CATEGORY: TIERED_CAVE_RUINS_MOBS (129 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Albino ape" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Beetlebum" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="Bloated Leech" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Boar" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Electrofuge" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="GiantDragonfly" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Glowmoth" Weight="1"/>
+<!--  T1,T2,T3,T4  -->
+<object Blueprint="Hide-Sheathed Hermit" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Honey Skunk" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Horned Chameleon" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="RifleTurret" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Salamander" Weight="1"/>
+<!--  T1,T2  -->
+<object Blueprint="Scrap-clad Hermit" Weight="1"/>
+<!--  T1,T2  -->
+<object Blueprint="Slumberling" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="SparkingBaetyl" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6,T7,T8  -->
+<object Blueprint="Trash Monk" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Bat" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Bear" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Burrowing Girshling" Weight="1"/>
+<!--  T2,T3,T4,T5  -->
+<object Blueprint="Cave Arconaut" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="ChaingunTurret" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Chitinous Puma" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Eyeless Crab" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Giant Centipede" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Giant Centipede Nest" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Knollworm" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Leech" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Miner Mk I" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Novice of the Sightless Way 2" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Plated Knollworm" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Quillipede" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Seed-Spitting Vine" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Seedsprout Worm" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Slugsnout" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Sprouting Orb" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Thirst Thistle" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Two-Headed Boar" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Agolmaggot" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Aloe Volta" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Drillbot" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Electric Snail" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Fire ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Fire Ant Queen" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Gelatinous Wedge" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Giant Beetle" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Giant Beetle Nest" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="LaserTurret" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Normality Bot" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Novice of the Sightless Way 3" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Rifle Turret Tinker" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Feeder" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Howler" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Spearfiend" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Trapper" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Spitting Slug" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Traipsing Mortar" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Two-Headed Slugsnout" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Worker ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Yonderbrush" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Aloe Pyra" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Breather" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Chaingun Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Cloneling" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Dervish of the Sightless Way" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Drowsing Urchin" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Gelatinous Frustum" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Gelatinous Prism" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Gyrohumor" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Holographic Ivory" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Humor" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Juice Sap" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Lagroot" Weight="1"/>
+<!--  T4,T5,T6,T7,T8  -->
+<object Blueprint="Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Livid Creeper" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Low-Light Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Mercurial" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Miner Mk II" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Mysterious Gunslinger" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="Rimewyk" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="RocketTurret" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Sawhander" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="Urchin Belcher" Weight="1"/>
+<!--  T4,T5,T6,T7  -->
+<object Blueprint="Waveform Worm" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Addling Urchin" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Aloe Fugues" Weight="1"/>
+<!--  T5,T7  -->
+<object Blueprint="Bloated Pearlfrog" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Elder Breather" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Fulcrete Catapult" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Gelatinous Cupola" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Greater Voider" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="High Dervish of the Sightless Way" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Life Sap" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Miner Mk III" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Pulsed Field Magnet" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Quartz Baboon" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Random Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Rocket Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Snailmother" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Trash Abbot" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Vantabud" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Deep Slumberling" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Eigenturret Tinker" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Gelatinous Antiprism" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Holographic Beth" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Interdictor" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Memory Eater" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Ogre Ape" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Purple Jell" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Red Jell" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Rhinox" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Stat Sap" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Trining Lamprey" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Astral Tabby" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Blast Cannon Tinker" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Elder Lagroot" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Galgal" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Glittermensch Boulderer" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Glittermensch Brainer" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Glittermensch Luminary" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Lithofex" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Quartziferous Mirror" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Arch Dervish of the Sightless Way" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Chrome Pyramid" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Decarbonizer" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Gamma Moth" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Great Magma Crab" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Leering Stalker" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Phase Cannon Tinker" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Vantabloom" Weight="1"/>
+<!--  T8  -->
+<!--  CATEGORY: BOSSES_AND_BOSS_ENCOUNTERS (18 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Baboon Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Goatfolk Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Snapjaw Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Burrowing Girshling" Weight="1"/>
+<!--  T2,T3,T4,T5  -->
+<object Blueprint="Eyeless King Crab Hero" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Gelatinous Prism" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Gyrohumor" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Lagroot" Weight="1"/>
+<!--  T4,T5,T6,T7,T8  -->
+<object Blueprint="Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Urchin Belcher" Weight="1"/>
+<!--  T4,T5,T6,T7  -->
+<object Blueprint="Waveform Worm" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Addling Urchin" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Aloe Fugues" Weight="1"/>
+<!--  T5,T7  -->
+<object Blueprint="Bloated Pearlfrog" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Pulsed Field Magnet" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Quartz Baboon" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Random Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Snailmother" Weight="1"/>
+<!--  T5  -->
+<!--  CATEGORY: GUARDS (0 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<!--  no concrete blueprint entries found in uploaded files for this category  -->
+<!--  CATEGORY: FACTION_PARTIES (37 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Baboon Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Goatfolk Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Snapjaw Hero 1" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Baboon" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Banner-Knight Templar" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goatfolk Bully" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goatfolk Qlippoth" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goatfolk Shaman" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goatfolk Sower" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goatfolk Yurtwarden" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gunner-Knight Templar" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Hulking Baboon" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Infiltrator" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Issachari Raider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Issachari Rifler" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Knight Templar" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Shrewd Baboon" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Brute 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Brute 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Brute 2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Hero 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Hunter 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Hunter 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Hunter 2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Scavenger 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Scavenger 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Scavenger 2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Shotgunner 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Shotgunner 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warlord 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warlord 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warlord 2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warrior 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warrior 1" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Warrior 2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Templar Squire" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Uplifted Knight Commander" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<!--  CATEGORY: PLANTS_AND_PLANTLIKE (71 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Aloe Porta" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6,T7,T8  -->
+<object Blueprint="Seed-Spitting Vine" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Thirst Thistle" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Aloe Volta" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Yonderbrush" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Aloe Pyra" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Holographic Ivory" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Lagroot" Weight="1"/>
+<!--  T4,T5,T6,T7,T8  -->
+<object Blueprint="Livid Creeper" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Aloe Fugues" Weight="1"/>
+<!--  T5,T7  -->
+<object Blueprint="Vantabud" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Holographic Beth" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Elder Lagroot" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Vantabloom" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Bop Sponge" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Brightshroom" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Brinestalk" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chiliad Dogthorn Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chiliad Starapple Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chiliad Watervine" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Chiliad Witchwood Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Crystal Flowers" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dogthorn Tree" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Dreadroot" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Dreamcrungle" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Feral Lah" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Finger Coral" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Flowers" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Fracti" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Fracti2" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Fracti3" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glitchwood Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowpad" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gorged Growth" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Grave Moss" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Banana Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Dicalyptus Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Dogthorn Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Star Palm" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Swarmshade Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Holographic Ziv Bough" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Icosahedar" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Irritable Palm" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Jilted Lover" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Luminous Hoarshroom" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Lurking Beth" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Moon Stair Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="n-Ary Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Nachash Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Nimbus Beam" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Noisegrass" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="PlantWall" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Prickler" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Qudzu" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Red Death Dacca" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Shimscale Mangrove Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Slime Grass" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Star Palm" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Starapple Tree" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Stillvine" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Sunflower" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Swarmshade Tree" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Tongue Tyrant" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Tunnel Sponge" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="UndergroundGrassy" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Urberry Bush" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Watervine" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Witchwood Tree" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Young Ivory" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Yuckwheat" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Ziv Bough" Weight="1"/>
+<!--  T7  -->
+<!--  CATEGORY: BIOME_CREATURES_AND_GLOBALS (174 unique concrete blueprints; sorted by inferred tier, then name)  -->
+<object Blueprint="Albino ape" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Beetlebum" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="Bloated Leech" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Boar" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Electrofuge" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="GiantDragonfly" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Glowmoth" Weight="1"/>
+<!--  T1,T2,T3,T4  -->
+<object Blueprint="Hide-Sheathed Hermit" Weight="1"/>
+<!--  T1,T2,T3,T4,T5  -->
+<object Blueprint="Honey Skunk" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Horned Chameleon" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Salamander" Weight="1"/>
+<!--  T1,T2  -->
+<object Blueprint="Scrap-clad Hermit" Weight="1"/>
+<!--  T1,T2  -->
+<object Blueprint="Slumberling" Weight="1"/>
+<!--  T1,T2,T3,T4,T5,T6  -->
+<object Blueprint="Trash Monk" Weight="1"/>
+<!--  T1,T2,T3  -->
+<object Blueprint="Bat" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Bear" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Burrowing Girshling" Weight="1"/>
+<!--  T2,T3,T4,T5  -->
+<object Blueprint="Cave Arconaut" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="ChaingunTurret" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Chitinous Puma" Weight="1"/>
+<!--  T2,T3,T4  -->
+<object Blueprint="Eyeless Crab" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Giant Centipede" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Giant Centipede Nest" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Knollworm" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Leech" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Miner Mk I" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Novice of the Sightless Way 2" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Plated Knollworm" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Quillipede" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Seed-Spitting Vine" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Seedsprout Worm" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Slugsnout" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Sprouting Orb" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Thirst Thistle" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Two-Headed Boar" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Agolmaggot" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Aloe Volta" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Drillbot" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Electric Snail" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Fire ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Fire Ant Queen" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Gelatinous Wedge" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Giant Beetle" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Giant Beetle Nest" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="LaserTurret" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Rifle Turret Tinker" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Feeder" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Howler" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Spearfiend" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Snapjaw Trapper" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Spitting Slug" Weight="1"/>
+<!--  T3,T4,T5  -->
+<object Blueprint="Traipsing Mortar" Weight="1"/>
+<!--  T3,T4,T5,T6  -->
+<object Blueprint="Worker ant" Weight="1"/>
+<!--  T3,T4  -->
+<object Blueprint="Yonderbrush" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Aloe Pyra" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Breather" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Chaingun Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Dervish of the Sightless Way" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Drowsing Urchin" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Gelatinous Frustum" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Gelatinous Prism" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Gyrohumor" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Holographic Ivory" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Humor" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Juice Sap" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Lagroot" Weight="1"/>
+<!--  T4,T5,T6,T7,T8  -->
+<object Blueprint="Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Livid Creeper" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Low-Light Laser Turret Tinker" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Miner Mk II" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Mysterious Gunslinger" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="Sawhander" Weight="1"/>
+<!--  T4,T5  -->
+<object Blueprint="Urchin Belcher" Weight="1"/>
+<!--  T4,T5,T6,T7  -->
+<object Blueprint="Waveform Worm" Weight="1"/>
+<!--  T4,T5,T6  -->
+<object Blueprint="Addling Urchin" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Aloe Fugues" Weight="1"/>
+<!--  T5,T7  -->
+<object Blueprint="Bloated Pearlfrog" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Elder Breather" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Fulcrete Catapult" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Gelatinous Cupola" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Greater Voider" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="High Dervish of the Sightless Way" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Life Sap" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Miner Mk III" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Pulsed Field Magnet" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Quartz Baboon" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Random Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Rocket Turret Tinker" Weight="1"/>
+<!--  T5,T6,T7  -->
+<object Blueprint="Snailmother" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Trash Abbot" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Vantabud" Weight="1"/>
+<!--  T5,T6,T7,T8  -->
+<object Blueprint="Deep Slumberling" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Eigenturret Tinker" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Gelatinous Antiprism" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Holographic Beth" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Interdictor" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Memory Eater" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Ogre Ape" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Purple Jell" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Red Jell" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Rhinox" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Stat Sap" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Trining Lamprey" Weight="1"/>
+<!--  T6,T7,T8  -->
+<object Blueprint="Astral Tabby" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Blast Cannon Tinker" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Elder Lagroot" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Galgal" Weight="1"/>
+<!--  T7,T8  -->
+<object Blueprint="Glittermensch Boulderer" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Glittermensch Brainer" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Glittermensch Luminary" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Lithofex" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Quartziferous Mirror" Weight="1"/>
+<!--  T7  -->
+<object Blueprint="Arch Dervish of the Sightless Way" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Chrome Pyramid" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Decarbonizer" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Gamma Moth" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Great Magma Crab" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Leering Stalker" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Phase Cannon Tinker" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="Vantabloom" Weight="1"/>
+<!--  T8  -->
+<object Blueprint="AcidPool" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Adiyy" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Agolfly" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Agolzvuv" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Barkbiter" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Black Jel" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Brown Sludge" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Cannibal" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="ChainLaserEmplacement" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Conjoined Girshling" Weight="1"/>
+<!--  T5  -->
+<object Blueprint="Croc" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Cryptic Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Cyclopean Gibbon" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dawnglider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dawning Ape" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Defanged Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dog" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dreadroot" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Dream Wren" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Dreamcrungle" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Equimax" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="GiantAmoeba" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowcrow" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowfish" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Glowpad" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Goat" Weight="1"/>
+<!--  T2  -->
+<object Blueprint="Goatfolk Qlippoth" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Graverobber" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Green Goo" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Gyre Wight Apotheote" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Ice frog" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Irritable Palm" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="IrritableTortoise" Weight="1"/>
+<!--  T4  -->
+<object Blueprint="Issachari Raider" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Issachari Rifler" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Jilted Lover" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Madpole" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Monad" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="n-Dimensional Starshell" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Polarized Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Prickler" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Qudzu" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Rank Girshling" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Red Death Dacca" Weight="1"/>
+<!--  T1  -->
+<object Blueprint="Rustacean" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Salthopper" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Saltwurm" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Scorpiock" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Hunter 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Snapjaw Scavenger 0" Weight="1"/>
+<!--  unknown/non-tiered  -->
+<object Blueprint="Spark Tick" Weight="1"/>
+<!--  T2,T3  -->
+<object Blueprint="Voider" Weight="1"/>
+<!--  T3  -->
+<object Blueprint="Young Ivory" Weight="1"/>
+<!--  T6  -->
+<object Blueprint="Zero Jell" Weight="1"/>
+<!--  unknown/non-tiered  -->
+</group>
+</population>
+</populations>

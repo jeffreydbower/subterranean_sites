@@ -149,9 +149,25 @@ namespace SubterraneanSites
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
                     "SubterraneanSiteMobs",
-                    "Count", "12",
+                    "Count", "6",
                     "Tier", tier.ToString()
                 );
+
+                The.ZoneManager.AddZonePostBuilder(
+                    zoneId,
+                    "SubterraneanSiteMobs",
+                    "Count", "6",
+                    "Tier", tier.ToString()
+                );
+
+                The.ZoneManager.AddZonePostBuilder(
+                    zoneId,
+                    "SubterraneanSiteMobs",
+                    "Count", "6",
+                    "Tier", tier.ToString()
+                );
+
+
 
                 // Bottom-layer special encounter.
                 if (i == siteZoneIds.Count - 1)
@@ -248,9 +264,19 @@ namespace XRL.World.ZoneBuilders
     {
         public int Count = 6;
         public int Tier = 1;
-
         public bool BuildZone(Zone Z)
         {
+            int targetLevel = GetRandomCreatureLevelFromTier(Tier);
+
+            GameObject sampleMob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+
+            if (sampleMob == null)
+            {
+                return true;
+            }
+
+            string blueprint = sampleMob.Blueprint;
+
             for (int i = 0; i < Count; i++)
             {
                 Cell cell = GetRandomEmptyReachableCell(Z);
@@ -260,9 +286,7 @@ namespace XRL.World.ZoneBuilders
                     continue;
                 }
 
-                int targetLevel = GetRandomCreatureLevelFromTier(Tier);
-
-                GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+                GameObject mob = GameObject.Create(blueprint);
 
                 if (mob != null)
                 {
@@ -272,6 +296,33 @@ namespace XRL.World.ZoneBuilders
 
             return true;
         }
+        /*public bool BuildZone(Zone Z)
+        {
+            int targetLevel = GetRandomCreatureLevelFromTier(Tier);
+
+            GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+
+            for (int i = 0; i < Count; i++)
+            {
+                Cell cell = GetRandomEmptyReachableCell(Z);
+
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                //int targetLevel = GetRandomCreatureLevelFromTier(Tier);
+
+                //GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+
+                if (mob != null)
+                {
+                    cell.AddObject(mob);
+                }
+            }
+
+            return true;
+        }*/
 
         private int GetRandomCreatureLevelFromTier(int tier)
         {
