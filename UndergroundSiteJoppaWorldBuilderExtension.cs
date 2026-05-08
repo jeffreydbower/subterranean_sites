@@ -134,6 +134,8 @@ namespace SubterraneanSites
                 The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
 
                 // Layout / chests / stairs.
+                // This is required. Without BasicLair, lower levels with SkipTerrainBuilders
+                // can become empty/void-like because no terrain/layout builder is creating the lair.
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
                     "BasicLair",
@@ -142,32 +144,28 @@ namespace SubterraneanSites
                     "Stairs", stairs
                 );
 
-                // Ordinary mobs.
-                // This custom builder chooses creature blueprints by Level.
-                // Tier is passed in; the builder rolls a random creature level
-                // inside that tier's level band for each mob.
+                string singlesTable = "SubterraneanSites_Tier" + tier + "_Mobs";
+                string teamsTable = "SubterraneanSites_Tier" + tier + "_FightableTeams";
+
+                // One vanilla-style encounter/team packet.
+                // Rolls = how many times to roll this XML population table.
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
                     "SubterraneanSiteMobs",
-                    "Count", "6",
-                    "Tier", tier.ToString()
+                    "Rolls", "2",
+                    "Tier", tier.ToString(),
+                    "Table", teamsTable
                 );
 
+                // A few single/filler rolls from our curated tier table.
+                // Each roll may still produce multiple creatures if the XML entry has Number="2-4", etc.
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
                     "SubterraneanSiteMobs",
-                    "Count", "6",
-                    "Tier", tier.ToString()
+                    "Rolls", "4",
+                    "Tier", tier.ToString(),
+                    "Table", singlesTable
                 );
-
-                The.ZoneManager.AddZonePostBuilder(
-                    zoneId,
-                    "SubterraneanSiteMobs",
-                    "Count", "6",
-                    "Tier", tier.ToString()
-                );
-
-
 
                 // Bottom-layer special encounter.
                 if (i == siteZoneIds.Count - 1)
@@ -256,114 +254,87 @@ namespace SubterraneanSites
 
 namespace XRL.World.ZoneBuilders
 {
-    using Qud.API;
+    using Genkit;
+    using System.Collections.Generic;
+    using XRL;
     using XRL.Rules;
     using XRL.World;
 
     public class SubterraneanSiteMobs : ZoneBuilderSandbox
     {
-        public int Count = 6;
+        public int Rolls = 1;
         public int Tier = 1;
+        public string Table = "";
+
         public bool BuildZone(Zone Z)
         {
-            int targetLevel = GetRandomCreatureLevelFromTier(Tier);
+            if (Tier < 1) Tier = 1;
+            if (Tier > 8) Tier = 8;
 
-            GameObject sampleMob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
+            string table = Table;
 
-            if (sampleMob == null)
+            if (table.IsNullOrEmpty())
             {
-                return true;
+                table = "SubterraneanSites_Tier" + Tier + "_Mobs";
             }
 
-            string blueprint = sampleMob.Blueprint;
-
-            for (int i = 0; i < Count; i++)
-            {
-                Cell cell = GetRandomEmptyReachableCell(Z);
-
-                if (cell == null)
-                {
-                    continue;
-                }
-
-                GameObject mob = GameObject.Create(blueprint);
-
-                if (mob != null)
-                {
-                    cell.AddObject(mob);
-                }
-            }
-
-            return true;
-        }
-        /*public bool BuildZone(Zone Z)
-        {
-            int targetLevel = GetRandomCreatureLevelFromTier(Tier);
-
-            GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
-
-            for (int i = 0; i < Count; i++)
-            {
-                Cell cell = GetRandomEmptyReachableCell(Z);
-
-                if (cell == null)
-                {
-                    continue;
-                }
-
-                //int targetLevel = GetRandomCreatureLevelFromTier(Tier);
-
-                //GameObject mob = EncountersAPI.GetNonLegendaryCreatureAroundLevel(targetLevel);
-
-                if (mob != null)
-                {
-                    cell.AddObject(mob);
-                }
-            }
-
-            return true;
-        }*/
-
-        private int GetRandomCreatureLevelFromTier(int tier)
-        {
-            if (tier < 1) tier = 1;
-            if (tier > 8) tier = 8;
-
-            int minLevel;
-            int maxLevel;
-
-            if (tier == 1)
-            {
-                minLevel = 1;
-                maxLevel = 4;
-            }
-            else
-            {
-                minLevel = ((tier - 1) * 5);
-                maxLevel = minLevel + 4;
-            }
-
-            return Stat.Random(minLevel, maxLevel);
-        }
-
-        private Cell GetRandomEmptyReachableCell(Zone Z)
-        {
-            List<Cell> candidates = new List<Cell>();
+            List<Location2D> locations = new List<Location2D>();
 
             foreach (Cell cell in Z.GetCells())
             {
                 if (cell.IsReachable() && cell.IsEmptyOfSolid() && !cell.HasSpawnBlocker())
                 {
-                    candidates.Add(cell);
+                    locations.Add(cell.Location);
                 }
             }
 
-            if (candidates.Count == 0)
+            if (locations.Count == 0)
             {
-                return null;
+                return true;
             }
 
-            return candidates[Stat.Random(0, candidates.Count - 1)];
+            LocationList area = new LocationList(locations);
+
+            for (int roll = 0; roll < Rolls; roll++)
+            {
+                List<GameObject> objects = PopulationManager.Expand(
+                    PopulationManager.Generate(
+                        table,
+                        "zonetier",
+                        Tier.ToString()
+                    )
+                );
+
+                if (objects == null)
+                {
+                    continue;
+                }
+
+                int placementIndex = 0;
+
+                foreach (GameObject obj in objects)
+                {
+                    if (obj == null)
+                    {
+                        continue;
+                    }
+
+                    ZoneBuilderSandbox.PlaceObjectInArea(
+                        Z,
+                        area,
+                        obj,
+                        placementIndex,
+                        0,
+                        null,
+                        null,
+                        true
+                    );
+
+                    placementIndex++;
+                }
+            }
+
+            return true;
         }
     }
 }

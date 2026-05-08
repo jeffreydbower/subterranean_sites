@@ -1,0 +1,405 @@
+<populations>
+  <!--
+    Subterranean Sites master creature pools.
+
+    Purpose:
+    - Broad, inclusive creature blueprint pools by tier.
+    - Intended for custom placement builders / PopulationManager usage.
+    - Not intended for BasicLair.Table.
+
+    Notes:
+    - These are intentionally broad.
+    - Includes creatures, plants, robots, turrets, baetyl-like encounter creatures, and lair mobs.
+    - You can later split these into:
+        SubterraneanSites_TierX_CaveMobs
+        SubterraneanSites_TierX_RuinsMobs
+        SubterraneanSites_TierX_Robots
+        SubterraneanSites_TierX_DenseMobs
+        SubterraneanSites_TierX_BossCandidates
+  -->
+
+  <population Name="SubterraneanSites_Tier1_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Giant Centipede" Weight="3" Number="2-4"/>
+      <object Blueprint="Knollworm" Weight="3" Number="1"/>
+      <object Blueprint="Plated Knollworm" Weight="2" Number="1"/>
+      <object Blueprint="Eyeless Crab" Weight="1" Number="1"/>
+      <object Blueprint="Trash Monk" Weight="2" Number="2-3"/>
+      <object Blueprint="Slugsnout" Weight="1" Number="1"/>
+      <object Blueprint="Scrap-clad Hermit" Weight="3" Number="2-3"/>
+      <object Blueprint="Seedsprout Worm" Weight="1" Number="1"/>
+      <object Blueprint="Cave Arconaut" Weight="3" Number="2-3"/>
+      <object Blueprint="Giant Centipede Nest" Weight="3" Number="2-3"/>
+      <!--<object Blueprint="Sprouting Orb" Weight="0" Number="0"/>-->
+      <object Blueprint="Miner Mk I" Weight="3" Number="1"/>
+      <object Blueprint="Thirst Thistle" Weight="1" Number="2-3"/>
+      <object Blueprint="Electrofuge" Weight="1" Number="1"/>
+      <object Blueprint="Seed-Spitting Vine" Weight="1" Number="1d3"/>
+      <object Blueprint="Slumberling" Weight="1" Number="1"/>
+      <object Blueprint="Bear" Weight="3" Number="1"/>
+      <object Blueprint="Bat" Weight="3" Number="1"/>
+      <object Blueprint="Burrowing Girshling" Weight="1" Number="1-2"/>
+      <object Blueprint="Boar" Weight="2" Number="1"/>
+      <object Blueprint="Salamander" Weight="3" Number="1-2"/>
+      <object Blueprint="GiantDragonfly" Weight="3" Number="2d3"/>
+      <object Blueprint="Albino ape" Weight="1" Number="1"/>
+      <object Blueprint="Horned Chameleon" Weight="1" Number="1"/>
+      <object Blueprint="Bloated Leech" Weight="1" Number="1-2"/>
+      <object Blueprint="Honey Skunk" Weight="1" Number="1"/>
+      <object Blueprint="Hide-Sheathed Hermit" Weight="2" Number="1"/>
+      <object Blueprint="Beetlebum" Weight="2" Number="1"/>
+      <object Blueprint="Glowmoth" Weight="2" Number="1"/>
+      <object Blueprint="RifleTurret" Weight="1" Number="1-2"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Cave Spider" Weight="3" Number="1-4"/>
+      <object Blueprint="GiantAmoeba" Weight="3" Number="1-4"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier2_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Giant Centipede" Weight="3" Number="2-4"/>
+      <object Blueprint="Knollworm" Weight="3" Number="1"/>
+      <object Blueprint="Plated Knollworm" Weight="3" Number="1"/>
+      <object Blueprint="Eyeless Crab" Weight="2" Number="1"/>
+      <object Blueprint="Trash Monk" Weight="2" Number="1"/>
+      <object Blueprint="Slugsnout" Weight="1" Number="1"/>
+      <object Blueprint="Scrap-clad Hermit" Weight="3" Number="2-3"/>
+      <object Blueprint="Seedsprout Worm" Weight="1" Number="1"/>
+      <object Blueprint="Cave Arconaut" Weight="3" Number="2-3"/>
+      <object Blueprint="Giant Centipede Nest" Weight="3" Number="1"/>
+      <!--<object Blueprint="Sprouting Orb" Weight="0" Number="0"/>-->
+      <object Blueprint="Miner Mk I" Weight="1" Number="1"/>
+      <object Blueprint="Thirst Thistle" Weight="1" Number="2-3"/>
+      <object Blueprint="Electrofuge" Weight="1" Number="1"/>
+      <object Blueprint="Seed-Spitting Vine" Weight="2" Number="1d3"/>
+      <object Blueprint="Slumberling" Weight="1" Number="1"/>
+      <object Blueprint="Bear" Weight="3" Number="1"/>
+      <object Blueprint="Bat" Weight="3" Number="2-3"/>
+      <object Blueprint="Burrowing Girshling" Weight="2" Number="1-2"/>
+      <object Blueprint="Two-Headed Boar" Weight="2" Number="1"/>
+      <object Blueprint="Salamander" Weight="2" Number="1-2"/>
+      <object Blueprint="GiantDragonfly" Weight="3" Number="2d3"/>
+      <object Blueprint="Albino ape" Weight="1" Number="1"/>
+      <object Blueprint="Horned Chameleon" Weight="1" Number="1"/>
+      <object Blueprint="Leech" Weight="2" Number="1-2"/>
+      <object Blueprint="Beetlebum" Weight="2" Number="1"/>
+      <object Blueprint="Bloated Leech" Weight="2" Number="1"/>
+      <object Blueprint="Honey Skunk" Weight="1" Number="1"/>
+      <object Blueprint="Novice of the Sightless Way 2" Weight="2" Number="1"/>
+      <object Blueprint="Hide-Sheathed Hermit" Weight="3" Number="2-3"/>
+      <object Blueprint="Chitinous Puma" Weight="1" Number="1"/>
+      <object Blueprint="Quillipede" Weight="1" Number="1"/>
+      <object Blueprint="Glowmoth" Weight="2" Number="1"/>
+      <object Blueprint="RifleTurret" Weight="1" Number="1-2"/>
+      <object Blueprint="ChaingunTurret" Weight="1" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Cave Spider" Weight="2" Number="1-4"/>
+      <object Blueprint="Voider" Weight="1" Number="1-4"/>
+      <object Blueprint="GiantAmoeba" Weight="2" Number="1-4"/>
+      <!--<object Blueprint="Black Jel" Weight="0" Number="1-3"/>-->
+      <!--<object Blueprint="Blue Jel" Weight="0" Number="1-3"/>-->
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier3_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Giant Beetle" Weight="3" Number="2-4"/>
+      <object Blueprint="Snapjaw Feeder" Weight="3" Number="3-5"/>
+      <object Blueprint="Snapjaw Spearfiend" Weight="1" Number="1-2"/>
+      <object Blueprint="Snapjaw Trapper" Weight="1" Number="0-1"/>
+      <object Blueprint="Snapjaw Howler" Weight="1" Number="0-1"/>
+      <object Blueprint="Agolmaggot" Weight="1" Number="2-3"/>
+      <object Blueprint="Drillbot" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Wedge" Weight="1" Number="1"/>
+      <object Blueprint="Burrowing Girshling" Weight="2" Number="1-4"/>
+      <object Blueprint="Cave Arconaut" Weight="3" Number="2-3"/>
+      <!--<object Blueprint="Aloe Volta" Weight="0" Number="8-12"/>-->
+      <object Blueprint="Seedsprout Worm" Weight="1" Number="1"/>
+      <object Blueprint="Rifle Turret Tinker" Weight="1" Number="1"/>
+      <object Blueprint="Giant Beetle Nest" Weight="3" Number="1"/>
+      <!--<object Blueprint="Sprouting Orb" Weight="0" Number="1"/>-->
+      <object Blueprint="Miner Mk I" Weight="1" Number="1"/>
+      <object Blueprint="Yonderbrush" Weight="1" Number="2-3"/>
+      <object Blueprint="Hide-Sheathed Hermit" Weight="3" Number="2-4"/>
+      <object Blueprint="Electrofuge" Weight="1" Number="1"/>
+      <object Blueprint="Seed-Spitting Vine" Weight="2" Number="1d3"/>
+      <object Blueprint="Slumberling" Weight="1" Number="1"/>
+      <object Blueprint="Bear" Weight="3" Number="1"/>
+      <object Blueprint="Bat" Weight="3" Number="2-4"/>
+      <object Blueprint="Two-Headed Slugsnout" Weight="3" Number="1"/>
+      <object Blueprint="Fire ant" Weight="1" Number="1"/>
+      <object Blueprint="Worker ant" Weight="2" Number="1-3"/>
+      <object Blueprint="Fire Ant Queen" Weight="2" Number="1"/>
+      <object Blueprint="GiantDragonfly" Weight="3" Number="2d3"/>
+      <object Blueprint="Albino ape" Weight="1" Number="1"/>
+      <object Blueprint="Quillipede" Weight="2" Number="1"/>
+      <object Blueprint="Horned Chameleon" Weight="3" Number="1"/>
+      <object Blueprint="Electric Snail" Weight="2" Number="1"/>
+      <object Blueprint="Spitting Slug" Weight="1" Number="1"/>
+      <object Blueprint="Bloated Leech" Weight="3" Number="1"/>
+      <object Blueprint="Honey Skunk" Weight="2" Number="1"/>
+      <object Blueprint="Novice of the Sightless Way 3" Weight="2" Number="1"/>
+      <object Blueprint="Trash Monk" Weight="2" Number="2-3"/>
+      <object Blueprint="Chitinous Puma" Weight="1" Number="1"/>
+      <!--<object Blueprint="Traipsing Mortar" Weight="0" Number="1"/>-->
+      <!--<object Blueprint="Normality Bot" Weight="0" Number="1"/>-->
+      <object Blueprint="Beetlebum" Weight="3" Number="1"/>
+      <object Blueprint="Glowmoth" Weight="2" Number="1"/>
+      <object Blueprint="RifleTurret" Weight="1" Number="1-2"/>
+      <object Blueprint="ChaingunTurret" Weight="1" Number="1"/>
+      <object Blueprint="LaserTurret" Weight="1" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Cave Spider" Weight="3" Number="1-4"/>
+      <object Blueprint="Voider" Weight="2" Number="1-4"/>
+      <object Blueprint="GiantAmoeba" Weight="3" Number="1-4"/>
+      <!--<object Blueprint="Black Jel" Weight="0" Number="1-3"/>-->
+      <!--<object Blueprint="Blue Jel" Weight="0" Number="1-3"/>-->
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier4_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Juice Sap" Weight="1" Number="3-4"/>
+      <!--<object Blueprint="Aloe Pyra" Weight="0" Number="3-4"/>-->
+      <object Blueprint="Drowsing Urchin" Weight="2" Number="1-2" Hint="AlongWall"/>
+      <object Blueprint="Burrowing Girshling" Weight="3" Number="1-4"/>
+      <object Blueprint="Mysterious Gunslinger" Weight="1" Number="1"/>
+      <object Blueprint="Cave Arconaut" Weight="2" Number="1"/>
+      <object Blueprint="Breather" Weight="1" Number="1"/>
+      <object Blueprint="Humor" Weight="1" Number="1"/>
+      <object Blueprint="Chaingun Turret Tinker" Weight="1" Number="1"/>
+      <object Blueprint="Low-Light Laser Turret Tinker" Weight="1" Number="1"/>
+      <object Blueprint="Dervish of the Sightless Way" Weight="2" Number="1"/>
+      <!--<object Blueprint="Gelatinous Frustum" Weight="0" Number="1"/>-->
+      <object Blueprint="Livid Creeper" Weight="3" Number="2-4" Hint="LivesOnWalls"/>
+      <!--<object Blueprint="Holographic Ivory" Weight="0" Number="2-4"/>-->
+      <object Blueprint="Miner Mk II" Weight="1" Number="1"/>
+      <object Blueprint="Fire ant" Weight="1" Number="1"/>
+      <object Blueprint="Worker ant" Weight="3" Number="1-3"/>
+      <!--<object Blueprint="Fire Ant Queen" Weight="0" Number="1"/>-->
+      <object Blueprint="Drillbot" Weight="1" Number="1"/>
+      <object Blueprint="Albino ape" Weight="3" Number="1-2"/>
+      <object Blueprint="Hide-Sheathed Hermit" Weight="2" Number="1"/>
+      <object Blueprint="Electric Snail" Weight="2" Number="1"/>
+      <object Blueprint="Spitting Slug" Weight="2" Number="1"/>
+      <object Blueprint="Sawhander" Weight="1" Number="1"/>
+      <object Blueprint="Slumberling" Weight="2" Number="1"/>
+      <object Blueprint="Beetlebum" Weight="3" Number="1"/>
+      <object Blueprint="Traipsing Mortar" Weight="1" Number="1"/>
+      <object Blueprint="Normality Bot" Weight="1" Number="1"/>
+      <object Blueprint="Chitinous Puma" Weight="2" Number="1"/>
+      <!--<object Blueprint="Cloneling" Weight="0" Number="1"/>-->
+      <object Blueprint="Glowmoth" Weight="3" Number="1"/>
+      <object Blueprint="Giant Beetle" Weight="3" Number="1"/>
+      <object Blueprint="ChaingunTurret" Weight="2" Number="1"/>
+      <object Blueprint="LaserTurret" Weight="1" Number="1"/>
+      <!--<object Blueprint="RocketTurret" Weight="0" Number="1"/>-->
+      <!--<object Blueprint="Gyrohumor" Weight="0" Number="1"/>-->
+      <!--<object Blueprint="Mercurial" Weight="0" Number="1"/>-->
+      <object Blueprint="Laser Turret Tinker" Weight="1" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Cave Spider" Weight="3" Number="1-4"/>
+      <object Blueprint="Voider" Weight="3" Number="1-4"/>
+      <object Blueprint="GiantAmoeba" Weight="3" Number="1-4"/>
+      <object Blueprint="Black Jel" Weight="1" Number="1"/>
+      <object Blueprint="Blue Jel" Weight="1" Number="1"/>
+      <object Blueprint="Brown Sludge" Weight="1" Number="0-1" Hint="Adjacent"/>
+      <object Blueprint="Green Goo" Weight="1" Number="0-1" Hint="Adjacent"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier5_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Burrowing Girshling" Weight="3" Number="1-4"/>
+      <!--<object Blueprint="Aloe Fugues" Weight="0" Number="1"/>-->
+      <object Blueprint="Snailmother" Weight="2" Number="1"/>
+      <object Blueprint="Bloated Pearlfrog" Weight="1" Number="1" Hint="Aquatic"/>
+      <object Blueprint="Addling Urchin" Weight="1" Number="1-2" Hint="AlongWall"/>
+      <object Blueprint="Gyrohumor" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Prism" Weight="2" Number="1"/>
+      <object Blueprint="Quartz Baboon" Weight="3" Number="3-6"/>
+      <object Blueprint="Laser Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Random Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Urchin Belcher" Weight="2" Number="1" Hint="Aquatic"/>
+      <object Blueprint="Pulsed Field Magnet" Weight="1" Number="1"/>
+      <object Blueprint="Waveform Worm" Weight="2" Number="1"/>
+      <object Blueprint="Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="Mysterious Gunslinger" Weight="3" Number="1"/>
+      <object Blueprint="Drillbot" Weight="1" Number="1"/>
+      <object Blueprint="Albino ape" Weight="3" Number="1-2"/>
+      <object Blueprint="Hide-Sheathed Hermit" Weight="1" Number="1"/>
+      <object Blueprint="Electric Snail" Weight="3" Number="1"/>
+      <object Blueprint="Spitting Slug" Weight="2" Number="1"/>
+      <object Blueprint="Sawhander" Weight="1" Number="1"/>
+      <object Blueprint="Juice Sap" Weight="2" Number="2-4"/>
+      <object Blueprint="Chaingun Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Low-Light Laser Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Livid Creeper" Weight="2" Number="2-4" Hint="LivesOnWalls"/>
+      <object Blueprint="Dervish of the Sightless Way" Weight="2" Number="1"/>
+      <object Blueprint="Miner Mk III" Weight="2" Number="1"/>
+      <object Blueprint="Gelatinous Frustum" Weight="2" Number="1"/>
+      <object Blueprint="Breather" Weight="1" Number="1"/>
+      <object Blueprint="Slumberling" Weight="3" Number="1"/>
+      <object Blueprint="Beetlebum" Weight="1" Number="1"/>
+      <object Blueprint="Traipsing Mortar" Weight="1" Number="1"/>
+      <object Blueprint="Normality Bot" Weight="1" Number="1"/>
+      <object Blueprint="Trash Abbot" Weight="3" Number="1"/>
+      <object Blueprint="Cloneling" Weight="1" Number="1"/>
+      <object Blueprint="LaserTurret" Weight="2" Number="1"/>
+      <object Blueprint="RocketTurret" Weight="1" Number="1"/>
+      <object Blueprint="Rimewyk" Weight="1" Number="1"/>
+      <object Blueprint="Mercurial" Weight="1" Number="1"/>
+      <object Blueprint="Life Sap" Weight="2" Number="2-4"/>
+      <object Blueprint="Rocket Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Fulcrete Catapult" Weight="1" Number="1"/>
+      <object Blueprint="Greater Voider" Weight="3" Number="1"/>
+      <object Blueprint="Vantabud" Weight="1" Number="1-2"/>
+      <object Blueprint="High Dervish of the Sightless Way" Weight="2" Number="1"/>
+      <object Blueprint="Miner Mk II" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Cupola" Weight="1" Number="1"/>
+      <object Blueprint="Elder Breather" Weight="1" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Cave Spider" Weight="1" Number="1-4"/>
+      <object Blueprint="Voider" Weight="3" Number="1-4"/>
+      <object Blueprint="GiantAmoeba" Weight="3" Number="1-4"/>
+      <object Blueprint="Black Jel" Weight="1" Number="1-3"/>
+      <object Blueprint="Blue Jel" Weight="1" Number="1-3"/>
+      <object Blueprint="Brown Sludge" Weight="1" Number="1-3" Hint="Adjacent"/>
+      <object Blueprint="Green Goo" Weight="1" Number="0-1" Hint="Adjacent"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier6_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Life Sap" Weight="3" Number="3-4"/>
+      <object Blueprint="Greater Voider" Weight="3" Number="1"/>
+      <object Blueprint="High Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Gelatinous Cupola" Weight="3" Number="1-2"/>
+      <object Blueprint="Vantabud" Weight="1" Number="1-2"/>
+      <object Blueprint="Trash Abbot" Weight="1" Number="1"/>
+      <object Blueprint="Fulcrete Catapult" Weight="1" Number="1"/>
+      <object Blueprint="Elder Breather" Weight="1" Number="1"/>
+      <object Blueprint="Rocket Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Random Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Pulsed Field Magnet" Weight="1" Number="1"/>
+      <object Blueprint="Rhinox" Weight="2" Number="1"/>
+      <object Blueprint="Miner Mk III" Weight="1" Number="1"/>
+      <object Blueprint="Holographic Beth" Weight="1" Number="2-4"/>
+      <object Blueprint="Laser Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Gelatinous Prism" Weight="2" Number="1"/>
+      <object Blueprint="Urchin Belcher" Weight="1" Number="1"/>
+      <object Blueprint="Waveform Worm" Weight="2" Number="1"/>
+      <object Blueprint="Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="Juice Sap" Weight="3" Number="2-4"/>
+      <object Blueprint="Chaingun Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Low-Light Laser Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Livid Creeper" Weight="1" Number="2-4" Hint="LivesOnWalls"/>
+      <object Blueprint="Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Miner Mk II" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Frustum" Weight="1" Number="1"/>
+      <object Blueprint="Breather" Weight="1" Number="1"/>
+      <object Blueprint="Slumberling" Weight="3" Number="1"/>
+      <object Blueprint="Beetlebum" Weight="1" Number="1"/>
+      <object Blueprint="Traipsing Mortar" Weight="1" Number="1"/>
+      <object Blueprint="Normality Bot" Weight="1" Number="1"/>
+      <object Blueprint="Cloneling" Weight="2" Number="1"/>
+      <object Blueprint="LaserTurret" Weight="2" Number="1"/>
+      <object Blueprint="RocketTurret" Weight="2" Number="1"/>
+      <object Blueprint="Gyrohumor" Weight="1" Number="1"/>
+      <object Blueprint="Mercurial" Weight="1" Number="1"/>
+      <object Blueprint="Stat Sap" Weight="3" Number="2-4"/>
+      <object Blueprint="Memory Eater" Weight="2" Number="1"/>
+      <object Blueprint="Red Jell" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Antiprism" Weight="2" Number="1"/>
+      <object Blueprint="Interdictor" Weight="2" Number="3-6"/>
+      <object Blueprint="Eigenturret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Trining Lamprey" Weight="1" Number="1"/>
+      <object Blueprint="Ogre Ape" Weight="2" Number="1"/>
+      <object Blueprint="Purple Jell" Weight="2" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="2" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Voider" Weight="3" Number="1-4"/>
+      <object Blueprint="PhaseWeb" Weight="1" Number="4-10"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier7_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Stat Sap" Weight="3" Number="3-4"/>
+      <object Blueprint="Memory Eater" Weight="3" Number="1"/>
+      <object Blueprint="Red Jell" Weight="1" Number="1-2"/>
+      <object Blueprint="Glittermensch Brainer" Weight="3" Number="1-2"/>
+      <object Blueprint="Glittermensch Boulderer" Weight="3" Number="1"/>
+      <object Blueprint="Glittermensch Luminary" Weight="3" Number="0-1"/>
+      <object Blueprint="Interdictor" Weight="3" Number="4-7"/>
+      <object Blueprint="Vantabud" Weight="1" Number="1-2"/>
+      <object Blueprint="Pulsed Field Magnet" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Antiprism" Weight="2" Number="1"/>
+      <object Blueprint="Lithofex" Weight="2" Number="1"/>
+      <object Blueprint="Quartziferous Mirror" Weight="1" Number="1"/>
+      <object Blueprint="Elder Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="Eigenturret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Blast Cannon Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Trining Lamprey" Weight="2" Number="1"/>
+      <object Blueprint="Ogre Ape" Weight="3" Number="1"/>
+      <object Blueprint="Purple Jell" Weight="1" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="2" Number="1"/>
+      <object Blueprint="Trash Abbot" Weight="2" Number="1"/>
+      <object Blueprint="Life Sap" Weight="3" Number="2-4"/>
+      <object Blueprint="Rocket Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Random Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Fulcrete Catapult" Weight="1" Number="1"/>
+      <object Blueprint="Greater Voider" Weight="3" Number="1"/>
+      <object Blueprint="Aloe Fugues" Weight="1" Number="1-2"/>
+      <object Blueprint="High Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Miner Mk III" Weight="1" Number="1"/>
+      <object Blueprint="Gelatinous Cupola" Weight="1" Number="1"/>
+      <object Blueprint="Elder Breather" Weight="1" Number="1"/>
+      <object Blueprint="Urchin Belcher" Weight="1" Number="1"/>
+      <object Blueprint="Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="Galgal" Weight="1" Number="1"/>
+      <object Blueprint="Astral Tabby" Weight="1" Number="1-2"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Voider" Weight="2" Number="1-4"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier8_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Astral Tabby" Weight="2" Number="1-2"/>
+      <object Blueprint="Vantabloom" Weight="1" Number="1-2"/>
+      <object Blueprint="Great Magma Crab" Weight="2" Number="1"/>
+      <object Blueprint="Arch Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Pulsed Field Magnet" Weight="1" Number="1"/>
+      <object Blueprint="Vantabud" Weight="1" Number="1-2"/>
+      <object Blueprint="Decarbonizer" Weight="1" Number="1"/>
+      <object Blueprint="Gamma Moth" Weight="1" Number="1"/>
+      <object Blueprint="Phase Cannon Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Galgal" Weight="1" Number="1"/>
+      <object Blueprint="Leering Stalker" Weight="1" Number="1"/>
+      <object Blueprint="Chrome Pyramid" Weight="1" Number="1"/>
+      <object Blueprint="Trash Abbot" Weight="1" Number="1"/>
+      <object Blueprint="Stat Sap" Weight="3" Number="2-4"/>
+      <object Blueprint="Memory Eater" Weight="3" Number="1"/>
+      <object Blueprint="Trining Lamprey" Weight="2" Number="1"/>
+      <object Blueprint="Ogre Ape" Weight="3" Number="1"/>
+      <object Blueprint="Purple Jell" Weight="2" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="1" Number="1"/>
+      <object Blueprint="Red Jell" Weight="2" Number="1"/>
+      <object Blueprint="Gelatinous Antiprism" Weight="2" Number="1"/>
+      <object Blueprint="Interdictor" Weight="1" Number="3-6"/>
+      <object Blueprint="Eigenturret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Blast Cannon Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Elder Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="Random Turret Tinker" Weight="2" Number="1"/>
+      <object Blueprint="Fulcrete Catapult" Weight="1" Number="1"/>
+      <object Blueprint="Greater Voider" Weight="1" Number="1"/>
+      <object Blueprint="Miner Mk III" Weight="1" Number="1"/>
+      <object Blueprint="Elder Breather" Weight="1" Number="1"/>
+      <object Blueprint="Lagroot" Weight="1" Number="1-3"/>
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Voider" Weight="1" Number="1-4"/>
+    </group>
+  </population>
+</populations>
