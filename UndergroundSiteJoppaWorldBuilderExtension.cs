@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using HistoryKit;
 using XRL;
 using XRL.Core;
+using XRL.Rules;
 using XRL.World;
 using XRL.World.WorldBuilders;
-using XRL.Rules;
+using XRL.World.ZoneBuilders;
 
 namespace SubterraneanSites
 {
@@ -21,18 +23,20 @@ namespace SubterraneanSites
     {
         private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
         private const string OwnerProperty = "SubterraneanSites_Owner";
-        private const string InitFlag = "SubterraneanSites_TestSiteRegistered";
+        private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
         /*
         Current test strategy:
-        - Register a fixed stacked BasicLair site once.
-        - Let ZoneManager build the site naturally when entered.
-        - Add ordinary mobs with a custom builder using creature blueprint Level.
-        - Keep FactionEncounters on the bottom layer as the special encounter.
+        - Register one fixed stacked SultanDungeon site once.
+        - Reuse existing generated sultan/history data.
+        - Build a SultanDungeonArgs object manually.
+        - Store it under sultanDungeonArgs_<regionName>.
+        - Register SultanDungeon on each layer using the same regionName.
+        - Skip secrets, quests, SultanRegionSurface, and relics for this first test.
 
-        Future strategy:
-        - Replace one-time registration with matrix-adjacent registration.
-        - Use tier/depth to scale ordinary mobs and special encounters.
+        Purpose:
+        - Test whether SultanDungeon can be used outside vanilla AddSultanHistoryLocations.
+        - Test whether existing sultan/region snapshots produce geometry and cult mobs.
         */
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
@@ -42,9 +46,6 @@ namespace SubterraneanSites
 
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
-            // One-time registration test.
-            // Later this becomes matrix-boundary / matrix-corner registration logic.
-
             if (The.Game.GetStringGameState(InitFlag) == "Yes")
             {
                 return true;
@@ -56,11 +57,11 @@ namespace SubterraneanSites
             int zoneSeed = XRLCore.Core.Game.GetWorldSeed(TargetZoneId + rawSeed);
             System.Random rng = new System.Random(zoneSeed);
 
-            int layers = rng.Next(3, 7);
+            int layers = rng.Next(3, 6);
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
 
-            RegisterSiteAllowPartial(siteZoneIds);
+            RegisterSultanDungeonSite(siteZoneIds);
 
             return true;
         }
@@ -96,13 +97,60 @@ namespace SubterraneanSites
             return siteZoneIds;
         }
 
-        private void RegisterSiteAllowPartial(List<string> siteZoneIds)
+        private void RegisterSultanDungeonSite(List<string> siteZoneIds)
         {
-            int GetZFromZoneId(string id)
+            if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                string[] parts = id.Split('.');
-                return int.Parse(parts[5]);
+                return;
             }
+
+            int originZ = GetZFromZoneId(siteZoneIds[0]);
+            int targetTier = GetTierFromZ(originZ);
+            int period = GetSultanPeriodForTier(targetTier);
+
+            History sultanHistory = The.Game.sultanHistory;
+
+            if (sultanHistory == null)
+            {
+                return;
+            }
+
+            HistoricEntity region = PickRegionForPeriod(sultanHistory, period);
+
+            if (region == null)
+            {
+                return;
+            }
+
+            HistoricEntitySnapshot regionSnapshot = region.GetCurrentSnapshot();
+
+            if (regionSnapshot == null)
+            {
+                return;
+            }
+
+            string sourceRegionName = regionSnapshot.GetProperty("newName", regionSnapshot.GetProperty("name", "Unknown Region"));
+
+            // Use a modded runtime key so we do not overwrite vanilla's sultanDungeonArgs_<region>.
+            // Mechanically, SultanDungeon only needs this to match the regionName builder argument.
+            string regionName = "SubterraneanSites_" + sourceRegionName;
+
+            // Use a real historical name where possible. SultanDungeon may use this to pull an
+            // additional snapshot during BuildZoneFromArgs.
+            string locationName = regionSnapshot.GetProperty("name", sourceRegionName);
+
+            SultanDungeonArgs args = BuildSultanDungeonArgsFromHistory(
+                sultanHistory,
+                regionSnapshot,
+                period
+            );
+
+            if (args == null)
+            {
+                return;
+            }
+
+            The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args);
 
             for (int i = 0; i < siteZoneIds.Count; i++)
             {
@@ -110,82 +158,131 @@ namespace SubterraneanSites
 
                 if (IsClaimedByOtherContent(zoneId))
                 {
-                    // Current temporary behavior:
-                    // skip only this layer.
-                    // Later we may reject the whole site if any critical collision exists.
                     continue;
                 }
 
-                The.ZoneManager.ClearZoneBuilders(zoneId);
-                The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-
-                // Let top layer keep normal terrain builders for now.
-                // Lower levels suppress ordinary terrain generation.
-                if (i != 0)
-                {
-                    The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
-                }
-
                 string stairs = GetStairsForLayer(i, siteZoneIds.Count);
-
                 int z = GetZFromZoneId(zoneId);
                 int tier = GetTierFromZ(z);
 
+                // Match vanilla SultanDungeon behavior more closely:
+                // - Top layer keeps existing terrain/builders so natural connections/entrances can survive.
+                // - Lower layers become fully controlled SultanDungeon levels.
+                if (i != 0)
+                {
+                    The.ZoneManager.ClearZoneBuilders(zoneId);
+                    The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
+                }
+
+                The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
                 The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
 
-                // Layout / chests / stairs.
-                // This is required. Without BasicLair, lower levels with SkipTerrainBuilders
-                // can become empty/void-like because no terrain/layout builder is creating the lair.
-                The.ZoneManager.AddZonePostBuilder(
+                // Optional but useful for seeing that this is our test site.
+                The.ZoneManager.SetZoneProperty(zoneId, "HistoricSite", regionName);
+
+                The.ZoneManager.AddZoneBuilder(
                     zoneId,
-                    "BasicLair",
-                    "Table", "",
-                    "Adjectives", "",
-                    "Stairs", stairs
+                    6000,
+                    "SultanDungeon",
+                    "locationName", locationName,
+                    "regionName", regionName,
+                    "stairs", stairs
                 );
 
-                string singlesTable = "SubterraneanSites_Tier" + tier + "_Mobs";
-                string teamsTable = "SubterraneanSites_Tier" + tier + "_FightableTeams";
-
-                // One vanilla-style encounter/team packet.
-                // Rolls = how many times to roll this XML population table.
-                The.ZoneManager.AddZonePostBuilder(
+                The.ZoneManager.AddZoneBuilder(
                     zoneId,
-                    "SubterraneanSiteMobs",
-                    "Rolls", "2",
-                    "Tier", tier.ToString(),
-                    "Table", teamsTable
+                    6000,
+                    "Music",
+                    "Track", "Music/of Chrome and How"
                 );
-
-                // A few single/filler rolls from our curated tier table.
-                // Each roll may still produce multiple creatures if the XML entry has Number="2-4", etc.
-                The.ZoneManager.AddZonePostBuilder(
-                    zoneId,
-                    "SubterraneanSiteMobs",
-                    "Rolls", "4",
-                    "Tier", tier.ToString(),
-                    "Table", singlesTable
-                );
-
-                // Bottom-layer special encounter.
-                if (i == siteZoneIds.Count - 1)
-                {
-                    The.ZoneManager.AddZoneBuilder(
-                        zoneId,
-                        6000,
-                        "FactionEncounters",
-                        "Chance", "100",
-                        "Rolls", "1",
-                        "Population", "GenericFactionPopulation"
-                    );
-                }
 
                 The.ZoneManager.SetZoneName(
                     zoneId,
-                    "Stacked Lair Test: Layer " + (i + 1) + " of " + siteZoneIds.Count,
+                    "Subterranean Historic Site Test: Layer " + (i + 1) + " of " + siteZoneIds.Count,
                     Proper: false
                 );
             }
+        }
+
+        private SultanDungeonArgs BuildSultanDungeonArgsFromHistory(
+            History sultanHistory,
+            HistoricEntitySnapshot regionSnapshot,
+            int period
+        )
+        {
+            SultanDungeonArgs args = new SultanDungeonArgs();
+
+            HistoricEntityList sultans = sultanHistory.GetEntitiesWherePropertyEquals("type", "sultan");
+
+            if (sultans != null && sultans.entities != null && sultans.entities.Count > 0)
+            {
+                HistoricEntity periodSultan = null;
+
+                HistoricEntityList matchingSultans =
+                    sultans.GetEntitiesWherePropertyEquals("period", period.ToString());
+
+                if (matchingSultans != null && matchingSultans.entities != null && matchingSultans.entities.Count > 0)
+                {
+                    periodSultan = matchingSultans.entities[Stat.Random(0, matchingSultans.entities.Count - 1)];
+                }
+                else
+                {
+                    periodSultan = sultans.entities[Stat.Random(0, sultans.entities.Count - 1)];
+                }
+
+                if (periodSultan != null)
+                {
+                    args.UpdateFromEntity(periodSultan.GetCurrentSnapshot());
+                }
+            }
+
+            args.UpdateWalls(period);
+            args.UpdateFromEntity(regionSnapshot);
+
+            if (50.in100())
+            {
+                args.wallTypes.Add("*SultanWall*");
+            }
+
+            return args;
+        }
+
+        private HistoricEntity PickRegionForPeriod(History sultanHistory, int period)
+        {
+            HistoricEntityList regions = sultanHistory.GetEntitiesWherePropertyEquals("type", "region");
+
+            if (regions == null || regions.entities == null || regions.entities.Count == 0)
+            {
+                return null;
+            }
+
+            List<HistoricEntity> matchingPeriodRegions = new List<HistoricEntity>();
+
+            foreach (HistoricEntity region in regions.entities)
+            {
+                HistoricEntitySnapshot snap = region.GetCurrentSnapshot();
+
+                if (snap == null)
+                {
+                    continue;
+                }
+
+                string periodString = snap.GetProperty("period", "-1");
+
+                int regionPeriod;
+
+                if (int.TryParse(periodString, out regionPeriod) && regionPeriod == period)
+                {
+                    matchingPeriodRegions.Add(region);
+                }
+            }
+
+            if (matchingPeriodRegions.Count > 0)
+            {
+                return matchingPeriodRegions[Stat.Random(0, matchingPeriodRegions.Count - 1)];
+            }
+
+            return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
         }
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
@@ -206,6 +303,12 @@ namespace SubterraneanSites
             }
 
             return "UD";
+        }
+
+        private int GetZFromZoneId(string id)
+        {
+            string[] parts = id.Split('.');
+            return int.Parse(parts[5]);
         }
 
         private bool IsClaimedByOtherContent(string zoneId)
@@ -249,92 +352,30 @@ namespace SubterraneanSites
 
             return tier;
         }
-    }
-}
 
-namespace XRL.World.ZoneBuilders
-{
-    using Genkit;
-    using System.Collections.Generic;
-    using XRL;
-    using XRL.Rules;
-    using XRL.World;
-
-    public class SubterraneanSiteMobs : ZoneBuilderSandbox
-    {
-        public int Rolls = 1;
-        public int Tier = 1;
-        public string Table = "";
-
-        public bool BuildZone(Zone Z)
+        private int GetSultanPeriodForTier(int tier)
         {
-            if (Tier < 1) Tier = 1;
-            if (Tier > 8) Tier = 8;
-
-            string table = Table;
-
-            if (table.IsNullOrEmpty())
+            if (tier <= 2)
             {
-                table = "SubterraneanSites_Tier" + Tier + "_Mobs";
+                return 5;
             }
 
-            List<Location2D> locations = new List<Location2D>();
-
-            foreach (Cell cell in Z.GetCells())
+            if (tier <= 4)
             {
-                if (cell.IsReachable() && cell.IsEmptyOfSolid() && !cell.HasSpawnBlocker())
-                {
-                    locations.Add(cell.Location);
-                }
+                return 4;
             }
 
-            if (locations.Count == 0)
+            if (tier <= 6)
             {
-                return true;
+                return 3;
             }
 
-            LocationList area = new LocationList(locations);
-
-            for (int roll = 0; roll < Rolls; roll++)
+            if (tier == 7)
             {
-                List<GameObject> objects = PopulationManager.Expand(
-                    PopulationManager.Generate(
-                        table,
-                        "zonetier",
-                        Tier.ToString()
-                    )
-                );
-
-                if (objects == null)
-                {
-                    continue;
-                }
-
-                int placementIndex = 0;
-
-                foreach (GameObject obj in objects)
-                {
-                    if (obj == null)
-                    {
-                        continue;
-                    }
-
-                    ZoneBuilderSandbox.PlaceObjectInArea(
-                        Z,
-                        area,
-                        obj,
-                        placementIndex,
-                        0,
-                        null,
-                        null,
-                        true
-                    );
-
-                    placementIndex++;
-                }
+                return 2;
             }
 
-            return true;
+            return 1;
         }
     }
 }
