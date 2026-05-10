@@ -106,7 +106,7 @@ namespace SubterraneanSites
 
             int originZ = GetZFromZoneId(siteZoneIds[0]);
             int targetTier = GetTierFromZ(originZ);
-            int period = GetSultanPeriodForTier(targetTier);
+            int period = SultanDungeon.GetSultanPeriodFromTier(targetTier);
 
             History sultanHistory = The.Game.sultanHistory;
 
@@ -196,12 +196,45 @@ namespace SubterraneanSites
                     "Track", "Music/of Chrome and How"
                 );
 
+                if (i == siteZoneIds.Count - 1)
+                {
+                    AddVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
+                }
+
                 The.ZoneManager.SetZoneName(
                     zoneId,
-                    "Subterranean Historic Site Test: Layer " + (i + 1) + " of " + siteZoneIds.Count,
+                    "Test: " + sourceRegionName +
+                    " T" + tier +
+                    " P" + period +
+                    " Layer " + (i + 1) + " of " + siteZoneIds.Count,
                     Proper: false
                 );
             }
+        }
+
+        private void AddVaultWithRelicAndHero(
+            string zoneId,
+            HistoricEntitySnapshot regionSnapshot,
+            int tier
+        )
+        {
+            XRL.World.GameObject relic =
+                RelicGenerator.GenerateRelic(regionSnapshot, tier, RandomName: true);
+
+            if (relic == null)
+            {
+                return;
+            }
+
+            //this is the magic that adds a hero, pretty neat!
+            The.ZoneManager.SetZoneProperty(zoneId, "Relicstyle", "Vault");
+
+            The.ZoneManager.AddZoneBuilder(
+                zoneId,
+                6000,
+                "PlaceRelicBuilder",
+                "Relic", The.ZoneManager.CacheObject(relic)
+            );
         }
 
         private SultanDungeonArgs BuildSultanDungeonArgsFromHistory(
@@ -313,6 +346,7 @@ namespace SubterraneanSites
 
         private bool IsClaimedByOtherContent(string zoneId)
         {
+            //This needs better struture. like a list of the excluded zonebuilders
             string owner = The.ZoneManager.GetZoneProperty(zoneId, OwnerProperty) as string;
 
             if (owner == "Yes")
@@ -351,31 +385,6 @@ namespace SubterraneanSites
             if (tier > 8) tier = 8;
 
             return tier;
-        }
-
-        private int GetSultanPeriodForTier(int tier)
-        {
-            if (tier <= 2)
-            {
-                return 5;
-            }
-
-            if (tier <= 4)
-            {
-                return 4;
-            }
-
-            if (tier <= 6)
-            {
-                return 3;
-            }
-
-            if (tier == 7)
-            {
-                return 2;
-            }
-
-            return 1;
         }
     }
 }
