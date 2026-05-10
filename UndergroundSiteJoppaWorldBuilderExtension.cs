@@ -25,19 +25,16 @@ namespace SubterraneanSites
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
-        /*
-        Current test strategy:
-        - Register one fixed stacked SultanDungeon site once.
-        - Reuse existing generated sultan/history data.
-        - Build a SultanDungeonArgs object manually.
-        - Store it under sultanDungeonArgs_<regionName>.
-        - Register SultanDungeon on each layer using the same regionName.
-        - Skip secrets, quests, SultanRegionSurface, and relics for this first test.
+        private enum SiteKind
+        {
+            SultanHistoric
 
-        Purpose:
-        - Test whether SultanDungeon can be used outside vanilla AddSultanHistoryLocations.
-        - Test whether existing sultan/region snapshots produce geometry and cult mobs.
-        */
+            //later the full set will be 
+            //SultanHistoric,
+            //BasicLairLegendary,
+            //BasicLairDense,
+            //BasicLairVendor
+        }
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
@@ -61,7 +58,8 @@ namespace SubterraneanSites
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
 
-            RegisterSultanDungeonSite(siteZoneIds);
+            //RegisterSultanDungeonSite(siteZoneIds);
+            RegisterSelectedSite(siteZoneIds, rng);
 
             return true;
         }
@@ -97,225 +95,27 @@ namespace SubterraneanSites
             return siteZoneIds;
         }
 
-        private void RegisterSultanDungeonSite(List<string> siteZoneIds)
+        private void RegisterSelectedSite(List<string> siteZoneIds, System.Random rng)
         {
-            if (siteZoneIds == null || siteZoneIds.Count == 0)
+            SiteKind siteKind = RollSiteKind(rng);
+
+            switch (siteKind)
             {
-                return;
-            }
+            case SiteKind.SultanHistoric:
+                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
+                break;
 
-            int originZ = GetZFromZoneId(siteZoneIds[0]);
-            int targetTier = GetTierFromZ(originZ);
-            int period = SultanDungeon.GetSultanPeriodFromTier(targetTier);
-
-            History sultanHistory = The.Game.sultanHistory;
-
-            if (sultanHistory == null)
-            {
-                return;
-            }
-
-            HistoricEntity region = PickRegionForPeriod(sultanHistory, period);
-
-            if (region == null)
-            {
-                return;
-            }
-
-            HistoricEntitySnapshot regionSnapshot = region.GetCurrentSnapshot();
-
-            if (regionSnapshot == null)
-            {
-                return;
-            }
-
-            string sourceRegionName = regionSnapshot.GetProperty("newName", regionSnapshot.GetProperty("name", "Unknown Region"));
-
-            // Use a modded runtime key so we do not overwrite vanilla's sultanDungeonArgs_<region>.
-            // Mechanically, SultanDungeon only needs this to match the regionName builder argument.
-            string regionName = "SubterraneanSites_" + sourceRegionName;
-
-            // Use a real historical name where possible. SultanDungeon may use this to pull an
-            // additional snapshot during BuildZoneFromArgs.
-            string locationName = regionSnapshot.GetProperty("name", sourceRegionName);
-
-            SultanDungeonArgs args = BuildSultanDungeonArgsFromHistory(
-                sultanHistory,
-                regionSnapshot,
-                period
-            );
-
-            if (args == null)
-            {
-                return;
-            }
-
-            The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args);
-
-            for (int i = 0; i < siteZoneIds.Count; i++)
-            {
-                string zoneId = siteZoneIds[i];
-
-                if (IsClaimedByOtherContent(zoneId))
-                {
-                    continue;
-                }
-
-                string stairs = GetStairsForLayer(i, siteZoneIds.Count);
-                int z = GetZFromZoneId(zoneId);
-                int tier = GetTierFromZ(z);
-
-                // Match vanilla SultanDungeon behavior more closely:
-                // - Top layer keeps existing terrain/builders so natural connections/entrances can survive.
-                // - Lower layers become fully controlled SultanDungeon levels.
-                if (i != 0)
-                {
-                    The.ZoneManager.ClearZoneBuilders(zoneId);
-                    The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
-                }
-
-                The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-                The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
-
-                // Optional but useful for seeing that this is our test site.
-                The.ZoneManager.SetZoneProperty(zoneId, "HistoricSite", regionName);
-
-                The.ZoneManager.AddZoneBuilder(
-                    zoneId,
-                    6000,
-                    "SultanDungeon",
-                    "locationName", locationName,
-                    "regionName", regionName,
-                    "stairs", stairs
-                );
-
-                The.ZoneManager.AddZoneBuilder(
-                    zoneId,
-                    6000,
-                    "Music",
-                    "Track", "Music/of Chrome and How"
-                );
-
-                if (i == siteZoneIds.Count - 1)
-                {
-                    AddVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
-                }
-
-                The.ZoneManager.SetZoneName(
-                    zoneId,
-                    "Test: " + sourceRegionName +
-                    " T" + tier +
-                    " P" + period +
-                    " Layer " + (i + 1) + " of " + siteZoneIds.Count,
-                    Proper: false
-                );
+            default:
+                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
+                break;
             }
         }
 
-        private void AddVaultWithRelicAndHero(
-            string zoneId,
-            HistoricEntitySnapshot regionSnapshot,
-            int tier
-        )
+        private SiteKind RollSiteKind(System.Random rng)
         {
-            XRL.World.GameObject relic =
-                RelicGenerator.GenerateRelic(regionSnapshot, tier, RandomName: true);
-
-            if (relic == null)
-            {
-                return;
-            }
-
-            //this is the magic that adds a hero, pretty neat!
-            The.ZoneManager.SetZoneProperty(zoneId, "Relicstyle", "Vault");
-
-            The.ZoneManager.AddZoneBuilder(
-                zoneId,
-                6000,
-                "PlaceRelicBuilder",
-                "Relic", The.ZoneManager.CacheObject(relic)
-            );
-        }
-
-        private SultanDungeonArgs BuildSultanDungeonArgsFromHistory(
-            History sultanHistory,
-            HistoricEntitySnapshot regionSnapshot,
-            int period
-        )
-        {
-            SultanDungeonArgs args = new SultanDungeonArgs();
-
-            HistoricEntityList sultans = sultanHistory.GetEntitiesWherePropertyEquals("type", "sultan");
-
-            if (sultans != null && sultans.entities != null && sultans.entities.Count > 0)
-            {
-                HistoricEntity periodSultan = null;
-
-                HistoricEntityList matchingSultans =
-                    sultans.GetEntitiesWherePropertyEquals("period", period.ToString());
-
-                if (matchingSultans != null && matchingSultans.entities != null && matchingSultans.entities.Count > 0)
-                {
-                    periodSultan = matchingSultans.entities[Stat.Random(0, matchingSultans.entities.Count - 1)];
-                }
-                else
-                {
-                    periodSultan = sultans.entities[Stat.Random(0, sultans.entities.Count - 1)];
-                }
-
-                if (periodSultan != null)
-                {
-                    args.UpdateFromEntity(periodSultan.GetCurrentSnapshot());
-                }
-            }
-
-            args.UpdateWalls(period);
-            args.UpdateFromEntity(regionSnapshot);
-
-            if (50.in100())
-            {
-                args.wallTypes.Add("*SultanWall*");
-            }
-
-            return args;
-        }
-
-        private HistoricEntity PickRegionForPeriod(History sultanHistory, int period)
-        {
-            HistoricEntityList regions = sultanHistory.GetEntitiesWherePropertyEquals("type", "region");
-
-            if (regions == null || regions.entities == null || regions.entities.Count == 0)
-            {
-                return null;
-            }
-
-            List<HistoricEntity> matchingPeriodRegions = new List<HistoricEntity>();
-
-            foreach (HistoricEntity region in regions.entities)
-            {
-                HistoricEntitySnapshot snap = region.GetCurrentSnapshot();
-
-                if (snap == null)
-                {
-                    continue;
-                }
-
-                string periodString = snap.GetProperty("period", "-1");
-
-                int regionPeriod;
-
-                if (int.TryParse(periodString, out regionPeriod) && regionPeriod == period)
-                {
-                    matchingPeriodRegions.Add(region);
-                }
-            }
-
-            if (matchingPeriodRegions.Count > 0)
-            {
-                return matchingPeriodRegions[Stat.Random(0, matchingPeriodRegions.Count - 1)];
-            }
-
-            return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
+            // For now, force the historical-site archetype while this path is stabilized.
+            // Later this will become a deterministic weighted roll from rng.
+            return SiteKind.SultanHistoric;
         }
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
@@ -386,5 +186,236 @@ namespace SubterraneanSites
 
             return tier;
         }
+        private class SultanHistoricSiteRegistrar
+        {
+            private readonly RuntimeZoneBuilderInjectionSystem parent;
+
+            public SultanHistoricSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
+            {
+                this.parent = parent;
+            }
+
+            public void Register(List<string> siteZoneIds)
+            {
+                if (siteZoneIds == null || siteZoneIds.Count == 0)
+                {
+                    return;
+                }
+
+                int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
+                int targetTier = parent.GetTierFromZ(originZ);
+                int period = SultanDungeon.GetSultanPeriodFromTier(targetTier);
+
+                // 1. Select existing history inputs for this site.
+                History sultanHistory = The.Game.sultanHistory;
+
+                if (sultanHistory == null)
+                {
+                    return;
+                }
+
+                HistoricEntity region = PickRegionForPeriod(sultanHistory, period);
+
+                if (region == null)
+                {
+                    return;
+                }
+
+                HistoricEntitySnapshot regionSnapshot = region.GetCurrentSnapshot();
+
+                if (regionSnapshot == null)
+                {
+                    return;
+                }
+
+                // 2. Build and store the SultanDungeonArgs package.
+                // SultanDungeon will fetch this using "sultanDungeonArgs_" + regionName.
+                string sourceRegionName =
+                    regionSnapshot.GetProperty("newName", regionSnapshot.GetProperty("name", "Unknown Region"));
+
+                string regionName = "SubterraneanSites_" + sourceRegionName;
+
+                string locationName = regionSnapshot.GetProperty("name", sourceRegionName);
+
+                SultanDungeonArgs args = BuildSultanDungeonArgsFromHistory(
+                    sultanHistory,
+                    regionSnapshot,
+                    period
+                );
+
+                if (args == null)
+                {
+                    return;
+                }
+
+                The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args);
+
+                // 3. Register each vertical layer.
+                for (int i = 0; i < siteZoneIds.Count; i++)
+                {
+                    string zoneId = siteZoneIds[i];
+
+                    if (parent.IsClaimedByOtherContent(zoneId))
+                    {
+                        continue;
+                    }
+
+                    string stairs = parent.GetStairsForLayer(i, siteZoneIds.Count);
+                    int z = parent.GetZFromZoneId(zoneId);
+                    int tier = parent.GetTierFromZ(z);
+
+                    if (i != 0)
+                    {
+                        The.ZoneManager.ClearZoneBuilders(zoneId);
+                        The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
+                    }
+
+                    The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
+                    The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
+
+                    The.ZoneManager.SetZoneProperty(zoneId, "HistoricSite", regionName);
+
+                    The.ZoneManager.AddZoneBuilder(
+                        zoneId,
+                        6000,
+                        "SultanDungeon",
+                        "locationName", locationName,
+                        "regionName", regionName,
+                        "stairs", stairs
+                    );
+
+                    The.ZoneManager.AddZoneBuilder(
+                        zoneId,
+                        6000,
+                        "Music",
+                        "Track", "Music/of Chrome and How"
+                    );
+
+                    if (i == siteZoneIds.Count - 1)
+                    {
+                        AddBottomLayerVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
+                    }
+
+                    The.ZoneManager.SetZoneName(
+                        zoneId,
+                        "Test: " + sourceRegionName +
+                        " T" + tier +
+                        " P" + period +
+                        " Layer " + (i + 1) + " of " + siteZoneIds.Count,
+                        Proper: false
+                    );
+                }
+            }
+
+            private void AddBottomLayerVaultWithRelicAndHero(
+                string zoneId,
+                HistoricEntitySnapshot regionSnapshot,
+                int tier
+            )
+            {
+                XRL.World.GameObject relic =
+                    RelicGenerator.GenerateRelic(regionSnapshot, tier, RandomName: true);
+
+                if (relic == null)
+                {
+                    return;
+                }
+
+                // This is the vanilla hook:
+                // SultanDungeon sees Relicstyle="Vault", creates a vault region,
+                // and places a cult leader there. PlaceRelicBuilder then puts the relic
+                // into the vault chest if one exists.
+                The.ZoneManager.SetZoneProperty(zoneId, "Relicstyle", "Vault");
+
+                The.ZoneManager.AddZoneBuilder(
+                    zoneId,
+                    6000,
+                    "PlaceRelicBuilder",
+                    "Relic", The.ZoneManager.CacheObject(relic)
+                );
+            }
+
+            private SultanDungeonArgs BuildSultanDungeonArgsFromHistory(
+                History sultanHistory,
+                HistoricEntitySnapshot regionSnapshot,
+                int period
+            )
+            {
+                SultanDungeonArgs args = new SultanDungeonArgs();
+
+                HistoricEntityList sultans = sultanHistory.GetEntitiesWherePropertyEquals("type", "sultan");
+
+                if (sultans != null && sultans.entities != null && sultans.entities.Count > 0)
+                {
+                    HistoricEntity periodSultan = null;
+
+                    HistoricEntityList matchingSultans =
+                        sultans.GetEntitiesWherePropertyEquals("period", period.ToString());
+
+                    if (matchingSultans != null && matchingSultans.entities != null && matchingSultans.entities.Count > 0)
+                    {
+                        periodSultan = matchingSultans.entities[Stat.Random(0, matchingSultans.entities.Count - 1)];
+                    }
+                    else
+                    {
+                        periodSultan = sultans.entities[Stat.Random(0, sultans.entities.Count - 1)];
+                    }
+
+                    if (periodSultan != null)
+                    {
+                        args.UpdateFromEntity(periodSultan.GetCurrentSnapshot());
+                    }
+                }
+
+                args.UpdateWalls(period);
+                args.UpdateFromEntity(regionSnapshot);
+
+                if (50.in100())
+                {
+                    args.wallTypes.Add("*SultanWall*");
+                }
+
+                return args;
+            }
+
+            private HistoricEntity PickRegionForPeriod(History sultanHistory, int period)
+            {
+                HistoricEntityList regions = sultanHistory.GetEntitiesWherePropertyEquals("type", "region");
+
+                if (regions == null || regions.entities == null || regions.entities.Count == 0)
+                {
+                    return null;
+                }
+
+                List<HistoricEntity> matchingPeriodRegions = new List<HistoricEntity>();
+
+                foreach (HistoricEntity region in regions.entities)
+                {
+                    HistoricEntitySnapshot snap = region.GetCurrentSnapshot();
+
+                    if (snap == null)
+                    {
+                        continue;
+                    }
+
+                    string periodString = snap.GetProperty("period", "-1");
+
+                    int regionPeriod;
+
+                    if (int.TryParse(periodString, out regionPeriod) && regionPeriod == period)
+                    {
+                        matchingPeriodRegions.Add(region);
+                    }
+                }
+
+                if (matchingPeriodRegions.Count > 0)
+                {
+                    return matchingPeriodRegions[Stat.Random(0, matchingPeriodRegions.Count - 1)];
+                }
+
+                return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
+            }
+        }
     }
+
 }
