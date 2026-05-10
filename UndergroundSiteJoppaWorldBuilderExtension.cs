@@ -21,7 +21,8 @@ namespace SubterraneanSites
 
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
-        private const string TargetZoneId = "JoppaWorld.11.22.0.1.11";
+        //private const string TargetZoneId = "JoppaWorld.11.22.0.1.11"; // this is 1-down, 1-west from Joppa
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
@@ -60,6 +61,28 @@ namespace SubterraneanSites
 
             //RegisterSultanDungeonSite(siteZoneIds);
             RegisterSelectedSite(siteZoneIds, rng);
+
+            // Temporary path coordinate test.
+            // For now this only generates zone IDs. It does not render path material yet.
+            SubterraneanPathCoordinateGenerator pathGenerator =
+                new SubterraneanPathCoordinateGenerator();
+
+            int steps = rng.Next(10, 16);
+
+            List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
+                siteZoneIds[0],
+                steps,
+                rng
+            );
+
+            for (int i = 1; i < pathZoneIds.Count; i++)
+            {
+                The.ZoneManager.SetZoneName(
+                    pathZoneIds[i],
+                    "Test Path " + i + " of " + (pathZoneIds.Count - 1),
+                    Proper: false
+                );
+            }
 
             return true;
         }
@@ -415,6 +438,233 @@ namespace SubterraneanSites
 
                 return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
             }
+        }
+    }
+    internal class SubterraneanPathCoordinateGenerator
+    {
+        private enum PathDirection
+        {
+            Up,
+            North,
+            South,
+            East,
+            West
+        }
+
+        private struct ZoneCoord
+        {
+            public string World;
+            public int ParasangX;
+            public int ParasangY;
+            public int ZoneX;
+            public int ZoneY;
+            public int Z;
+
+            public ZoneCoord(
+                string world,
+                int parasangX,
+                int parasangY,
+                int zoneX,
+                int zoneY,
+                int z
+            )
+            {
+                World = world;
+                ParasangX = parasangX;
+                ParasangY = parasangY;
+                ZoneX = zoneX;
+                ZoneY = zoneY;
+                Z = z;
+            }
+
+            public string ToZoneId()
+            {
+                return
+                    World + "." +
+                    ParasangX + "." +
+                    ParasangY + "." +
+                    ZoneX + "." +
+                    ZoneY + "." +
+                    Z;
+            }
+        }
+
+        public List<string> BuildPathZoneIds(
+            string originZoneId,
+            int steps,
+            System.Random rng
+        )
+        {
+            List<string> pathZoneIds = new List<string>();
+
+            if (steps <= 0)
+            {
+                return pathZoneIds;
+            }
+
+            ZoneCoord current = ParseZoneId(originZoneId);
+
+            PathDirection? previousDirection = null;
+
+            pathZoneIds.Add(current.ToZoneId());
+
+            for (int i = 0; i < steps; i++)
+            {
+                PathDirection direction = PickNextDirection(rng, previousDirection);
+
+                current = Step(current, direction);
+
+                pathZoneIds.Add(current.ToZoneId());
+
+                previousDirection = direction;
+            }
+
+            return pathZoneIds;
+        }
+
+        private PathDirection PickNextDirection(
+            System.Random rng,
+            PathDirection? previousDirection
+        )
+        {
+            List<PathDirection> candidates = new List<PathDirection>();
+
+            candidates.Add(PathDirection.Up);
+            candidates.Add(PathDirection.North);
+            candidates.Add(PathDirection.South);
+            candidates.Add(PathDirection.East);
+            candidates.Add(PathDirection.West);
+
+            // Simple anti-backtracking rule.
+            // This prevents ugly one-step curls like North → South or East → West.
+            if (previousDirection.HasValue)
+            {
+                PathDirection reverse = GetReverseDirection(previousDirection.Value);
+                candidates.Remove(reverse);
+            }
+
+            int index = rng.Next(0, candidates.Count);
+
+            return candidates[index];
+        }
+
+        private PathDirection GetReverseDirection(PathDirection direction)
+        {
+            switch (direction)
+            {
+                case PathDirection.North:
+                    return PathDirection.South;
+
+                case PathDirection.South:
+                    return PathDirection.North;
+
+                case PathDirection.East:
+                    return PathDirection.West;
+
+                case PathDirection.West:
+                    return PathDirection.East;
+
+                // Paths only move upward for now, never downward.
+                // There is no reverse Up move in the candidate list,
+                // so returning Up here has no practical effect.
+                case PathDirection.Up:
+                default:
+                    return PathDirection.Up;
+            }
+        }
+
+        private ZoneCoord Step(ZoneCoord coord, PathDirection direction)
+        {
+            switch (direction)
+            {
+                case PathDirection.Up:
+                    coord.Z -= 1;
+                    break;
+
+                case PathDirection.North:
+                    coord = StepNorth(coord);
+                    break;
+
+                case PathDirection.South:
+                    coord = StepSouth(coord);
+                    break;
+
+                case PathDirection.East:
+                    coord = StepEast(coord);
+                    break;
+
+                case PathDirection.West:
+                    coord = StepWest(coord);
+                    break;
+            }
+
+            return coord;
+        }
+
+        private ZoneCoord StepNorth(ZoneCoord coord)
+        {
+            coord.ZoneY -= 1;
+
+            if (coord.ZoneY < 0)
+            {
+                coord.ZoneY = 2;
+                coord.ParasangY -= 1;
+            }
+
+            return coord;
+        }
+
+        private ZoneCoord StepSouth(ZoneCoord coord)
+        {
+            coord.ZoneY += 1;
+
+            if (coord.ZoneY > 2)
+            {
+                coord.ZoneY = 0;
+                coord.ParasangY += 1;
+            }
+
+            return coord;
+        }
+
+        private ZoneCoord StepEast(ZoneCoord coord)
+        {
+            coord.ZoneX += 1;
+
+            if (coord.ZoneX > 2)
+            {
+                coord.ZoneX = 0;
+                coord.ParasangX += 1;
+            }
+
+            return coord;
+        }
+
+        private ZoneCoord StepWest(ZoneCoord coord)
+        {
+            coord.ZoneX -= 1;
+
+            if (coord.ZoneX < 0)
+            {
+                coord.ZoneX = 2;
+                coord.ParasangX -= 1;
+            }
+
+            return coord;
+        }
+
+        private ZoneCoord ParseZoneId(string zoneId)
+        {
+            string[] parts = zoneId.Split('.');
+
+            return new ZoneCoord(
+                parts[0],
+                int.Parse(parts[1]),
+                int.Parse(parts[2]),
+                int.Parse(parts[3]),
+                int.Parse(parts[4]),
+                int.Parse(parts[5])
+            );
         }
     }
 
