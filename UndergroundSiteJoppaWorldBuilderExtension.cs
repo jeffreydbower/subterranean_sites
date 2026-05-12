@@ -83,15 +83,17 @@ namespace SubterraneanSites
                 SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction =
                     pathInstructions[i];
 
-                The.ZoneManager.SetZoneName(
+                /*The.ZoneManager.SetZoneName(
                     instruction.ZoneId,
                     "Path " + instruction.Index +
                     " Entry=" + instruction.Entry +
                     " Exit=" + instruction.Exit +
                     " Surface=" + instruction.IsSurface,
                     Proper: false
-                );
+                );*/
             }
+
+            RegisterHorizontalRoadPath(pathInstructions);
 
             /*for (int i = 1; i < pathZoneIds.Count; i++)
             {
@@ -456,6 +458,102 @@ namespace SubterraneanSites
 
                 return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
             }
+        }
+        private void RegisterHorizontalRoadPath(
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions
+        )
+        {
+            if (pathInstructions == null || pathInstructions.Count == 0)
+            {
+                return;
+            }
+
+            foreach (SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction in pathInstructions)
+            {
+                RegisterRoadPathZone(instruction);
+            }
+        }
+        private void RegisterRoadPathZone(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+        )
+        {
+            bool addedAnyMouth = false;
+
+            if (instruction.Entry == "North" ||
+                instruction.Entry == "South" ||
+                instruction.Entry == "East" ||
+                instruction.Entry == "West")
+            {
+                AddRoadMouth(instruction.ZoneId, instruction.Entry);
+                addedAnyMouth = true;
+            }
+
+            if (instruction.Exit == "North" ||
+                instruction.Exit == "South" ||
+                instruction.Exit == "East" ||
+                instruction.Exit == "West")
+            {
+                AddRoadMouth(instruction.ZoneId, instruction.Exit);
+                addedAnyMouth = true;
+            }
+
+            if (instruction.Entry == "Site" || instruction.Exit == "None")
+            {
+                The.ZoneManager.AddZoneBuilder(
+                    instruction.ZoneId,
+                    6100,
+                    "RoadStartMouth"
+                );
+
+                addedAnyMouth = true;
+            }
+
+            if (addedAnyMouth)
+            {
+                The.ZoneManager.AddZoneBuilder(
+                    instruction.ZoneId,
+                    6200,
+                    "RoadBuilder",
+                    "ClearSolids", "true",
+                    "ClearAdjacent", "true",
+                    "Noise", "true"
+                );
+            }
+        }
+
+        private void AddRoadMouth(string zoneId, string direction)
+        {
+            string builderName = null;
+
+            switch (direction)
+            {
+                case "North":
+                    builderName = "RoadNorthMouth";
+                    break;
+
+                case "South":
+                    builderName = "RoadSouthMouth";
+                    break;
+
+                case "East":
+                    builderName = "RoadEastMouth";
+                    break;
+
+                case "West":
+                    builderName = "RoadWestMouth";
+                    break;
+            }
+
+            if (builderName == null)
+            {
+                return;
+            }
+
+            The.ZoneManager.AddZoneBuilder(
+                zoneId,
+                6100,
+                builderName
+            );
         }
     }
     internal class SubterraneanPathCoordinateGenerator
