@@ -28,7 +28,7 @@ namespace SubterraneanSites
 
         private enum SiteKind
         {
-            SultanHistoric
+            SultanHistoric,
 
             //later the full set will be 
             //SultanHistoric,
@@ -451,6 +451,35 @@ namespace SubterraneanSites
             West
         }
 
+        private enum PathHeading
+        {
+            North,
+            South,
+            East,
+            West,
+            NorthEast,
+            NorthWest,
+            SouthEast,
+            SouthWest
+        }
+
+        private struct WeightedDirection
+        {
+            public PathDirection Direction;
+            public int Weight;
+
+            public WeightedDirection(PathDirection direction, int weight)
+            {
+                this.Direction = direction;
+                this.Weight = weight;
+            }
+        }
+
+        private const int MainWeight = 33;
+        private const int SideWeight = 17;
+        private const int DiagonalComponentWeight = 33;
+        private const int UpWeight = 100;
+
         private struct ZoneCoord
         {
             public string World;
@@ -504,17 +533,23 @@ namespace SubterraneanSites
 
             ZoneCoord current = ParseZoneId(originZoneId);
 
+            PathHeading heading = PickPathHeading(rng);
             PathDirection? previousDirection = null;
 
             pathZoneIds.Add(current.ToZoneId());
 
             for (int i = 0; i < steps; i++)
             {
-                PathDirection direction = PickNextDirection(rng, previousDirection);
+                PathDirection direction = PickNextDirection(rng, previousDirection, heading);
 
                 current = Step(current, direction);
 
                 pathZoneIds.Add(current.ToZoneId());
+
+                if (current.Z <= 10)
+                {
+                    break;
+                }
 
                 previousDirection = direction;
             }
@@ -524,31 +559,135 @@ namespace SubterraneanSites
 
         private PathDirection PickNextDirection(
             System.Random rng,
-            PathDirection? previousDirection
+            PathDirection? previousDirection,
+            PathHeading heading
         )
         {
-            List<PathDirection> candidates = new List<PathDirection>();
-
-            candidates.Add(PathDirection.Up);
-            candidates.Add(PathDirection.North);
-            candidates.Add(PathDirection.South);
-            candidates.Add(PathDirection.East);
-            candidates.Add(PathDirection.West);
+            List<WeightedDirection> candidates = GetWeightedDirectionsForHeading(heading);
 
             // Simple anti-backtracking rule.
-            // This prevents ugly one-step curls like North → South or East → West.
+            // This still matters even with heading bias.
             if (previousDirection.HasValue)
             {
-                PathDirection reverse = GetReverseDirection(previousDirection.Value);
-                candidates.Remove(reverse);
+                PathDirection? reverse = GetReverseDirection(previousDirection.Value);
+
+                if (reverse.HasValue)
+                {
+                    for (int i = candidates.Count - 1; i >= 0; i--)
+                    {
+                        if (candidates[i].Direction == reverse.Value)
+                        {
+                            candidates.RemoveAt(i);
+                        }
+                    }
+                }
             }
 
-            int index = rng.Next(0, candidates.Count);
-
-            return candidates[index];
+            return PickWeightedDirection(rng, candidates);
         }
 
-        private PathDirection GetReverseDirection(PathDirection direction)
+        private List<WeightedDirection> GetWeightedDirectionsForHeading(PathHeading heading)
+        {
+            List<WeightedDirection> directions = new List<WeightedDirection>();
+
+            switch (heading)
+            {
+                case PathHeading.North:
+                    directions.Add(new WeightedDirection(PathDirection.North, MainWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
+                    directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
+                    break;
+
+                case PathHeading.South:
+                    directions.Add(new WeightedDirection(PathDirection.South, MainWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
+                    directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
+                    break;
+
+                case PathHeading.East:
+                    directions.Add(new WeightedDirection(PathDirection.East, MainWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
+                    directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
+                    break;
+
+                case PathHeading.West:
+                    directions.Add(new WeightedDirection(PathDirection.West, MainWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
+                    directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
+                    break;
+
+                case PathHeading.NorthEast:
+                    directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    break;
+
+                case PathHeading.NorthWest:
+                    directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    break;
+
+                case PathHeading.SouthEast:
+                    directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    break;
+                case PathHeading.SouthWest:
+                    directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    break;
+            }
+
+            return directions;
+        }
+
+        private PathDirection PickWeightedDirection(
+            System.Random rng,
+            List<WeightedDirection> candidates
+        )
+        {
+            int totalWeight = 0;
+
+            foreach (WeightedDirection candidate in candidates)
+            {
+                totalWeight += candidate.Weight;
+            }
+
+            if (totalWeight <= 0)
+            {
+                return PathDirection.Up;
+            }
+
+            int roll = rng.Next(1, totalWeight + 1);
+            int cumulative = 0;
+
+            foreach (WeightedDirection candidate in candidates)
+            {
+                cumulative += candidate.Weight;
+
+                if (roll <= cumulative)
+                {
+                    return candidate.Direction;
+                }
+            }
+
+            return candidates[candidates.Count - 1].Direction;
+        }
+
+        private PathHeading PickPathHeading(System.Random rng)
+        {
+            Array values = Enum.GetValues(typeof(PathHeading));
+            return (PathHeading)values.GetValue(rng.Next(values.Length));
+        }
+
+
+        private PathDirection? GetReverseDirection(PathDirection direction)
         {
             switch (direction)
             {
@@ -569,7 +708,7 @@ namespace SubterraneanSites
                 // so returning Up here has no practical effect.
                 case PathDirection.Up:
                 default:
-                    return PathDirection.Up;
+                    return null;
             }
         }
 
