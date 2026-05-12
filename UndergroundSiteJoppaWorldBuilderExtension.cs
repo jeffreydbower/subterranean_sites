@@ -75,14 +75,32 @@ namespace SubterraneanSites
                 rng
             );
 
-            for (int i = 1; i < pathZoneIds.Count; i++)
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
+                pathGenerator.BuildPathInstructions(pathZoneIds);
+
+            for (int i = 1; i < pathInstructions.Count; i++)
+            {
+                SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction =
+                    pathInstructions[i];
+
+                The.ZoneManager.SetZoneName(
+                    instruction.ZoneId,
+                    "Path " + instruction.Index +
+                    " Entry=" + instruction.Entry +
+                    " Exit=" + instruction.Exit +
+                    " Surface=" + instruction.IsSurface,
+                    Proper: false
+                );
+            }
+
+            /*for (int i = 1; i < pathZoneIds.Count; i++)
             {
                 The.ZoneManager.SetZoneName(
                     pathZoneIds[i],
                     "Test Path " + i + " of " + (pathZoneIds.Count - 1),
                     Proper: false
                 );
-            }
+            }*/
 
             return true;
         }
@@ -463,6 +481,47 @@ namespace SubterraneanSites
             SouthWest
         }
 
+        private enum PathConnection
+        {
+            None,
+            North,
+            South,
+            East,
+            West,
+            Up,
+            Down,
+            Site,
+            Surface
+        }
+
+        public struct PathZoneInstruction
+        {
+            public string ZoneId;
+            public int Index;
+            public string Entry;
+            public string Exit;
+            public bool IsOrigin;
+            public bool IsSurface;
+
+            public PathZoneInstruction(
+                string zoneId,
+                int index,
+                string entry,
+                string exit,
+                bool isOrigin,
+                bool isSurface
+            )
+            {
+                this.ZoneId = zoneId;
+                this.Index = index;
+                this.Entry = entry;
+                this.Exit = exit;
+                this.IsOrigin = isOrigin;
+                this.IsSurface = isSurface;
+            }
+        }
+
+
         private struct WeightedDirection
         {
             public PathDirection Direction;
@@ -478,7 +537,7 @@ namespace SubterraneanSites
         private const int MainWeight = 33;
         private const int SideWeight = 17;
         private const int DiagonalComponentWeight = 33;
-        private const int UpWeight = 100;
+        private const int UpWeight = 0;
 
         private struct ZoneCoord
         {
@@ -555,6 +614,189 @@ namespace SubterraneanSites
             }
 
             return pathZoneIds;
+        }
+
+        public List<PathZoneInstruction> BuildPathInstructions(
+            List<string> pathZoneIds
+        )
+        {
+            List<PathZoneInstruction> instructions = new List<PathZoneInstruction>();
+
+            if (pathZoneIds == null || pathZoneIds.Count == 0)
+            {
+                return instructions;
+            }
+
+            for (int i = 0; i < pathZoneIds.Count; i++)
+            {
+                string currentZoneId = pathZoneIds[i];
+
+                PathConnection entry = PathConnection.None;
+                PathConnection exit = PathConnection.None;
+
+                if (i == 0)
+                {
+                    entry = PathConnection.Site;
+                }
+                else
+                {
+                    entry = GetConnectionFromCurrentToOther(
+                        currentZoneId,
+                        pathZoneIds[i - 1]
+                    );
+                }
+
+                if (i == pathZoneIds.Count - 1)
+                {
+                    exit = PathConnection.None;
+                }
+                else
+                {
+                    exit = GetConnectionFromCurrentToOther(
+                        currentZoneId,
+                        pathZoneIds[i + 1]
+                    );
+                }
+
+                int z = ParseZoneId(currentZoneId).Z;
+                bool isSurface = z <= 10;
+
+                if (isSurface && i == pathZoneIds.Count - 1)
+                {
+                    exit = PathConnection.Surface;
+                }
+
+                instructions.Add(new PathZoneInstruction(
+                    currentZoneId,
+                    i,
+                    entry.ToString(),
+                    exit.ToString(),
+                    i == 0,
+                    isSurface
+                ));
+            }
+
+            return instructions;
+        }
+
+        private PathConnection GetConnectionFromCurrentToOther(
+            string currentZoneId,
+            string otherZoneId
+        )
+        {
+            ZoneCoord current = ParseZoneId(currentZoneId);
+            ZoneCoord other = ParseZoneId(otherZoneId);
+
+            if (other.Z < current.Z)
+            {
+                return PathConnection.Up;
+            }
+
+            if (other.Z > current.Z)
+            {
+                return PathConnection.Down;
+            }
+
+            if (IsNorthOf(current, other))
+            {
+                return PathConnection.North;
+            }
+
+            if (IsSouthOf(current, other))
+            {
+                return PathConnection.South;
+            }
+
+            if (IsEastOf(current, other))
+            {
+                return PathConnection.East;
+            }
+
+            if (IsWestOf(current, other))
+            {
+                return PathConnection.West;
+            }
+
+            return PathConnection.None;
+        }
+        private bool IsNorthOf(ZoneCoord current, ZoneCoord other)
+        {
+            if (other.ParasangX != current.ParasangX)
+            {
+                return false;
+            }
+
+            if (other.ParasangY == current.ParasangY && other.ZoneX == current.ZoneX && other.ZoneY == current.ZoneY - 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangY == current.ParasangY - 1 && other.ZoneX == current.ZoneX && current.ZoneY == 0 && other.ZoneY == 2)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsSouthOf(ZoneCoord current, ZoneCoord other)
+        {
+            if (other.ParasangX != current.ParasangX)
+            {
+                return false;
+            }
+
+            if (other.ParasangY == current.ParasangY && other.ZoneX == current.ZoneX && other.ZoneY == current.ZoneY + 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangY == current.ParasangY + 1 && other.ZoneX == current.ZoneX && current.ZoneY == 2 && other.ZoneY == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsEastOf(ZoneCoord current, ZoneCoord other)
+        {
+            if (other.ParasangY != current.ParasangY)
+            {
+                return false;
+            }
+
+            if (other.ParasangX == current.ParasangX && other.ZoneY == current.ZoneY && other.ZoneX == current.ZoneX + 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangX == current.ParasangX + 1 && other.ZoneY == current.ZoneY && current.ZoneX == 2 && other.ZoneX == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsWestOf(ZoneCoord current, ZoneCoord other)
+        {
+            if (other.ParasangY != current.ParasangY)
+            {
+                return false;
+            }
+
+            if (other.ParasangX == current.ParasangX && other.ZoneY == current.ZoneY && other.ZoneX == current.ZoneX - 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangX == current.ParasangX - 1 && other.ZoneY == current.ZoneY && current.ZoneX == 0 && other.ZoneX == 2)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private PathDirection PickNextDirection(
