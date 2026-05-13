@@ -475,7 +475,9 @@ namespace SubterraneanSites
                 "Exit", instruction.Exit,
                 "EntryHole", entryHole,
                 "ExitHole", exitHole,
-                "PathMaterial", pathMaterial
+                "PathMaterial", pathMaterial//,
+                //"MarkerObject", PickPathMarker(),
+                //"MarkerChance", "50"
             );
         }
 
@@ -490,7 +492,7 @@ namespace SubterraneanSites
                 "CryptTrail",
                 "BrickWalkway",
                 "MarbleWalkway",
-                "BlackMarbleWalkway",
+                //"BlackMarbleWalkway",
                 "GreyMarbleWalkway"//,
                 //"FoamcreteFloor",
                 //"SmallHexFloor"
@@ -1175,6 +1177,12 @@ namespace XRL.World.ZoneBuilders
         public bool ClearAdjacent = true;
         public bool ClearSolids = true;
 
+        //public string MarkerObject = "";
+        //public int MarkerChance = 0;
+
+        public string MarkerObject = "RandomPathStatue";
+        public int MarkerChance = 100;
+
         public bool BuildZone(Zone Z)
         {
             Location2D start = GetPointForConnection(Z, Entry);
@@ -1200,6 +1208,11 @@ namespace XRL.World.ZoneBuilders
             if (Entry == "Down")
             {
                 PlaceHole(Z);
+            }
+
+            if (!MarkerObject.IsNullOrEmpty() && Stat.Random(1, 100) <= MarkerChance)
+            {
+                PlaceExitMarker(Z);
             }
 
             return true;
@@ -1405,6 +1418,72 @@ namespace XRL.World.ZoneBuilders
             }
 
             return fallback;
+        }
+        private void PlaceExitMarker(Zone Z)
+        {
+            Location2D markerPoint = GetPointForConnection(Z, Entry);
+
+            if (markerPoint == null)
+            {
+                return;
+            }
+
+            Cell markerCell = FindMarkerCellNear(Z, markerPoint);
+
+            if (markerCell == null)
+            {
+                return;
+            }
+
+            markerCell.ClearTerrain();
+
+            string markerBlueprint = PickMarkerObject();
+
+            GameObject marker = GameObjectFactory.Factory.CreateObject(markerBlueprint);
+
+            if (marker != null)
+            {
+                markerCell.AddObject(marker);
+            }
+        }
+
+        private Cell FindMarkerCellNear(Zone Z, Location2D point)
+        {
+            for (int radius = 1; radius <= 3; radius++)
+            {
+                foreach (Cell cell in Z.GetCell(point).GetLocalAdjacentCellsCircular(radius, true))
+                {
+                    if (cell == null)
+                    {
+                        continue;
+                    }
+
+                    if (cell.IsEmptyOfSolid())
+                    {
+                        return cell;
+                    }
+                }
+            }
+
+            return null;
+        }
+        private string PickMarkerObject()
+        {
+            if (MarkerObject != "RandomPathStatue")
+            {
+                return MarkerObject;
+            }
+
+            string[] markers =
+            {
+                //"Random Stone Statue",
+                //"Random Marble Statue",
+                "EaterStatue",
+                "EaterStatueFlipped",
+                "ImplantedEaterStatue"
+            };
+
+            return markers[Stat.Random(0, markers.Length - 1)];
         }
     }
 
