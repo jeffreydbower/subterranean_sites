@@ -79,31 +79,9 @@ namespace SubterraneanSites
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
                 pathGenerator.BuildPathInstructions(pathZoneIds);
 
-            for (int i = 1; i < pathInstructions.Count; i++)
-            {
-                SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction =
-                    pathInstructions[i];
+            string pathMaterial = PickPathMaterial(rng);
 
-                /*The.ZoneManager.SetZoneName(
-                    instruction.ZoneId,
-                    "Path " + instruction.Index +
-                    " Entry=" + instruction.Entry +
-                    " Exit=" + instruction.Exit +
-                    " Surface=" + instruction.IsSurface,
-                    Proper: false
-                );*/
-            }
-
-            RegisterHorizontalRoadPath(pathInstructions);
-
-            /*for (int i = 1; i < pathZoneIds.Count; i++)
-            {
-                The.ZoneManager.SetZoneName(
-                    pathZoneIds[i],
-                    "Test Path " + i + " of " + (pathZoneIds.Count - 1),
-                    Proper: false
-                );
-            }*/
+            RegisterHorizontalRoadPath(pathInstructions, pathMaterial);
 
             return true;
         }
@@ -461,7 +439,8 @@ namespace SubterraneanSites
             }
         }
         private void RegisterHorizontalRoadPath(
-            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
+            string pathMaterial
         )
         {
             if (pathInstructions == null || pathInstructions.Count == 0)
@@ -471,15 +450,22 @@ namespace SubterraneanSites
 
             foreach (SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction in pathInstructions)
             {
-                RegisterRoadPathZone(instruction);
+                RegisterRoadPathZone(instruction, pathMaterial);
             }
         }
+
         private void RegisterRoadPathZone(
-            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
+            string pathMaterial
         )
         {
-            int holeX = 40;
-            int holeY = 12;
+            int entryHoleX = GetEntryHoleXForInstruction(instruction);
+            int entryHoleY = GetEntryHoleYForInstruction(instruction);
+            int exitHoleX = GetExitHoleXForInstruction(instruction);
+            int exitHoleY = GetExitHoleYForInstruction(instruction);
+
+            string entryHole = entryHoleX.ToString() + "," + entryHoleY.ToString();
+            string exitHole = exitHoleX.ToString() + "," + exitHoleY.ToString();
 
             The.ZoneManager.AddZoneBuilder(
                 instruction.ZoneId,
@@ -487,47 +473,103 @@ namespace SubterraneanSites
                 "SubterraneanPathBuilder",
                 "Entry", instruction.Entry,
                 "Exit", instruction.Exit,
-                "HoleX", holeX.ToString(),
-                "HoleY", holeY.ToString(),
-                "PathMaterial", "DirtRoad",
-                "HoleObject", "Pit"
+                "EntryHole", entryHole,
+                "ExitHole", exitHole,
+                "PathMaterial", pathMaterial
             );
         }
-        private void AddRoadMouth(string zoneId, string direction)
+
+        private string PickPathMaterial(System.Random rng)
         {
-            string builderName = null;
-
-            switch (direction)
+            string[] materials =
             {
-                case "North":
-                    builderName = "RoadNorthMouth";
-                    break;
+                "DirtRoad",
+                //"DirtPath",
+                "SaltPath",
+                "FungalTrailBrick",
+                "CryptTrail",
+                "BrickWalkway",
+                "MarbleWalkway",
+                "BlackMarbleWalkway",
+                "GreyMarbleWalkway"//,
+                //"FoamcreteFloor",
+                //"SmallHexFloor"
+            };
 
-                case "South":
-                    builderName = "RoadSouthMouth";
-                    break;
+            return materials[rng.Next(materials.Length)];
+        }
+        
 
-                case "East":
-                    builderName = "RoadEastMouth";
-                    break;
-
-                case "West":
-                    builderName = "RoadWestMouth";
-                    break;
+        private int GetEntryHoleXForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+        )
+        {
+            if (instruction.Entry == "Down")
+            {
+                return GetHoleXForVerticalTransition(instruction.Index - 1);
             }
 
-            if (builderName == null)
+            return GetHoleXForVerticalTransition(instruction.Index);
+        }
+
+        private int GetEntryHoleYForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+        )
+        {
+            if (instruction.Entry == "Down")
             {
-                return;
+                return GetHoleYForVerticalTransition(instruction.Index - 1);
             }
 
-            The.ZoneManager.AddZoneBuilder(
-                zoneId,
-                6100,
-                builderName
+            return GetHoleYForVerticalTransition(instruction.Index);
+        }
+
+        private int GetExitHoleXForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+        )
+        {
+            if (instruction.Exit == "Up")
+            {
+                return GetHoleXForVerticalTransition(instruction.Index);
+            }
+
+            return GetHoleXForVerticalTransition(instruction.Index);
+        }
+
+        private int GetExitHoleYForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
+        )
+        {
+            if (instruction.Exit == "Up")
+            {
+                return GetHoleYForVerticalTransition(instruction.Index);
+            }
+
+            return GetHoleYForVerticalTransition(instruction.Index);
+        }
+        private int GetHoleXForVerticalTransition(int verticalIndex)
+        {
+            int seed = XRLCore.Core.Game.GetWorldSeed(
+                TargetZoneId + ":HoleX:" + verticalIndex
             );
+
+            System.Random rng = new System.Random(seed);
+
+            return 40 + rng.Next(-16, 17);
+        }
+
+        private int GetHoleYForVerticalTransition(int verticalIndex)
+        {
+            int seed = XRLCore.Core.Game.GetWorldSeed(
+                TargetZoneId + ":HoleY:" + verticalIndex
+            );
+
+            System.Random rng = new System.Random(seed);
+
+            return 12 + rng.Next(-8, 9);
         }
     }
+
     internal class SubterraneanPathCoordinateGenerator
     {
         private enum PathDirection
@@ -1125,10 +1167,10 @@ namespace XRL.World.ZoneBuilders
     {
         public string Entry = "None";
         public string Exit = "None";
-        public int HoleX = 40;
-        public int HoleY = 12;
+        public string EntryHole = "40,12";
+        public string ExitHole = "40,12";
         public string PathMaterial = "DirtRoad";
-        public string HoleObject = "LazyPit";
+        public string HoleObject = "Pit";
 
         public bool ClearAdjacent = true;
         public bool ClearSolids = true;
@@ -1183,10 +1225,10 @@ namespace XRL.World.ZoneBuilders
                     return GetCenterPoint(Z);
 
                 case "Up":
-                    return Location2D.Get(HoleX, HoleY);
+                    return Location2D.Get(GetExitHoleX(), GetExitHoleY());
 
                 case "Down":
-                    return Location2D.Get(HoleX, HoleY);
+                    return Location2D.Get(GetEntryHoleX(), GetEntryHoleY());
 
                 case "Surface":
                     return GetCenterPoint(Z);
@@ -1275,8 +1317,8 @@ namespace XRL.World.ZoneBuilders
             {
                 for (int dy = -radius; dy <= radius; dy++)
                 {
-                    int x = HoleX + dx;
-                    int y = HoleY + dy;
+                    int x = GetEntryHoleX() + dx;
+                    int y = GetEntryHoleY() + dy;
 
                     Cell cell = Z.GetCell(x, y);
 
@@ -1287,7 +1329,6 @@ namespace XRL.World.ZoneBuilders
 
                     int distance = Math.Abs(dx) + Math.Abs(dy);
 
-                    // Keep the center solidly open, but make the outer area irregular.
                     if (distance > radius && !50.in100())
                     {
                         continue;
@@ -1322,7 +1363,49 @@ namespace XRL.World.ZoneBuilders
                 }
             }
         }
+        private int GetEntryHoleX()
+        {
+            return GetCoordPart(EntryHole, 0, 40);
+        }
 
+        private int GetEntryHoleY()
+        {
+            return GetCoordPart(EntryHole, 1, 12);
+        }
+
+        private int GetExitHoleX()
+        {
+            return GetCoordPart(ExitHole, 0, 40);
+        }
+
+        private int GetExitHoleY()
+        {
+            return GetCoordPart(ExitHole, 1, 12);
+        }
+
+        private int GetCoordPart(string coord, int index, int fallback)
+        {
+            if (coord == null)
+            {
+                return fallback;
+            }
+
+            string[] parts = coord.Split(',');
+
+            if (parts.Length <= index)
+            {
+                return fallback;
+            }
+
+            int value;
+
+            if (int.TryParse(parts[index], out value))
+            {
+                return value;
+            }
+
+            return fallback;
+        }
     }
 
     
