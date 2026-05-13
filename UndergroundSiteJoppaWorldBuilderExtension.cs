@@ -7,6 +7,7 @@ using XRL.Rules;
 using XRL.World;
 using XRL.World.WorldBuilders;
 using XRL.World.ZoneBuilders;
+using Genkit;
 
 namespace SubterraneanSites
 {
@@ -477,50 +478,21 @@ namespace SubterraneanSites
             SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
         )
         {
-            bool addedAnyMouth = false;
+            int holeX = 40;
+            int holeY = 12;
 
-            if (instruction.Entry == "North" ||
-                instruction.Entry == "South" ||
-                instruction.Entry == "East" ||
-                instruction.Entry == "West")
-            {
-                AddRoadMouth(instruction.ZoneId, instruction.Entry);
-                addedAnyMouth = true;
-            }
-
-            if (instruction.Exit == "North" ||
-                instruction.Exit == "South" ||
-                instruction.Exit == "East" ||
-                instruction.Exit == "West")
-            {
-                AddRoadMouth(instruction.ZoneId, instruction.Exit);
-                addedAnyMouth = true;
-            }
-
-            if (instruction.Entry == "Site" || instruction.Exit == "None")
-            {
-                The.ZoneManager.AddZoneBuilder(
-                    instruction.ZoneId,
-                    6100,
-                    "RoadStartMouth"
-                );
-
-                addedAnyMouth = true;
-            }
-
-            if (addedAnyMouth)
-            {
-                The.ZoneManager.AddZoneBuilder(
-                    instruction.ZoneId,
-                    6200,
-                    "RoadBuilder",
-                    "ClearSolids", "true",
-                    "ClearAdjacent", "true",
-                    "Noise", "true"
-                );
-            }
+            The.ZoneManager.AddZoneBuilder(
+                instruction.ZoneId,
+                6200,
+                "SubterraneanPathBuilder",
+                "Entry", instruction.Entry,
+                "Exit", instruction.Exit,
+                "HoleX", holeX.ToString(),
+                "HoleY", holeY.ToString(),
+                "PathMaterial", "DirtRoad",
+                "HoleObject", "Pit"
+            );
         }
-
         private void AddRoadMouth(string zoneId, string direction)
         {
             string builderName = null;
@@ -635,7 +607,7 @@ namespace SubterraneanSites
         private const int MainWeight = 33;
         private const int SideWeight = 17;
         private const int DiagonalComponentWeight = 33;
-        private const int UpWeight = 0;
+        private const int UpWeight = 33;
 
         private struct ZoneCoord
         {
@@ -1146,5 +1118,212 @@ namespace SubterraneanSites
             );
         }
     }
+}
+namespace XRL.World.ZoneBuilders
+{
+    public class SubterraneanPathBuilder
+    {
+        public string Entry = "None";
+        public string Exit = "None";
+        public int HoleX = 40;
+        public int HoleY = 12;
+        public string PathMaterial = "DirtRoad";
+        public string HoleObject = "LazyPit";
 
+        public bool ClearAdjacent = true;
+        public bool ClearSolids = true;
+
+        public bool BuildZone(Zone Z)
+        {
+            Location2D start = GetPointForConnection(Z, Entry);
+            Location2D end = GetPointForConnection(Z, Exit);
+
+            if (start == null && end == null)
+            {
+                return true;
+            }
+
+            if (start == null)
+            {
+                start = GetCenterPoint(Z);
+            }
+
+            if (end == null)
+            {
+                end = GetCenterPoint(Z);
+            }
+
+            DrawPath(Z, start, end);
+
+            if (Entry == "Down")
+            {
+                PlaceHole(Z);
+            }
+
+            return true;
+        }
+
+        private Location2D GetPointForConnection(Zone Z, string connection)
+        {
+            switch (connection)
+            {
+                case "North":
+                    return Location2D.Get(40, 0);
+
+                case "South":
+                    return Location2D.Get(40, Z.Height - 1);
+
+                case "East":
+                    return Location2D.Get(Z.Width - 1, 12);
+
+                case "West":
+                    return Location2D.Get(0, 12);
+
+                case "Site":
+                    return GetCenterPoint(Z);
+
+                case "Up":
+                    return Location2D.Get(HoleX, HoleY);
+
+                case "Down":
+                    return Location2D.Get(HoleX, HoleY);
+
+                case "Surface":
+                    return GetCenterPoint(Z);
+
+                case "None":
+                default:
+                    return null;
+            }
+        }
+
+        private Location2D GetCenterPoint(Zone Z)
+        {
+            return Location2D.Get(Z.Width / 2, Z.Height / 2);
+        }
+
+        private void DrawPath(Zone Z, Location2D start, Location2D end)
+        {
+            Cell startCell = Z.GetCell(start);
+            Cell endCell = Z.GetCell(end);
+
+            if (startCell == null || endCell == null)
+            {
+                return;
+            }
+
+            startCell.ClearTerrain();
+            endCell.ClearTerrain();
+
+            XRL.World.AI.Pathfinding.FindPath findPath =
+                new XRL.World.AI.Pathfinding.FindPath(
+                    Z,
+                    start.X,
+                    start.Y,
+                    Z,
+                    end.X,
+                    end.Y,
+                    false,
+                    true,
+                    null,
+                    true
+                );
+
+            if (!findPath.Usable)
+            {
+                return;
+            }
+
+            foreach (Cell step in findPath.Steps)
+            {
+                PaintPathCell(Z, step);
+
+                if (ClearAdjacent)
+                {
+                    foreach (Cell adjacent in step.GetLocalAdjacentCells())
+                    {
+                        PaintPathCell(Z, adjacent);
+                    }
+                }
+            }
+        }
+
+        private void PaintPathCell(Zone Z, Cell cell)
+        {
+            if (cell == null)
+            {
+                return;
+            }
+
+            Z.ReachableMap[cell.X, cell.Y] = true;
+
+            if (ClearSolids)
+            {
+                cell.ClearTerrain();
+            }
+
+            if (!cell.HasObjectWithBlueprint(PathMaterial))
+            {
+                cell.AddObject(GameObjectFactory.Factory.CreateObject(PathMaterial));
+            }
+        }
+        private void PlaceHole(Zone Z)
+        {
+            int radius = 3;
+
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                for (int dy = -radius; dy <= radius; dy++)
+                {
+                    int x = HoleX + dx;
+                    int y = HoleY + dy;
+
+                    Cell cell = Z.GetCell(x, y);
+
+                    if (cell == null)
+                    {
+                        continue;
+                    }
+
+                    int distance = Math.Abs(dx) + Math.Abs(dy);
+
+                    // Keep the center solidly open, but make the outer area irregular.
+                    if (distance > radius && !50.in100())
+                    {
+                        continue;
+                    }
+
+                    if (distance > radius + 1)
+                    {
+                        continue;
+                    }
+
+                    cell.Clear();
+
+                    GameObject hole = GameObjectFactory.Factory.CreateObject(HoleObject);
+
+                    if (hole == null)
+                    {
+                        continue;
+                    }
+
+                    XRL.World.Parts.StairsDown stairsDown =
+                        hole.GetPart<XRL.World.Parts.StairsDown>();
+
+                    if (stairsDown != null)
+                    {
+                        stairsDown.ConnectLanding = false;
+                    }
+
+                    cell.AddObject("FlyingWhitelistArea");
+                    cell.AddObject(hole);
+                    cell.AddObject("StairBlocker");
+                    cell.AddObject("InfluenceMapBlocker");
+                }
+            }
+        }
+
+    }
+
+    
 }
