@@ -202,19 +202,15 @@ namespace SubterraneanSites
         }
     }
 
+
     internal static class SubterraneanSafety
     {
         private static readonly List<ProtectedZoneColumn> ProtectedColumns =
             new List<ProtectedZoneColumn>
             {
                 // Joppa / Waterlogged Tunnel column.
-                //
-                // Based on current test comments:
-                // JoppaWorld.11.22.0.1.11 is 1-down, 1-west from Joppa.
-                // Therefore the Joppa column is JoppaWorld.11.22.1.1.Z.
-                //
-                // Z 10 = surface / Joppa
-                // Z 11-14 = -1 through -4 / Waterlogged Tunnel depth range
+                // Z 10 = Joppa surface.
+                // Z 11-14 = Waterlogged Tunnel, -1 through -4.
                 new ProtectedZoneColumn(
                     "Joppa / Waterlogged Tunnel column",
                     "JoppaWorld",
@@ -248,6 +244,8 @@ namespace SubterraneanSites
             return false;
         }
 
+        /*
+        //this was used previously to exclude an entire stached site.
         public static bool AnyProtected(List<string> zoneIds, out string reason)
         {
             if (zoneIds == null)
@@ -267,11 +265,8 @@ namespace SubterraneanSites
 
             reason = "";
             return false;
-        }
+        }*/
     }
-
-
-
 
 
 
@@ -286,9 +281,12 @@ namespace SubterraneanSites
 
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
+        //Joppa is "JoppaWorld.11.22.1.1.10"
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.11"; // this is 1-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
-        private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
+        //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
+        //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 6-down, 1-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
@@ -321,10 +319,11 @@ namespace SubterraneanSites
             int zoneSeed = XRLCore.Core.Game.GetWorldSeed(TargetZoneId + rawSeed);
             System.Random rng = new System.Random(zoneSeed);
 
-            int layers = rng.Next(3, 6);
+            int layers = rng.Next(3, 6); // 3-5 layers for now, but I may make it 3-7 at final
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
 
+            //below checks if site zones are protected
             siteZoneIds = RemoveProtectedZones(siteZoneIds, "site zone");
 
             if (siteZoneIds.Count == 0)
@@ -339,7 +338,9 @@ namespace SubterraneanSites
             }
 
             //RegisterSultanDungeonSite(siteZoneIds);
-            RegisterSelectedSite(siteZoneIds, rng);
+            //RegisterSelectedSite(siteZoneIds, rng);
+            SiteKind siteKind = RollSiteKind(rng);
+            RegisterSelectedSite(siteZoneIds, siteKind, rng);
 
             // Temporary path coordinate test.
             // For now this only generates zone IDs. It does not render path material yet.
@@ -396,11 +397,28 @@ namespace SubterraneanSites
 
             return siteZoneIds;
         }
-
+        /*
         private void RegisterSelectedSite(List<string> siteZoneIds, System.Random rng)
         {
-            SiteKind siteKind = RollSiteKind(rng);
+            SiteKind siteKind = RollSiteKind(rng); /// should this be inside? this rerolls every call
 
+            switch (siteKind)
+            {
+            case SiteKind.SultanHistoric:
+                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
+                break;
+
+            default:
+                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
+                break;
+            }
+        }*/
+        private void RegisterSelectedSite(
+            List<string> siteZoneIds,
+            SiteKind siteKind,
+            System.Random rng
+        )
+        {
             switch (siteKind)
             {
             case SiteKind.SultanHistoric:
@@ -486,37 +504,6 @@ namespace SubterraneanSites
             return safeZoneIds;
         }
 
-        /*private List<string> TruncatePathAtFirstProtectedZone(
-            List<string> pathZoneIds
-        )
-        {
-            List<string> safePathZoneIds = new List<string>();
-
-            if (pathZoneIds == null)
-            {
-                return safePathZoneIds;
-            }
-
-            foreach (string zoneId in pathZoneIds)
-            {
-                string safetyReason;
-
-                if (SubterraneanSafety.IsProtected(zoneId, out safetyReason))
-                {
-                    The.ZoneManager.SetZoneName(
-                        zoneId,
-                        "SubterraneanSites path stopped: " + safetyReason,
-                        Proper: false
-                    );
-
-                    break;
-                }
-
-                safePathZoneIds.Add(zoneId);
-            }
-
-            return safePathZoneIds;
-        }*/
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
         {
@@ -543,34 +530,6 @@ namespace SubterraneanSites
             string[] parts = id.Split('.');
             return int.Parse(parts[5]);
         }
-
-        /*private bool IsClaimedByOtherContent(string zoneId)
-        {
-            //This needs better struture. like a list of the excluded zonebuilders
-            string owner = The.ZoneManager.GetZoneProperty(zoneId, OwnerProperty) as string;
-
-            if (owner == "Yes")
-            {
-                return false;
-            }
-
-            if (The.ZoneManager.ZoneHasBuilder(zoneId, "SultanDungeon"))
-            {
-                return true;
-            }
-
-            if (The.ZoneManager.ZoneHasBuilder(zoneId, "Village"))
-            {
-                return true;
-            }
-
-            if (The.ZoneManager.ZoneHasBuilder(zoneId, "BasicLair"))
-            {
-                return true;
-            }
-
-            return false;
-        }*/
 
         private int GetTierFromZ(int z)
         {
@@ -661,17 +620,14 @@ namespace SubterraneanSites
                     {
                         The.ZoneManager.SetZoneName(
                             zoneId,
-                            "SubterraneanSites refused site builder: " + safetyReason,
+                            //below if the message
+                            "site out: " + safetyReason + " at " + zoneId,
+                            //"SubterraneanSites refused site builder: " + safetyReason,
                             Proper: false
                         );
 
                         continue;
                     }
-
-
-
-
-
 
                     string stairs = parent.GetStairsForLayer(i, siteZoneIds.Count);
                     int z = parent.GetZFromZoneId(zoneId);
@@ -708,7 +664,7 @@ namespace SubterraneanSites
                     {
                         AddBottomLayerVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
                     }
-
+                    //how to name this zone in release???
                     The.ZoneManager.SetZoneName(
                         zoneId,
                         "Test: " + sourceRegionName +
@@ -1058,6 +1014,7 @@ namespace SubterraneanSites
         private const int DiagonalComponentWeight = 33;
         private const int UpWeight = 33;
 
+        /*
         private struct ZoneCoord
         {
             public string World;
@@ -1095,7 +1052,53 @@ namespace SubterraneanSites
                     Z;
             }
         }
+        */
 
+        public List<string> BuildPathZoneIds(
+            string originZoneId,
+            int steps,
+            System.Random rng
+        )
+        {
+            List<string> pathZoneIds = new List<string>();
+
+            if (steps <= 0)
+            {
+                return pathZoneIds;
+            }
+
+            SubterraneanZoneCoord current = SubterraneanZoneCoord.Parse(originZoneId);
+
+            PathHeading heading = PickPathHeading(rng);
+            PathDirection? previousDirection = null;
+
+            pathZoneIds.Add(current.ToZoneId());
+
+            for (int i = 0; i < steps; i++)
+            {
+                // TEMPORARY TEST HACK:
+                // Use forced east only for Waterlogged Tunnel collision testing.
+                // Restore PickNextDirection before normal development.
+                //PathDirection direction = PathDirection.East;
+
+                // Normal behavior:
+                PathDirection direction = PickNextDirection(rng, previousDirection, heading);
+
+                current = Step(current, direction);
+
+                pathZoneIds.Add(current.ToZoneId());
+
+                if (current.Z <= 10)
+                {
+                    break;
+                }
+
+                previousDirection = direction;
+            }
+
+            return pathZoneIds;
+        }
+        /*
         public List<string> BuildPathZoneIds(
             string originZoneId,
             int steps,
@@ -1118,8 +1121,8 @@ namespace SubterraneanSites
 
             for (int i = 0; i < steps; i++)
             {
-                //PathDirection direction = PickNextDirection(rng, previousDirection, heading);
-                PathDirection direction = PathDirection.East;
+                PathDirection direction = PickNextDirection(rng, previousDirection, heading);
+                //PathDirection direction = PathDirection.East;
 
                 current = Step(current, direction);
 
@@ -1134,7 +1137,7 @@ namespace SubterraneanSites
             }
 
             return pathZoneIds;
-        }
+        }*/
 
         public List<PathZoneInstruction> BuildPathInstructions(
             List<string> pathZoneIds
@@ -1178,7 +1181,9 @@ namespace SubterraneanSites
                     );
                 }
 
-                int z = ParseZoneId(currentZoneId).Z;
+                //int z = ParseZoneId(currentZoneId).Z;
+                int z = SubterraneanZoneCoord.Parse(currentZoneId).Z;
+
                 bool isSurface = z <= 10;
 
                 if (isSurface && i == pathZoneIds.Count - 1)
@@ -1204,8 +1209,11 @@ namespace SubterraneanSites
             string otherZoneId
         )
         {
-            ZoneCoord current = ParseZoneId(currentZoneId);
-            ZoneCoord other = ParseZoneId(otherZoneId);
+            //ZoneCoord current = ParseZoneId(currentZoneId);
+            //ZoneCoord other = ParseZoneId(otherZoneId);
+            SubterraneanZoneCoord current = SubterraneanZoneCoord.Parse(currentZoneId);
+            SubterraneanZoneCoord other = SubterraneanZoneCoord.Parse(otherZoneId);
+
 
             if (other.Z < current.Z)
             {
@@ -1239,6 +1247,107 @@ namespace SubterraneanSites
 
             return PathConnection.None;
         }
+
+        private bool IsNorthOf(SubterraneanZoneCoord current, SubterraneanZoneCoord other)
+        {
+            if (other.ParasangX != current.ParasangX)
+            {
+                return false;
+            }
+
+            if (other.ParasangY == current.ParasangY &&
+                other.ZoneX == current.ZoneX &&
+                other.ZoneY == current.ZoneY - 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangY == current.ParasangY - 1 &&
+                other.ZoneX == current.ZoneX &&
+                current.ZoneY == 0 &&
+                other.ZoneY == 2)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsSouthOf(SubterraneanZoneCoord current, SubterraneanZoneCoord other)
+        {
+            if (other.ParasangX != current.ParasangX)
+            {
+                return false;
+            }
+
+            if (other.ParasangY == current.ParasangY &&
+                other.ZoneX == current.ZoneX &&
+                other.ZoneY == current.ZoneY + 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangY == current.ParasangY + 1 &&
+                other.ZoneX == current.ZoneX &&
+                current.ZoneY == 2 &&
+                other.ZoneY == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsEastOf(SubterraneanZoneCoord current, SubterraneanZoneCoord other)
+        {
+            if (other.ParasangY != current.ParasangY)
+            {
+                return false;
+            }
+
+            if (other.ParasangX == current.ParasangX &&
+                other.ZoneY == current.ZoneY &&
+                other.ZoneX == current.ZoneX + 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangX == current.ParasangX + 1 &&
+                other.ZoneY == current.ZoneY &&
+                current.ZoneX == 2 &&
+                other.ZoneX == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsWestOf(SubterraneanZoneCoord current, SubterraneanZoneCoord other)
+        {
+            if (other.ParasangY != current.ParasangY)
+            {
+                return false;
+            }
+
+            if (other.ParasangX == current.ParasangX &&
+                other.ZoneY == current.ZoneY &&
+                other.ZoneX == current.ZoneX - 1)
+            {
+                return true;
+            }
+
+            if (other.ParasangX == current.ParasangX - 1 &&
+                other.ZoneY == current.ZoneY &&
+                current.ZoneX == 0 &&
+                other.ZoneX == 2)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        /*
         private bool IsNorthOf(ZoneCoord current, ZoneCoord other)
         {
             if (other.ParasangX != current.ParasangX)
@@ -1317,7 +1426,7 @@ namespace SubterraneanSites
             }
 
             return false;
-        }
+        }*/
 
         private PathDirection PickNextDirection(
             System.Random rng,
@@ -1474,6 +1583,32 @@ namespace SubterraneanSites
             }
         }
 
+        private SubterraneanZoneCoord Step(
+            SubterraneanZoneCoord coord,
+            PathDirection direction
+        )
+        {
+            switch (direction)
+            {
+                case PathDirection.Up:
+                    return coord.StepUp();
+
+                case PathDirection.North:
+                    return coord.StepNorth();
+
+                case PathDirection.South:
+                    return coord.StepSouth();
+
+                case PathDirection.East:
+                    return coord.StepEast();
+
+                case PathDirection.West:
+                    return coord.StepWest();
+            }
+
+            return coord;
+        }
+        /*
         private ZoneCoord Step(ZoneCoord coord, PathDirection direction)
         {
             switch (direction)
@@ -1500,8 +1635,10 @@ namespace SubterraneanSites
             }
 
             return coord;
-        }
+        }*/
 
+
+        /*
         private ZoneCoord StepNorth(ZoneCoord coord)
         {
             coord.ZoneY -= 1;
@@ -1552,8 +1689,9 @@ namespace SubterraneanSites
             }
 
             return coord;
-        }
+        }*/
 
+        /*
         private ZoneCoord ParseZoneId(string zoneId)
         {
             string[] parts = zoneId.Split('.');
@@ -1565,10 +1703,11 @@ namespace SubterraneanSites
                 int.Parse(parts[3]),
                 int.Parse(parts[4]),
                 int.Parse(parts[5])
-            );
-        }
+            )
+        }*/
     }
 }
+
 namespace XRL.World.ZoneBuilders
 {
     public class SubterraneanPathBuilder
