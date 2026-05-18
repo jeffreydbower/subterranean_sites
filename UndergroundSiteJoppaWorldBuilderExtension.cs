@@ -166,6 +166,8 @@ namespace SubterraneanSites
             MaxZ = maxZ;
         }
 
+        
+
         public bool Contains(SubterraneanZoneCoord coord)
         {
             if (coord.World != World)
@@ -202,26 +204,277 @@ namespace SubterraneanSites
         }
     }
 
+    internal class ProtectedParasangColumn
+    {
+        public string Name;
+        public string World;
+
+        public int ParasangX;
+        public int ParasangY;
+
+        public int MinZ;
+        public int MaxZ;
+
+        public ProtectedParasangColumn(
+            string name,
+            string world,
+            int parasangX,
+            int parasangY,
+            int minZ,
+            int maxZ
+        )
+        {
+            Name = name;
+            World = world;
+
+            ParasangX = parasangX;
+            ParasangY = parasangY;
+
+            MinZ = minZ;
+            MaxZ = maxZ;
+        }
+
+        public bool Contains(SubterraneanZoneCoord coord)
+        {
+            if (coord.World != World)
+            {
+                return false;
+            }
+
+            if (coord.ParasangX != ParasangX)
+            {
+                return false;
+            }
+
+            if (coord.ParasangY != ParasangY)
+            {
+                return false;
+            }
+
+            if (coord.Z < MinZ || coord.Z > MaxZ)
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
 
     internal static class SubterraneanSafety
     {
-        private static readonly List<ProtectedZoneColumn> ProtectedColumns =
-            new List<ProtectedZoneColumn>
-            {
-                // Joppa / Waterlogged Tunnel column.
-                // Z 10 = Joppa surface.
-                // Z 11-14 = Waterlogged Tunnel, -1 through -4.
-                new ProtectedZoneColumn(
-                    "Joppa / Waterlogged Tunnel column",
-                    "JoppaWorld",
-                    11,
-                    22,
-                    1,
-                    1,
-                    10,
-                    14
-                )
-            };
+    private static readonly List<ProtectedZoneColumn> ProtectedColumns =
+        new List<ProtectedZoneColumn>
+        {
+            // Joppa / Waterlogged Tunnel column.
+            // Z 10 = Joppa surface.
+            // Z 11-14 = Waterlogged Tunnel, -1 through -4.
+            new ProtectedZoneColumn(
+                "Joppa / Waterlogged Tunnel column",
+                "JoppaWorld",
+                11,
+                22,
+                1,
+                1,
+                10,
+                14
+            ),
+
+            new ProtectedZoneColumn(
+                "Grit Gate",
+                "JoppaWorld",
+                22,
+                14,
+                1,
+                0,
+                10,
+                30
+            ),
+
+            new ProtectedZoneColumn(
+                "Ezra",
+                "JoppaWorld",
+                53,
+                4,
+                0,
+                0,
+                10,
+                11
+            ),
+
+            //surface zone, but all around should be protected.
+            new ProtectedZoneColumn(
+                "Spindle",
+                "JoppaWorld",
+                53,
+                3,
+                1,
+                1,
+                10,
+                11
+            ),
+
+            new ProtectedZoneColumn(
+                "Golgotha / Agolgot",
+                "JoppaWorld",
+                23,
+                9,
+                1,
+                1,
+                10,
+                46
+            ),
+
+            new ProtectedZoneColumn(
+                "Bethesda Susa / Temple Rock / Bethsaida",
+                "JoppaWorld",
+                25,
+                3,
+                1,
+                1,
+                10,
+                46
+            ),
+
+            //surface zone
+            new ProtectedZoneColumn(
+                "Court of the Sultans",
+                "JoppaWorld",
+                53,
+                4,
+                1,
+                1,
+                10,
+                11
+            ),
+
+            new ProtectedZoneColumn(
+                "Redrock",
+                "JoppaWorld",
+                11,
+                20,
+                1,
+                1,
+                10,
+                14
+            ),
+
+            new ProtectedZoneColumn(
+                "Rustwell 1",
+                "JoppaWorld",
+                16,
+                22,
+                1,
+                1,
+                10,
+                13
+            ),
+
+            new ProtectedZoneColumn(
+                "Rustwell 2",
+                "JoppaWorld",
+                17,
+                23,
+                1,
+                1,
+                10,
+                13
+            ),
+
+            new ProtectedZoneColumn(
+                "Rustwell 3",
+                "JoppaWorld",
+                16,
+                24,
+                1,
+                1,
+                10,
+                13
+            ),
+
+            new ProtectedZoneColumn(
+                "Rusted Archway",
+                "JoppaWorld",
+                16,
+                24,
+                1,
+                1,
+                10,
+                14
+            ),
+
+            new ProtectedZoneColumn(
+                "Kyakukya",
+                "JoppaWorld",
+                27,
+                20,
+                1,
+                1,
+                10,
+                11
+            ),
+
+            new ProtectedZoneColumn(
+                "YD",
+                "JoppaWorld",
+                67,
+                17,
+                1,
+                1,
+                10,
+                11
+            ),
+        
+            new ProtectedZoneColumn(
+                "Eyn Roj",
+                "JoppaWorld",
+                76,
+                5,
+                1,
+                1,
+                10,
+                50
+            )
+        };
+
+        private static readonly List<ProtectedParasangColumn> ProtectedParasangColumns =
+        new List<ProtectedParasangColumn>
+        {
+            new ProtectedParasangColumn(
+                 "Stiltgrounds",
+                 "JoppaWorld",
+                 5,
+                 2,
+                 10,
+                 11
+            ),
+
+            new ProtectedParasangColumn(
+                 "Grit Gate Entrance - Center",
+                 "JoppaWorld",
+                 22,
+                 14,
+                 10,
+                 30
+            ),
+
+            new ProtectedParasangColumn(
+                 "Tomb of the Eaters",
+                 "JoppaWorld",
+                 53,
+                 3,
+                 10,
+                 15
+            ),
+
+            new ProtectedParasangColumn(
+                 "Asphalt Mines",
+                 "JoppaWorld",
+                 53,
+                 3,
+                 10,
+                 15
+            )
+        };
 
         public static bool IsProtected(string zoneId, out string reason)
         {
@@ -240,9 +493,33 @@ namespace SubterraneanSites
                 }
             }
 
+            foreach (ProtectedParasangColumn parasangColumn in ProtectedParasangColumns)
+            {
+                if (parasangColumn.Contains(coord))
+                {
+                    reason = parasangColumn.Name;
+                    return true;
+                }
+            }
+
             reason = "";
             return false;
         }
+
+        /*public static bool IsProtected(SubterraneanZoneCoord coord, out string reason)
+        {
+            foreach (ProtectedZoneColumn column in ProtectedColumns)
+            {
+                if (column.Contains(coord))
+                {
+                    reason = column.Name;
+                    return true;
+                }
+            }
+
+            reason = "";
+            return false;
+        }*/
 
         /*
         //this was used previously to exclude an entire stached site.
@@ -286,9 +563,10 @@ namespace SubterraneanSites
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
-        private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 6-down, 1-west from Joppa
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 3-down, 1-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
+        private const bool DebugNameVisitedZonesWithZoneId = false;
 
         private enum SiteKind
         {
@@ -308,6 +586,15 @@ namespace SubterraneanSites
 
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
+            if (DebugNameVisitedZonesWithZoneId && zoneBuildEvent != null && zoneBuildEvent.Zone != null)
+            {
+                The.ZoneManager.SetZoneName(
+                    zoneBuildEvent.Zone.ZoneID,
+                    "ZONE " + zoneBuildEvent.Zone.ZoneID,
+                    Proper: false
+                );
+            }
+
             if (The.Game.GetStringGameState(InitFlag) == "Yes")
             {
                 return true;
