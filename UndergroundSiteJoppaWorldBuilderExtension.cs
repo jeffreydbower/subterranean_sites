@@ -8,6 +8,7 @@ using XRL.World;
 using XRL.World.WorldBuilders;
 using XRL.World.ZoneBuilders;
 using Genkit;
+using XRL.UI;
 
 namespace SubterraneanSites
 {
@@ -328,6 +329,7 @@ namespace SubterraneanSites
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
             registrar.Register(BeforeZoneBuiltEvent.ID);
+            registrar.Register(ZoneActivatedEvent.ID);
         }
 
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
@@ -562,6 +564,51 @@ namespace SubterraneanSites
 
             return tier;
         }
+
+        public override bool HandleEvent(ZoneActivatedEvent zoneActivatedEvent)
+        {
+            if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
+            {
+                return true;
+            }
+
+            string zoneId = zoneActivatedEvent.Zone.ZoneID;
+
+            string isSiteOrigin =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin") as string;
+
+            if (isSiteOrigin != "Yes")
+            {
+                return true;
+            }
+
+            string siteDisplayName =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName") as string;
+
+            if (siteDisplayName == null || siteDisplayName == "")
+            {
+                siteDisplayName = "a forgotten historical site";
+            }
+
+            string discoveryKey =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey") as string;
+
+            if (discoveryKey == null || discoveryKey == "")
+            {
+                discoveryKey = "SubterraneanSites_Discovered_" + zoneId;
+            }
+
+            if (The.Game.GetStringGameState(discoveryKey) == "Yes")
+            {
+                return true;
+            }
+
+            The.Game.SetStringGameState(discoveryKey, "Yes");
+
+            Popup.Show("You have discovered " + siteDisplayName + ".");
+
+            return true;
+        }
         private class SultanHistoricSiteRegistrar
         {
             private readonly RuntimeZoneBuilderInjectionSystem parent;
@@ -611,7 +658,9 @@ namespace SubterraneanSites
 
                 string regionName = "SubterraneanSites_" + sourceRegionName;
 
-                string locationName = regionSnapshot.GetProperty("name", sourceRegionName);
+                string siteDisplayName = "Forgotten Site of " + sourceRegionName;
+
+                string locationName = siteDisplayName;
 
                 SultanDungeonArgs args = BuildSultanDungeonArgsFromHistory(
                     sultanHistory,
@@ -665,7 +714,7 @@ namespace SubterraneanSites
                         zoneId,
                         6000,
                         "SultanDungeon",
-                        "locationName", locationName,
+                        "locationName", siteDisplayName,
                         "regionName", regionName,
                         "stairs", stairs
                     );
@@ -681,14 +730,23 @@ namespace SubterraneanSites
                     {
                         AddBottomLayerVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
                     }
+
+                    if (i == 0)
+                    {
+                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin", "Yes");
+                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName", siteDisplayName);
+                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey", "SubterraneanSites_Discovered_" + regionName);
+                    }
+
                     //how to name this zone in release???
                     The.ZoneManager.SetZoneName(
                         zoneId,
-                        "Test: " + sourceRegionName +
-                        " T" + tier +
-                        " P" + period +
-                        " Layer " + (i + 1) + " of " + siteZoneIds.Count,
-                        Proper: false
+                        siteDisplayName,
+                        //"Test: " + sourceRegionName +
+                        //" T" + tier +
+                        //" P" + period +
+                        //" Layer " + (i + 1) + " of " + siteZoneIds.Count,
+                        Proper: true
                     );
                 }
             }
