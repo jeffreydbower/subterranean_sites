@@ -12,6 +12,7 @@ using XRL.UI;
 using System.Reflection;
 using System.Text;
 using Qud.API;
+using XRL.Language;
 
 
 namespace SubterraneanSites
@@ -559,6 +560,7 @@ namespace SubterraneanSites
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
         private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 3-down, 1-west from Joppa
+        //private const string TargetZoneId = "JoppaWorld.10.22.2.1.13"; // this is 3-down, 2-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
         private const bool DebugNameVisitedZonesWithZoneId = false;
@@ -570,6 +572,7 @@ namespace SubterraneanSites
         {
             SultanHistoric,
             BasicLairChaos,
+            ProperLair,
 
             //later the full set will be 
             //SultanHistoric,
@@ -712,6 +715,10 @@ namespace SubterraneanSites
                 new BasicLairChaosSiteRegistrar(this).Register(siteZoneIds);
                 break;
 
+            case SiteKind.ProperLair:
+                new ProperLairSiteRegistrar(this).Register(siteZoneIds);
+                break;
+
             default:
                 new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
                 break;
@@ -725,15 +732,16 @@ namespace SubterraneanSites
             //return SiteKind.SultanHistoric;
             //return SiteKind.BasicLairChaos;
 
-                int roll = rng.Next(100);
+                /*int roll = rng.Next(100);
 
                 if (roll < 50)
                 {
                     return SiteKind.SultanHistoric;
-                }
+                }*/
 
-                return SiteKind.BasicLairChaos;
+                return SiteKind.ProperLair;
                 //return SiteKind.SultanHistoric;
+                //return SiteKind.BasicLairChaos;
         }
 
         private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
@@ -1163,6 +1171,382 @@ namespace SubterraneanSites
                 );
             }
         }
+        private class ProperLairSiteRegistrar
+        {
+            private readonly RuntimeZoneBuilderInjectionSystem parent;
+
+            private string siteDisplayName;
+            private string discoveryKey;
+            private string minionTable;
+            private string adjectives;
+            private string cachedOwnerId;
+            private int chestTier;
+
+            public ProperLairSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
+            {
+                this.parent = parent;
+            }
+
+            public void Register(List<string> siteZoneIds)
+            {
+                if (siteZoneIds == null || siteZoneIds.Count == 0)
+                {
+                    return;
+                }
+
+                if (!PrepareProperLair(siteZoneIds))
+                {
+                    return;
+                }
+
+                parent.RegisterLayeredSite(
+                    siteZoneIds,
+                    siteDisplayName,
+                    discoveryKey,
+                    RegisterLayer
+                );
+            }
+
+            private bool PrepareProperLair(List<string> siteZoneIds)
+            {
+                SubterraneanZoneCoord origin = SubterraneanZoneCoord.Parse(siteZoneIds[0]);
+
+                int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
+                int tier = parent.GetTierFromZ(originZ);
+
+                string terrainBlueprint = PickProperLairTerrainForTier(tier);
+
+                /*Popup.Show(
+                    "origin=" + siteZoneIds[0] +
+                    "\npx=" + origin.ParasangX.ToString() +
+                    " py=" + origin.ParasangY.ToString() +
+                    "\nterrainBlueprint=" + terrainBlueprint
+                );*/
+
+                /*if (terrainBlueprint == null || terrainBlueprint == "")
+                {
+                    terrainBlueprint = "SaltDunes";
+                }*/
+
+                XRL.World.GameObject lairOwner =
+                    JoppaWorldBuilder.GenerateLairOwner(
+                        terrainBlueprint,
+                        tier,
+                        0
+                    );
+                    
+
+                if (lairOwner == null)
+                {
+                    return false;
+                }
+
+                minionTable = BuildMinionTableFromLairOwner(lairOwner, tier);
+
+                if (minionTable == null || minionTable == "")
+                {
+                    return false;
+                }
+
+                adjectives = BuildAdjectives(lairOwner, terrainBlueprint);
+
+                siteDisplayName = BuildVanillaLairName(lairOwner);
+
+                discoveryKey =
+                    "SubterraneanSites_Discovered_ProperLair_" +
+                    siteZoneIds[0] +
+                    "_" +
+                    lairOwner.ID;
+
+                cachedOwnerId = The.ZoneManager.CacheObject(lairOwner);
+
+                chestTier = BuildChestTierFromLairOwner(lairOwner);
+
+                return true;
+            }
+
+            private void RegisterLayer(SiteLayerContext context)
+            {
+                The.ZoneManager.AddZonePostBuilder(
+                    context.ZoneId,
+                    "BasicLair",
+                    "Table", minionTable,
+                    "Adjectives", adjectives,
+                    "Stairs", context.Stairs
+                );
+
+                if (context.IsBottom)
+                {
+                    The.ZoneManager.AddZonePostBuilder(
+                        context.ZoneId,
+                        "AddObjectBuilder",
+                        "Object", cachedOwnerId
+                    );
+
+                    The.ZoneManager.AddZonePostBuilder(
+                        context.ZoneId,
+                        "AddBlueprintBuilder",
+                        "Object", "Chest" + chestTier.ToString()
+                    );
+                }
+            }
+
+            private string BuildMinionTableFromLairOwner(
+                XRL.World.GameObject lairOwner,
+                int tier
+            )
+            {
+                if (lairOwner == null)
+                {
+                    return "";
+                }
+
+                if (lairOwner.HasTag("LairMinionsInherit"))
+                {
+                    return
+                        "DynamicInheritsTable:" +
+                        lairOwner.GetTag("LairMinionsInherit") +
+                        ":Tier" +
+                        tier.ToString();
+                }
+
+                if (lairOwner.HasTag("LairMinions"))
+                {
+                    return lairOwner.GetTag("LairMinions");
+                }
+
+                GameObjectBlueprint blueprint = lairOwner.GetBlueprint();
+
+                if (blueprint == null)
+                {
+                    return "";
+                }
+
+                string baseCreatureType = blueprint.Inherits;
+                string key = baseCreatureType;
+
+                while (key != null &&
+                    (
+                        (
+                            !key.StartsWith("Base") &&
+                            !GameObjectFactory.Factory.Blueprints[key].Tags.ContainsKey("BaseObject")
+                        )
+                        ||
+                        GameObjectFactory.Factory.Blueprints[key].Tags.ContainsKey("SkipAsLairBaseCreatureType")
+                    ))
+                {
+                    key = GameObjectFactory.Factory.Blueprints[key].Inherits;
+                }
+
+                if (key != null)
+                {
+                    baseCreatureType = key;
+                }
+
+                if (baseCreatureType == null || baseCreatureType == "")
+                {
+                    return "";
+                }
+
+                return
+                    "DynamicInheritsTable:" +
+                    baseCreatureType +
+                    ":Tier" +
+                    tier.ToString();
+            }
+
+            private string BuildAdjectives(
+                XRL.World.GameObject lairOwner,
+                string terrainBlueprint
+            )
+            {
+                string ownerAdjectives = "";
+
+                if (lairOwner != null)
+                {
+                    ownerAdjectives = lairOwner.GetPropertyOrTag("LairAdjectives", "");
+                }
+
+                if (ownerAdjectives == null)
+                {
+                    ownerAdjectives = "";
+                }
+
+                if (ownerAdjectives.Length > 0)
+                {
+                    ownerAdjectives += ",";
+                }
+
+                string terrainAdjectives = "lair";
+
+                try
+                {
+                    GameObjectBlueprint terrain =
+                        GameObjectFactory.Factory.Blueprints[terrainBlueprint];
+
+                    if (terrain != null)
+                    {
+                        terrainAdjectives = terrain.GetTag("LairAdjectives", "lair");
+                    }
+                }
+                catch
+                {
+                    terrainAdjectives = "lair";
+                }
+
+                return ownerAdjectives + terrainAdjectives;
+            }
+
+            private string BuildVanillaLairName(XRL.World.GameObject lairOwner)
+            {
+                if (lairOwner == null)
+                {
+                    return "lair";
+                }
+
+                GameObjectBlueprint blueprint = lairOwner.GetBlueprint();
+
+                string lairType = "lair";
+
+                if (blueprint != null)
+                {
+                    lairType = blueprint.GetTag("LairName", "lair");
+                }
+
+                string ownerName =
+                    lairOwner.GetReferenceDisplayName(
+                        Context: "LairName"
+                    );
+
+                string possessive = Grammar.MakePossessive(ownerName);
+
+                return
+                    "The " +
+                    lairType +
+                    " of " +
+                    ownerName;
+            }
+
+            private int BuildChestTierFromLairOwner(XRL.World.GameObject lairOwner)
+            {
+                if (lairOwner == null)
+                {
+                    return 2;
+                }
+
+                int tier = lairOwner.Stat("Level") / 5 + 1;
+
+                if (tier < 2)
+                {
+                    tier = 2;
+                }
+
+                if (tier > 8)
+                {
+                    tier = 8;
+                }
+
+                return tier;
+            }
+            
+            private string PickProperLairTerrainForTier(int tier)
+            {
+                string[] terrains = GetProperLairTerrainsForTier(tier);
+
+                if (terrains == null || terrains.Length == 0)
+                {
+                    return "TerrainRuins";
+                }
+
+                return terrains[Stat.Random(0, terrains.Length - 1)];
+            }
+
+            private string[] GetProperLairTerrainsForTier(int tier)
+            {
+                if (tier <= 0)
+                {
+                    return new string[]
+                    {
+                        "TerrainSaltmarsh",
+                        "TerrainWatervine"
+                    };
+                }
+
+                if (tier == 1)
+                {
+                    return new string[]
+                    {
+                        "TerrainDesertCanyon"
+                    };
+                }
+
+                if (tier == 2)
+                {
+                    return new string[]
+                    {
+                        "TerrainSaltdunes",
+                        "TerrainFlowerfields",
+                        "TerrainHills",
+                        "TerrainCraters",
+                        "RandomCrater"
+                    };
+                }
+
+                if (tier == 3)
+                {
+                    return new string[]
+                    {
+                        "TerrainJungle"
+                    };
+                }
+
+                if (tier == 4)
+                {
+                    return new string[]
+                    {
+                        "TerrainMountains",
+                        "TerrainWater",
+                        "TerrainRuins"
+                    };
+                }
+
+                if (tier == 5)
+                {
+                    return new string[]
+                    {
+                        "TerrainFungalBase",
+                        "TerrainBananaGrove",
+                        "TerrainTheSpindle",
+                        "TerrainOmonporch"
+                    };
+                }
+
+                if (tier == 6)
+                {
+                    return new string[]
+                    {
+                        "TerrainDeepJungle",
+                        "TerrainLakeHinnom"
+                    };
+                }
+
+                if (tier == 7)
+                {
+                    return new string[]
+                    {
+                        "TerrainPalladiumReef",
+                        "TerrainBaroqueRuins"
+                    };
+                }
+
+                return new string[]
+                {
+                    "TerrainMoonStair"
+                };
+            }
+        }
+
+
 
         private class BasicLairChaosSiteRegistrar
         {
@@ -1190,6 +1574,8 @@ namespace SubterraneanSites
                     RegisterLayer
                 );
             }
+
+            
 
             private void RegisterLayer(SiteLayerContext context)
             {
@@ -1233,114 +1619,9 @@ namespace SubterraneanSites
                 }
             }
         }
-
+    
         
-        /*private class BasicLairChaosSiteRegistrar
-        {
-            private readonly RuntimeZoneBuilderInjectionSystem parent;
-
-            public BasicLairChaosSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
-            {
-                this.parent = parent;
-            }
-
-            public void Register(List<string> siteZoneIds)
-            {
-                if (siteZoneIds == null || siteZoneIds.Count == 0)
-                {
-                    return;
-                }
-
-                string siteDisplayName = "Forgotten Subterranean Lair";
-                string discoveryKey = "SubterraneanSites_Discovered_BasicLairChaos_" + siteZoneIds[0];
-
-                for (int i = 0; i < siteZoneIds.Count; i++)
-                {
-                    string zoneId = siteZoneIds[i];
-
-                    string safetyReason;
-
-                    if (SubterraneanSafety.IsProtected(zoneId, out safetyReason))
-                    {
-                        //remove in release
-                        The.ZoneManager.SetZoneName(
-                            zoneId,
-                            "site out: " + safetyReason + " at " + zoneId,
-                            Proper: false
-                        );
-
-                        continue;
-                    }
-
-                    if (i != 0)
-                    {
-                        The.ZoneManager.ClearZoneBuilders(zoneId);
-                        The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
-                    }
-
-                    The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-
-                    string stairs = parent.GetStairsForLayer(i, siteZoneIds.Count);
-
-                    int z = parent.GetZFromZoneId(zoneId);
-                    int tier = parent.GetTierFromZ(z);
-
-                    The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
-
-                    The.ZoneManager.AddZonePostBuilder(
-                        zoneId,
-                        "BasicLair",
-                        "Table", "",
-                        "Adjectives", "",
-                        "Stairs", stairs
-                    );
-
-                    string singlesTable = "SubterraneanSites_Tier" + tier.ToString() + "_Mobs";
-                    string teamsTable = "SubterraneanSites_Tier" + tier.ToString() + "_FightableTeams";
-
-                    The.ZoneManager.AddZonePostBuilder(
-                        zoneId,
-                        "SubterraneanSiteMobs",
-                        "Rolls", "2",
-                        "Tier", tier.ToString(),
-                        "Table", teamsTable
-                    );
-
-                    The.ZoneManager.AddZonePostBuilder(
-                        zoneId,
-                        "SubterraneanSiteMobs",
-                        "Rolls", "4",
-                        "Tier", tier.ToString(),
-                        "Table", singlesTable
-                    );
-
-                    if (i == siteZoneIds.Count - 1)
-                    {
-                        The.ZoneManager.AddZoneBuilder(
-                            zoneId,
-                            6000,
-                            "FactionEncounters",
-                            "Chance", "100",
-                            "Rolls", "1",
-                            "Population", "GenericFactionPopulation"
-                        );
-                    }
-
-                    if (i == 0)
-                    {
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin", "Yes");
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName", siteDisplayName);
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey", discoveryKey);
-                    }
-
-                    The.ZoneManager.SetZoneName(
-                        zoneId,
-                        siteDisplayName,
-                        Proper: true
-                    );
-                }
-            }
-        }*/
+      
 
         private class SultanHistoricSiteRegistrar
         {
@@ -1563,257 +1844,7 @@ namespace SubterraneanSites
         }
 
 
-        /*private class SultanHistoricSiteRegistrar
-        {
-            private readonly RuntimeZoneBuilderInjectionSystem parent;
-
-            public SultanHistoricSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
-            {
-                this.parent = parent;
-            }
-
-            public void Register(List<string> siteZoneIds)
-            {
-                if (siteZoneIds == null || siteZoneIds.Count == 0)
-                {
-                    return;
-                }
-
-                int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
-                int targetTier = parent.GetTierFromZ(originZ);
-                int period = SultanDungeon.GetSultanPeriodFromTier(targetTier);
-
-                // 1. Select existing history inputs for this site.
-                History sultanHistory = The.Game.sultanHistory;
-
-                if (sultanHistory == null)
-                {
-                    return;
-                }
-
-                HistoricEntity region = PickRegionForPeriod(sultanHistory, period);
-
-                if (region == null)
-                {
-                    return;
-                }
-
-                HistoricEntitySnapshot regionSnapshot = region.GetCurrentSnapshot();
-
-                if (regionSnapshot == null)
-                {
-                    return;
-                }
-
-                // 2. Build and store the SultanDungeonArgs package.
-                // SultanDungeon will fetch this using "sultanDungeonArgs_" + regionName.
-                string sourceRegionName =
-                    regionSnapshot.GetProperty("newName", regionSnapshot.GetProperty("name", "Unknown Region"));
-
-                string regionName = "SubterraneanSites_" + sourceRegionName;
-
-                string siteDisplayName = "Forgotten Site of " + sourceRegionName;
-
-                string locationName = siteDisplayName;
-
-                SultanDungeonArgs args = BuildSultanDungeonArgsFromHistory(
-                    sultanHistory,
-                    regionSnapshot,
-                    period
-                );
-
-                if (args == null)
-                {
-                    return;
-                }
-
-                The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args);
-
-                // 3. Register each vertical layer.
-                for (int i = 0; i < siteZoneIds.Count; i++)
-                {
-                    string zoneId = siteZoneIds[i];
-
-                    string safetyReason;
-
-                    if (SubterraneanSafety.IsProtected(zoneId, out safetyReason))
-                    {
-                        The.ZoneManager.SetZoneName(
-                            zoneId,
-                            //below if the message
-                            "site out: " + safetyReason + " at " + zoneId,
-                            //"SubterraneanSites refused site builder: " + safetyReason,
-                            Proper: false
-                        );
-
-                        continue;
-                    }
-
-                    string stairs = parent.GetStairsForLayer(i, siteZoneIds.Count);
-                    int z = parent.GetZFromZoneId(zoneId);
-                    int tier = parent.GetTierFromZ(z);
-
-                    if (i != 0)
-                    {
-                        The.ZoneManager.ClearZoneBuilders(zoneId);
-                        The.ZoneManager.SetZoneProperty(zoneId, "SkipTerrainBuilders", true);
-                    }
-
-                    The.ZoneManager.SetZoneProperty(zoneId, OwnerProperty, "Yes");
-                    The.ZoneManager.SetZoneProperty(zoneId, "ZoneTierOverride", tier.ToString());
-
-                    The.ZoneManager.SetZoneProperty(zoneId, "HistoricSite", regionName);
-
-                    The.ZoneManager.AddZoneBuilder(
-                        zoneId,
-                        6000,
-                        "SultanDungeon",
-                        "locationName", siteDisplayName,
-                        "regionName", regionName,
-                        "stairs", stairs
-                    );
-
-                    The.ZoneManager.AddZoneBuilder(
-                        zoneId,
-                        6000,
-                        "Music",
-                        "Track", "Music/of Chrome and How"
-                    );
-
-                    if (i == siteZoneIds.Count - 1)
-                    {
-                        AddBottomLayerVaultWithRelicAndHero(zoneId, regionSnapshot, tier);
-                    }
-
-                    if (i == 0)
-                    {
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin", "Yes");
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName", siteDisplayName);
-                        The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey", "SubterraneanSites_Discovered_" + regionName);
-                    }
-
-                    //how to name this zone in release???
-                    The.ZoneManager.SetZoneName(
-                        zoneId,
-                        siteDisplayName,
-                        //"Test: " + sourceRegionName +
-                        //" T" + tier +
-                        //" P" + period +
-                        //" Layer " + (i + 1) + " of " + siteZoneIds.Count,
-                        Proper: true
-                    );
-                }
-            }
-
-            private void AddBottomLayerVaultWithRelicAndHero(
-                string zoneId,
-                HistoricEntitySnapshot regionSnapshot,
-                int tier
-            )
-            {
-                XRL.World.GameObject relic =
-                    RelicGenerator.GenerateRelic(regionSnapshot, tier, RandomName: true);
-
-                if (relic == null)
-                {
-                    return;
-                }
-
-                // This is the vanilla hook:
-                // SultanDungeon sees Relicstyle="Vault", creates a vault region,
-                // and places a cult leader there. PlaceRelicBuilder then puts the relic
-                // into the vault chest if one exists.
-                The.ZoneManager.SetZoneProperty(zoneId, "Relicstyle", "Vault");
-
-                The.ZoneManager.AddZoneBuilder(
-                    zoneId,
-                    6000,
-                    "PlaceRelicBuilder",
-                    "Relic", The.ZoneManager.CacheObject(relic)
-                );
-            }
-
-            private SultanDungeonArgs BuildSultanDungeonArgsFromHistory(
-                History sultanHistory,
-                HistoricEntitySnapshot regionSnapshot,
-                int period
-            )
-            {
-                SultanDungeonArgs args = new SultanDungeonArgs();
-
-                HistoricEntityList sultans = sultanHistory.GetEntitiesWherePropertyEquals("type", "sultan");
-
-                if (sultans != null && sultans.entities != null && sultans.entities.Count > 0)
-                {
-                    HistoricEntity periodSultan = null;
-
-                    HistoricEntityList matchingSultans =
-                        sultans.GetEntitiesWherePropertyEquals("period", period.ToString());
-
-                    if (matchingSultans != null && matchingSultans.entities != null && matchingSultans.entities.Count > 0)
-                    {
-                        periodSultan = matchingSultans.entities[Stat.Random(0, matchingSultans.entities.Count - 1)];
-                    }
-                    else
-                    {
-                        periodSultan = sultans.entities[Stat.Random(0, sultans.entities.Count - 1)];
-                    }
-
-                    if (periodSultan != null)
-                    {
-                        args.UpdateFromEntity(periodSultan.GetCurrentSnapshot());
-                    }
-                }
-
-                args.UpdateWalls(period);
-                args.UpdateFromEntity(regionSnapshot);
-
-                if (50.in100())
-                {
-                    args.wallTypes.Add("*SultanWall*");
-                }
-
-                return args;
-            }
-
-            private HistoricEntity PickRegionForPeriod(History sultanHistory, int period)
-            {
-                HistoricEntityList regions = sultanHistory.GetEntitiesWherePropertyEquals("type", "region");
-
-                if (regions == null || regions.entities == null || regions.entities.Count == 0)
-                {
-                    return null;
-                }
-
-                List<HistoricEntity> matchingPeriodRegions = new List<HistoricEntity>();
-
-                foreach (HistoricEntity region in regions.entities)
-                {
-                    HistoricEntitySnapshot snap = region.GetCurrentSnapshot();
-
-                    if (snap == null)
-                    {
-                        continue;
-                    }
-
-                    string periodString = snap.GetProperty("period", "-1");
-
-                    int regionPeriod;
-
-                    if (int.TryParse(periodString, out regionPeriod) && regionPeriod == period)
-                    {
-                        matchingPeriodRegions.Add(region);
-                    }
-                }
-
-                if (matchingPeriodRegions.Count > 0)
-                {
-                    return matchingPeriodRegions[Stat.Random(0, matchingPeriodRegions.Count - 1)];
-                }
-
-                return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
-            }
-        }*/
+        
         private void RegisterHorizontalRoadPath(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
             string pathMaterial
