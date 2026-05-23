@@ -559,7 +559,7 @@ namespace SubterraneanSites
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
-        private const string TargetZoneId = "JoppaWorld.11.22.0.1.23"; // this is 3-down, 1-west from Joppa
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.27"; // this is 17-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.13"; // this is 3-down, 2-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
@@ -573,6 +573,7 @@ namespace SubterraneanSites
             SultanHistoric,
             BasicLairChaos,
             ProperLair,
+            MerchantHive,
 
             //later the full set will be 
             //SultanHistoric,
@@ -719,6 +720,10 @@ namespace SubterraneanSites
                 new ProperLairSiteRegistrar(this).Register(siteZoneIds);
                 break;
 
+            case SiteKind.MerchantHive:
+                new MerchantHiveSiteRegistrar(this).Register(siteZoneIds);
+                break;
+
             default:
                 new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
                 break;
@@ -727,21 +732,39 @@ namespace SubterraneanSites
 
         private SiteKind RollSiteKind(System.Random rng)
         {
-            // For now, force the historical-site archetype while this path is stabilized.
-            // Later this will become a deterministic weighted roll from rng.
-            //return SiteKind.SultanHistoric;
-            //return SiteKind.BasicLairChaos;
+            if (rng == null)
+            {
+                return SiteKind.SultanHistoric;
+            }
 
-                /*int roll = rng.Next(100);
+            // Weighted deterministic site archetype selection.
+            //
+            // Current weights:
+            //   35 = SultanHistoric
+            //   30 = ProperLair
+            //   25 = BasicLairChaos
+            //   10 = MerchantHive
+            //
+            // These sum to 90. We roll over the total weight rather than 100
+            // so no archetype is accidentally assigned the unused 10%.
+            int roll = rng.Next(100);
 
-                if (roll < 50)
-                {
-                    return SiteKind.SultanHistoric;
-                }*/
+            if (roll < 35)
+            {
+                return SiteKind.SultanHistoric;
+            }
 
+            if (roll < 65)
+            {
                 return SiteKind.ProperLair;
-                //return SiteKind.SultanHistoric;
-                //return SiteKind.BasicLairChaos;
+            }
+
+            if (roll < 90)
+            {
+                return SiteKind.BasicLairChaos;
+            }
+
+            return SiteKind.MerchantHive;
         }
 
         private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
@@ -1171,6 +1194,312 @@ namespace SubterraneanSites
                 );
             }
         }
+        private class MerchantHiveSiteRegistrar
+        {
+            private readonly RuntimeZoneBuilderInjectionSystem parent;
+
+            private string siteDisplayName;
+            private string discoveryKey;
+
+            private Dictionary<int, string> cachedMerchantByLayer =
+                new Dictionary<int, string>();
+
+            private Dictionary<int, string> adjectivesByLayer =
+                new Dictionary<int, string>();
+
+            public MerchantHiveSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
+            {
+                this.parent = parent;
+            }
+
+            public void Register(List<string> siteZoneIds)
+            {
+                if (siteZoneIds == null || siteZoneIds.Count == 0)
+                {
+                    return;
+                }
+
+                if (!PrepareMerchantHive(siteZoneIds))
+                {
+                    return;
+                }
+
+                parent.RegisterLayeredSite(
+                    siteZoneIds,
+                    siteDisplayName,
+                    discoveryKey,
+                    RegisterLayer
+                );
+            }
+
+            private bool PrepareMerchantHive(List<string> siteZoneIds)
+            {
+                cachedMerchantByLayer.Clear();
+                adjectivesByLayer.Clear();
+
+                XRL.World.GameObject bottomMerchant = null;
+
+                for (int i = 0; i < siteZoneIds.Count; i++)
+                {
+                    string zoneId = siteZoneIds[i];
+
+                    int z = parent.GetZFromZoneId(zoneId);
+                    int tier = parent.GetTierFromZ(z);
+
+                    bool isBottom = i == siteZoneIds.Count - 1;
+
+                    int merchantTier = tier;
+
+                    if (isBottom)
+                    {
+                        merchantTier = ClampTier(tier + 1);
+                    }
+
+                    string terrainBlueprint = PickMerchantTerrainForTier(merchantTier);
+
+                    XRL.World.GameObject merchant =
+                        GenerateMerchantForTier(terrainBlueprint, merchantTier);
+
+                    if (merchant == null)
+                    {
+                        return false;
+                    }
+
+                    cachedMerchantByLayer[i] = The.ZoneManager.CacheObject(merchant);
+                    adjectivesByLayer[i] = BuildAdjectives(merchant, terrainBlueprint);
+
+                    if (isBottom)
+                    {
+                        bottomMerchant = merchant;
+                    }
+                }
+
+                if (bottomMerchant == null)
+                {
+                    return false;
+                }
+
+                siteDisplayName = BuildBazaarName(bottomMerchant);
+
+                discoveryKey =
+                    "SubterraneanSites_Discovered_MerchantHive_" +
+                    siteZoneIds[0] +
+                    "_" +
+                    bottomMerchant.ID;
+
+                return true;
+            }
+
+            private void RegisterLayer(SiteLayerContext context)
+            {
+                string adjectives = "workshop";
+
+                if (adjectivesByLayer.ContainsKey(context.LayerIndex))
+                {
+                    adjectives = adjectivesByLayer[context.LayerIndex];
+                }
+
+                // Use BasicLair primarily as a native lair/workshop layout generator.
+                // MerchantHive intentionally does not add hostile population or reward chests.
+                The.ZoneManager.AddZonePostBuilder(
+                    context.ZoneId,
+                    "BasicLair",
+                    "Table", "",
+                    "Adjectives", adjectives,
+                    "Stairs", context.Stairs
+                );
+
+                if (cachedMerchantByLayer.ContainsKey(context.LayerIndex))
+                {
+                    The.ZoneManager.AddZonePostBuilder(
+                        context.ZoneId,
+                        "AddObjectBuilder",
+                        "Object", cachedMerchantByLayer[context.LayerIndex]
+                    );
+                }
+            }
+
+            private XRL.World.GameObject GenerateMerchantForTier(
+                string terrainBlueprint,
+                int tier
+            )
+            {
+                // GenericChance 100 forces the GenericLairOwner path.
+                // That path is the merchant/workshop-heavy vanilla lair-owner pool.
+                XRL.World.GameObject merchant =
+                    JoppaWorldBuilder.GenerateLairOwner(
+                        terrainBlueprint,
+                        tier,
+                        100
+                    );
+
+                if (merchant == null)
+                {
+                    return null;
+                }
+
+                if (!IsMerchantLike(merchant))
+                {
+                    return null;
+                }
+
+                return merchant;
+            }
+
+            private bool IsMerchantLike(XRL.World.GameObject obj)
+            {
+                if (obj == null)
+                {
+                    return false;
+                }
+
+                try
+                {
+                    if (obj.IsMerchant())
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+
+                if (obj.HasTag("Merchant"))
+                {
+                    return true;
+                }
+
+                if (obj.HasPart<XRL.World.Parts.GenericInventoryRestocker>())
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            private string BuildAdjectives(
+                XRL.World.GameObject merchant,
+                string terrainBlueprint
+            )
+            {
+                string ownerAdjectives = "";
+
+                if (merchant != null)
+                {
+                    ownerAdjectives = merchant.GetPropertyOrTag("LairAdjectives", "");
+                }
+
+                if (ownerAdjectives == null)
+                {
+                    ownerAdjectives = "";
+                }
+
+                if (ownerAdjectives.Length > 0)
+                {
+                    ownerAdjectives += ",";
+                }
+
+                string terrainAdjectives = "workshop";
+
+                try
+                {
+                    GameObjectBlueprint terrain =
+                        GameObjectFactory.Factory.Blueprints[terrainBlueprint];
+
+                    if (terrain != null)
+                    {
+                        terrainAdjectives = terrain.GetTag("LairAdjectives", "workshop");
+                    }
+                }
+                catch
+                {
+                    terrainAdjectives = "workshop";
+                }
+
+                return ownerAdjectives + terrainAdjectives;
+            }
+
+            private string BuildBazaarName(XRL.World.GameObject bottomMerchant)
+            {
+                if (bottomMerchant == null)
+                {
+                    return "Subterranean Bazaar";
+                }
+
+                string merchantName =
+                    bottomMerchant.GetReferenceDisplayName(
+                        Context: "LairName"
+                    );
+
+                if (merchantName == null || merchantName == "")
+                {
+                    return "Subterranean Bazaar";
+                }
+
+                return "Underworld Bazaar of " + merchantName;
+            }
+
+            private string PickMerchantTerrainForTier(int tier)
+            {
+                // GenericChance=100 means the terrain mostly exists to satisfy
+                // GenerateLairOwner's expected terrain-blueprint argument and provide
+                // reasonable adjective fallback. Use broad, valid terrain blueprints.
+                if (tier <= 1)
+                {
+                    return "TerrainDesertCanyon";
+                }
+
+                if (tier == 2)
+                {
+                    return "TerrainSaltdunes";
+                }
+
+                if (tier == 3)
+                {
+                    return "TerrainJungle";
+                }
+
+                if (tier == 4)
+                {
+                    return "TerrainRuins";
+                }
+
+                if (tier == 5)
+                {
+                    return "TerrainFungalBase";
+                }
+
+                if (tier == 6)
+                {
+                    return "TerrainDeepJungle";
+                }
+
+                if (tier == 7)
+                {
+                    return "TerrainPalladiumReef";
+                }
+
+                return "TerrainMoonStair";
+            }
+
+            private int ClampTier(int tier)
+            {
+                if (tier < 1)
+                {
+                    return 1;
+                }
+
+                if (tier > 8)
+                {
+                    return 8;
+                }
+
+                return tier;
+            }
+        }
+
+
+
         private class ProperLairSiteRegistrar
         {
             private readonly RuntimeZoneBuilderInjectionSystem parent;
@@ -1693,10 +2022,10 @@ namespace SubterraneanSites
                 {
                     return new string[]
                     {
-                        "TerrainSaltdunes",
-                        "TerrainFlowerfields",
-                        "TerrainHills",
-                        "TerrainCraters",
+                        //"TerrainSaltdunes",
+                        //"TerrainFlowerfields",
+                        //"TerrainHills",
+                        //"TerrainCraters",
                         "RandomCrater"
                     };
                 }
@@ -1755,10 +2084,10 @@ namespace SubterraneanSites
             }
         }
 
-
-
         private class BasicLairChaosSiteRegistrar
         {
+            private const int ExtraFactionEncounterChance = 25;
+
             private readonly RuntimeZoneBuilderInjectionSystem parent;
 
             public BasicLairChaosSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
@@ -1774,7 +2103,9 @@ namespace SubterraneanSites
                 }
 
                 string siteDisplayName = "Forgotten Subterranean Lair";
-                string discoveryKey = "SubterraneanSites_Discovered_BasicLairChaos_" + siteZoneIds[0];
+                string discoveryKey =
+                    "SubterraneanSites_Discovered_BasicLairChaos_" +
+                    siteZoneIds[0];
 
                 parent.RegisterLayeredSite(
                     siteZoneIds,
@@ -1783,8 +2114,6 @@ namespace SubterraneanSites
                     RegisterLayer
                 );
             }
-
-            
 
             private void RegisterLayer(SiteLayerContext context)
             {
@@ -1796,8 +2125,15 @@ namespace SubterraneanSites
                     "Stairs", context.Stairs
                 );
 
-                string singlesTable = "SubterraneanSites_Tier" + context.Tier.ToString() + "_Mobs";
-                string teamsTable = "SubterraneanSites_Tier" + context.Tier.ToString() + "_FightableTeams";
+                string singlesTable =
+                    "SubterraneanSites_Tier" +
+                    context.Tier.ToString() +
+                    "_Mobs";
+
+                string teamsTable =
+                    "SubterraneanSites_Tier" +
+                    context.Tier.ToString() +
+                    "_FightableTeams";
 
                 The.ZoneManager.AddZonePostBuilder(
                     context.ZoneId,
@@ -1810,24 +2146,97 @@ namespace SubterraneanSites
                 The.ZoneManager.AddZonePostBuilder(
                     context.ZoneId,
                     "SubterraneanSiteMobs",
-                    "Rolls", "5",
+                    "Rolls", "4",
                     "Tier", context.Tier.ToString(),
                     "Table", singlesTable
                 );
 
+                MaybeAddFactionEncounterWithChest(context);
+
                 if (context.IsBottom)
                 {
-                    The.ZoneManager.AddZoneBuilder(
+                    AddFactionEncounter(context.ZoneId);
+
+                    The.ZoneManager.AddZonePostBuilder(
                         context.ZoneId,
-                        6000,
-                        "FactionEncounters",
-                        "Chance", "100",
-                        "Rolls", "1",
-                        "Population", "GenericFactionPopulation"
+                        "AddBlueprintBuilder",
+                        "Object", GetRewardChestBlueprint(GetRewardChestTier(context.Tier))
                     );
                 }
             }
+
+            private void MaybeAddFactionEncounterWithChest(SiteLayerContext context)
+            {
+                if (context == null)
+                {
+                    return;
+                }
+
+                if (context.IsBottom)
+                {
+                    return;
+                }
+
+                if (!ExtraFactionEncounterChance.in100())
+                {
+                    return;
+                }
+
+                AddFactionEncounter(context.ZoneId);
+
+                The.ZoneManager.AddZonePostBuilder(
+                    context.ZoneId,
+                    "AddBlueprintBuilder",
+                    "Object", GetRewardChestBlueprint(GetRewardChestTier(context.Tier))
+                );
+            }
+
+            private void AddFactionEncounter(string zoneId)
+            {
+                The.ZoneManager.AddZoneBuilder(
+                    zoneId,
+                    6000,
+                    "FactionEncounters",
+                    "Chance", "100",
+                    "Rolls", "1",
+                    "Population", "GenericFactionPopulation"
+                );
+            }
+
+            private int GetRewardChestTier(int baseTier)
+            {
+                int rewardTier = baseTier + 1;
+
+                if (rewardTier < 2)
+                {
+                    rewardTier = 2;
+                }
+
+                if (rewardTier > 8)
+                {
+                    rewardTier = 8;
+                }
+
+                return rewardTier;
+            }
+
+            private string GetRewardChestBlueprint(int tier)
+            {
+                if (tier < 1)
+                {
+                    tier = 1;
+                }
+
+                if (tier > 8)
+                {
+                    tier = 8;
+                }
+
+                return "Rare Chest" + tier.ToString();
+            }
         }
+
+ 
     
         
       
