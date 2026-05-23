@@ -559,7 +559,7 @@ namespace SubterraneanSites
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
-        private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 3-down, 1-west from Joppa
+        private const string TargetZoneId = "JoppaWorld.11.22.0.1.23"; // this is 3-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.13"; // this is 3-down, 2-west from Joppa
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
@@ -1175,12 +1175,17 @@ namespace SubterraneanSites
         {
             private readonly RuntimeZoneBuilderInjectionSystem parent;
 
+            private const int ExtraHeroChance = 15;
+            private const int MaxInheritanceWalk = 32;
+
             private string siteDisplayName;
             private string discoveryKey;
             private string minionTable;
             private string adjectives;
             private string cachedOwnerId;
+            
             private int chestTier;
+            //private int chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
 
             public ProperLairSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
             {
@@ -1209,24 +1214,10 @@ namespace SubterraneanSites
 
             private bool PrepareProperLair(List<string> siteZoneIds)
             {
-                SubterraneanZoneCoord origin = SubterraneanZoneCoord.Parse(siteZoneIds[0]);
-
                 int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
                 int tier = parent.GetTierFromZ(originZ);
 
                 string terrainBlueprint = PickProperLairTerrainForTier(tier);
-
-                /*Popup.Show(
-                    "origin=" + siteZoneIds[0] +
-                    "\npx=" + origin.ParasangX.ToString() +
-                    " py=" + origin.ParasangY.ToString() +
-                    "\nterrainBlueprint=" + terrainBlueprint
-                );*/
-
-                /*if (terrainBlueprint == null || terrainBlueprint == "")
-                {
-                    terrainBlueprint = "SaltDunes";
-                }*/
 
                 XRL.World.GameObject lairOwner =
                     JoppaWorldBuilder.GenerateLairOwner(
@@ -1260,7 +1251,9 @@ namespace SubterraneanSites
 
                 cachedOwnerId = The.ZoneManager.CacheObject(lairOwner);
 
-                chestTier = BuildChestTierFromLairOwner(lairOwner);
+                //chestTier = BuildChestTierFromLairOwner(lairOwner);
+                //chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
+                chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
 
                 return true;
             }
@@ -1275,6 +1268,8 @@ namespace SubterraneanSites
                     "Stairs", context.Stairs
                 );
 
+                MaybeAddExtraHero(context);
+
                 if (context.IsBottom)
                 {
                     The.ZoneManager.AddZonePostBuilder(
@@ -1286,7 +1281,7 @@ namespace SubterraneanSites
                     The.ZoneManager.AddZonePostBuilder(
                         context.ZoneId,
                         "AddBlueprintBuilder",
-                        "Object", "Chest" + chestTier.ToString()
+                        "Object", GetRewardChestBlueprint(chestTier)
                     );
                 }
             }
@@ -1303,16 +1298,30 @@ namespace SubterraneanSites
 
                 if (lairOwner.HasTag("LairMinionsInherit"))
                 {
+                    string inheritSource = lairOwner.GetTag("LairMinionsInherit");
+
+                    if (inheritSource == null || inheritSource == "")
+                    {
+                        return "";
+                    }
+
                     return
                         "DynamicInheritsTable:" +
-                        lairOwner.GetTag("LairMinionsInherit") +
+                        inheritSource +
                         ":Tier" +
                         tier.ToString();
                 }
 
                 if (lairOwner.HasTag("LairMinions"))
                 {
-                    return lairOwner.GetTag("LairMinions");
+                    string explicitMinions = lairOwner.GetTag("LairMinions");
+
+                    if (explicitMinions == null)
+                    {
+                        return "";
+                    }
+
+                    return explicitMinions;
                 }
 
                 GameObjectBlueprint blueprint = lairOwner.GetBlueprint();
@@ -1325,22 +1334,33 @@ namespace SubterraneanSites
                 string baseCreatureType = blueprint.Inherits;
                 string key = baseCreatureType;
 
-                while (key != null &&
-                    (
-                        (
-                            !key.StartsWith("Base") &&
-                            !GameObjectFactory.Factory.Blueprints[key].Tags.ContainsKey("BaseObject")
-                        )
-                        ||
-                        GameObjectFactory.Factory.Blueprints[key].Tags.ContainsKey("SkipAsLairBaseCreatureType")
-                    ))
-                {
-                    key = GameObjectFactory.Factory.Blueprints[key].Inherits;
-                }
+                int steps = 0;
 
-                if (key != null)
+                while (key != null && key != "" && steps < MaxInheritanceWalk)
                 {
-                    baseCreatureType = key;
+                    steps++;
+
+                    GameObjectBlueprint currentBlueprint;
+
+                    if (!GameObjectFactory.Factory.Blueprints.TryGetValue(key, out currentBlueprint))
+                    {
+                        break;
+                    }
+
+                    bool isBaseCandidate =
+                        key.StartsWith("Base") ||
+                        currentBlueprint.Tags.ContainsKey("BaseObject");
+
+                    bool skipAsBase =
+                        currentBlueprint.Tags.ContainsKey("SkipAsLairBaseCreatureType");
+
+                    if (isBaseCandidate && !skipAsBase)
+                    {
+                        baseCreatureType = key;
+                        break;
+                    }
+
+                    key = currentBlueprint.Inherits;
                 }
 
                 if (baseCreatureType == null || baseCreatureType == "")
@@ -1353,6 +1373,190 @@ namespace SubterraneanSites
                     baseCreatureType +
                     ":Tier" +
                     tier.ToString();
+            }
+            // Extra heroes are generated from the same minion table used by BasicLair,
+            // so ProperLair stays a single-ecology lair rather than a mixed-owner site.
+            private void MaybeAddExtraHero(SiteLayerContext context)
+            {
+                if (context == null)
+                {
+                    return;
+                }
+
+                if (context.IsBottom)
+                {
+                    return;
+                }
+
+                if (!ExtraHeroChance.in100())
+                {
+                    return;
+                }
+
+                XRL.World.GameObject hero = GenerateExtraHeroFromMinionTable(context.Tier);
+
+                if (hero == null)
+                {
+                    return;
+                }
+
+                The.ZoneManager.AddZonePostBuilder(
+                    context.ZoneId,
+                    "AddBlueprintBuilder",
+                    "Object", GetRewardChestBlueprint(GetRewardChestTier(context.Tier))
+                );
+
+                The.ZoneManager.AddZonePostBuilder(
+                    context.ZoneId,
+                    "AddObjectBuilder",
+                    "Object", The.ZoneManager.CacheObject(hero)
+                );
+            }
+
+            private XRL.World.GameObject GenerateExtraHeroFromMinionTable(int tier)
+            {
+                if (minionTable == null || minionTable == "")
+                {
+                    return null;
+                }
+
+                List<XRL.World.GameObject> candidates = null;
+
+                try
+                {
+                    candidates = PopulationManager.Expand(
+                        PopulationManager.Generate(
+                            minionTable,
+                            "zonetier",
+                            tier.ToString()
+                        )
+                    );
+                }
+                catch
+                {
+                    return null;
+                }
+
+                if (candidates == null || candidates.Count == 0)
+                {
+                    return null;
+                }
+
+                XRL.World.GameObject baseCreature = PickHeroCandidate(candidates);
+
+                if (baseCreature == null)
+                {
+                    return null;
+                }
+
+                baseCreature.SetStringProperty("Role", "Hero");
+
+                XRL.World.GameObject hero = HeroMaker.MakeHero(
+                    baseCreature,
+                    Array.Empty<string>(),
+                    Array.Empty<string>(),
+                    tier,
+                    "Lair"
+                );
+
+                if (hero == null)
+                {
+                    return null;
+                }
+
+                if (hero.HasStat("Hitpoints"))
+                {
+                    hero.GetStat("Hitpoints").BaseValue *= 2;
+                }
+
+                return hero;
+            }
+
+            private XRL.World.GameObject PickHeroCandidate(
+                List<XRL.World.GameObject> candidates
+            )
+            {
+                if (candidates == null || candidates.Count == 0)
+                {
+                    return null;
+                }
+
+                List<XRL.World.GameObject> validCandidates =
+                    new List<XRL.World.GameObject>();
+
+                foreach (XRL.World.GameObject candidate in candidates)
+                {
+                    if (candidate == null)
+                    {
+                        continue;
+                    }
+
+                    if (candidate.IsPlayer())
+                    {
+                        continue;
+                    }
+
+                    if (candidate.HasTag("Merchant"))
+                    {
+                        continue;
+                    }
+
+                    if (candidate.HasPart<XRL.World.Parts.GivesRep>())
+                    {
+                        continue;
+                    }
+
+                    if (!candidate.HasStat("Hitpoints"))
+                    {
+                        continue;
+                    }
+
+                    validCandidates.Add(candidate);
+                }
+
+                if (validCandidates.Count == 0)
+                {
+                    return null;
+                }
+
+                return validCandidates[Stat.Random(0, validCandidates.Count - 1)];
+            }
+
+            private int GetRewardChestTier(int baseTier)
+            {
+                int rewardTier = baseTier + 1;
+
+                if (rewardTier < 2)
+                {
+                    rewardTier = 2;
+                }
+
+                if (rewardTier > 8)
+                {
+                    rewardTier = 8;
+                }
+
+                return rewardTier;
+            }
+
+            private string GetRewardChestBlueprint(int tier)
+            {
+                if (tier < 1)
+                {
+                    tier = 1;
+                }
+
+                if (tier > 8)
+                {
+                    tier = 8;
+                }
+
+                return "Rare Chest" + tier.ToString();
+            }
+
+            private int BuildRewardChestTierFromLairOwner(XRL.World.GameObject lairOwner)
+            {
+                return GetRewardChestTier(BuildChestTierFromLairOwner(lairOwner));
             }
 
             private string BuildAdjectives(
@@ -1448,7 +1652,10 @@ namespace SubterraneanSites
 
                 return tier;
             }
-            
+            // ProperLair intentionally selects from curated terrain blueprints by depth tier
+            // instead of using the literal surface terrain. Special surface locations like
+            // TerrainJoppa can lack LairOwnerTable and fall back to GenericLairOwner,
+            // producing merchant/workshop lairs instead of creature lairs.
             private string PickProperLairTerrainForTier(int tier)
             {
                 string[] terrains = GetProperLairTerrainsForTier(tier);
@@ -1476,7 +1683,9 @@ namespace SubterraneanSites
                 {
                     return new string[]
                     {
-                        "TerrainDesertCanyon"
+                        "TerrainDesertCanyon",
+                        "TerrainSaltmarsh",
+                        "TerrainWatervine"
                     };
                 }
 
