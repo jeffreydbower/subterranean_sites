@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using Qud.API;
 using XRL.Language;
+using System.Text;
 
 
 namespace SubterraneanSites
@@ -172,8 +173,6 @@ namespace SubterraneanSites
             MaxZ = maxZ;
         }
 
-        
-
         public bool Contains(SubterraneanZoneCoord coord)
         {
             if (coord.World != World)
@@ -306,9 +305,79 @@ namespace SubterraneanSites
 
     internal static class SubterraneanDynamicProtectedLocations
     {
+        internal static string DescribeVanillaLairProtectionSample(int maxCount)
+        {
+            StringBuilder text = new StringBuilder();
+
+            text.AppendLine("vanilla lairs captured: " + VanillaLairColumns.Count.ToString());
+
+            int count = 0;
+
+            foreach (ProtectedZoneColumn column in VanillaLairColumns)
+            {
+                if (count >= maxCount)
+                {
+                    break;
+                }
+
+                text.AppendLine(
+                    count.ToString() +
+                    ": " +
+                    column.Name +
+                    " = " +
+                    column.World + "." +
+                    column.ParasangX.ToString() + "." +
+                    column.ParasangY.ToString() + "." +
+                    column.ZoneX.ToString() + "." +
+                    column.ZoneY.ToString() +
+                    ".10-14"
+                );
+
+                count++;
+            }
+
+            return text.ToString();
+        }
+
+        internal static string GetVanillaLairTestZoneId(int index, int z)
+        {
+            if (VanillaLairColumns == null)
+            {
+                return "";
+            }
+
+            if (index < 0 || index >= VanillaLairColumns.Count)
+            {
+                return "";
+            }
+
+            if (z < 10)
+            {
+                z = 10;
+            }
+
+            ProtectedZoneColumn column = VanillaLairColumns[index];
+
+            return
+                column.World + "." +
+                column.ParasangX.ToString() + "." +
+                column.ParasangY.ToString() + "." +
+                column.ZoneX.ToString() + "." +
+                column.ZoneY.ToString() + "." +
+                z.ToString();
+        }
+
+
+        private static List<ProtectedZoneColumn> VanillaLairColumns =  new List<ProtectedZoneColumn>();
+
         public static bool IsProtected(SubterraneanZoneCoord coord, out string reason)
         {
             if (IsProtectedHistoricalSite(coord, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedVanillaLair(coord, out reason))
             {
                 return true;
             }
@@ -340,6 +409,96 @@ namespace SubterraneanSites
 
             reason = "";
             return false;
+        }
+
+        private static bool IsProtectedVanillaLair(
+            SubterraneanZoneCoord coord,
+            out string reason
+        )
+        {
+            foreach (ProtectedZoneColumn column in VanillaLairColumns)
+            {
+                if (column.Contains(coord))
+                {
+                    reason = column.Name;
+                    return true;
+                }
+            }
+
+            reason = "";
+            return false;
+        }
+
+        internal static void CaptureVanillaLairsFromWorldInfo(JoppaWorldBuilder builder)
+        {
+            VanillaLairColumns.Clear();
+
+            if (builder == null)
+            {
+                return;
+            }
+
+            if (builder.worldInfo == null)
+            {
+                return;
+            }
+
+            if (builder.worldInfo.lairs == null)
+            {
+                return;
+            }
+
+            foreach (GeneratedLocationInfo lair in builder.worldInfo.lairs)
+            {
+                if (lair == null)
+                {
+                    continue;
+                }
+
+                if (lair.zoneLocation == null)
+                {
+                    continue;
+                }
+
+                string surfaceZoneId =
+                    Zone.XYToID(
+                        "JoppaWorld",
+                        lair.zoneLocation.X,
+                        lair.zoneLocation.Y,
+                        10
+                    );
+
+                SubterraneanZoneCoord lairCoord;
+
+                try
+                {
+                    lairCoord = SubterraneanZoneCoord.Parse(surfaceZoneId);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                string name = "vanilla lair";
+
+                if (lair.name != null && lair.name != "")
+                {
+                    name = "vanilla lair: " + lair.name;
+                }
+
+                VanillaLairColumns.Add(
+                    new ProtectedZoneColumn(
+                        name,
+                        lairCoord.World,
+                        lairCoord.ParasangX,
+                        lairCoord.ParasangY,
+                        lairCoord.ZoneX,
+                        lairCoord.ZoneY,
+                        10,
+                        14
+                    )
+                );
+            }
         }
 
         private static bool IsProtectedHistoricalSite(SubterraneanZoneCoord coord, out string reason)
@@ -548,6 +707,8 @@ namespace SubterraneanSites
     {
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
+            SubterraneanDynamicProtectedLocations.CaptureVanillaLairsFromWorldInfo(builder);
+
             The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
         }
     }
@@ -567,6 +728,8 @@ namespace SubterraneanSites
         private const bool DebugShowCriticalSecretCoordinates = false;
         private const string CriticalSecretProbeFlag = "SubterraneanSites_CriticalSecretProbeShown_2";
 
+        private const bool DebugShowVanillaLairProtectionSample = false;
+        private const string VanillaLairProbeFlag = "SubterraneanSites_VanillaLairProbeShown_1";
 
         private enum SiteKind
         {
@@ -574,7 +737,7 @@ namespace SubterraneanSites
             BasicLairChaos,
             ProperLair,
             MerchantHive,
-            
+
         }
 
         public override void Register(XRLGame game, IEventRegistrar registrar)
@@ -585,6 +748,7 @@ namespace SubterraneanSites
 
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
+
             if (DebugNameVisitedZonesWithZoneId && zoneBuildEvent != null && zoneBuildEvent.Zone != null)
             {
                 The.ZoneManager.SetZoneName(
@@ -608,15 +772,34 @@ namespace SubterraneanSites
                 return true;
             }
 
+            /*
+            //Debug code for lair saftey test
+            string targetZoneId = TargetZoneId;
+
+            string lairTestZoneId =
+                SubterraneanDynamicProtectedLocations.GetVanillaLairTestZoneId(0, 13);
+
+            if (lairTestZoneId != null && lairTestZoneId != "")
+            {
+                targetZoneId = lairTestZoneId;
+            }*/
+
+
+
+
+
+
             The.Game.SetStringGameState(InitFlag, "Yes");
 
             int rawSeed = XRLCore.Core.Game.GetWorldSeed();
             int zoneSeed = XRLCore.Core.Game.GetWorldSeed(TargetZoneId + rawSeed);
+            //int zoneSeed = XRLCore.Core.Game.GetWorldSeed(targetZoneId + rawSeed);
             System.Random rng = new System.Random(zoneSeed);
 
             int layers = rng.Next(3, 6); // 3-5 layers for now, but I may make it 3-7 at final
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
+            //List<string> siteZoneIds = BuildSiteZoneIds(targetZoneId, layers);
 
             //below checks if site zones are protected
             siteZoneIds = RemoveProtectedZones(siteZoneIds, "site zone");
@@ -625,6 +808,7 @@ namespace SubterraneanSites
             {
                 The.ZoneManager.SetZoneName(
                     TargetZoneId,
+                    //targetZoneId,
                     "SubterraneanSites skipped: all site zones protected",
                     Proper: false
                 );
@@ -873,6 +1057,7 @@ namespace SubterraneanSites
         {
             //debug popup for girsh lair test
             MaybeShowCriticalSecretCoordinateProbe();
+            MaybeShowVanillaLairProtectionProbe();
 
             if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
             {
@@ -915,6 +1100,26 @@ namespace SubterraneanSites
             Popup.Show("You have discovered " + siteDisplayName + ".");
 
             return true;
+        }
+
+        private void MaybeShowVanillaLairProtectionProbe()
+        {
+            if (!DebugShowVanillaLairProtectionSample)
+            {
+                return;
+            }
+
+            if (The.Game.GetStringGameState(VanillaLairProbeFlag) == "Yes")
+            {
+                return;
+            }
+
+            The.Game.SetStringGameState(VanillaLairProbeFlag, "Yes");
+
+            Popup.Show(
+                SubterraneanDynamicProtectedLocations
+                    .DescribeVanillaLairProtectionSample(5)
+            );
         }
 
         private void MaybeShowCriticalSecretCoordinateProbe()
