@@ -1,292 +1,427 @@
-Development Phases
+# Subterranean Sites — Test Plan
 
-1. Runtime Injection POC
+## Purpose
 
-Goals:
-- Prove the mod can intercept zone generation
-- Confirm BeforeZoneBuiltEvent is the correct hook
-- Confirm generated zones persist after re-entry
+This test plan tracks functional, safety, determinism, and release-readiness testing for Subterranean Sites.
 
-Status:
-- Complete
+The most important release requirement is:
 
-Results:
-- BeforeZoneBuiltEvent is the correct runtime hook
-- ZoneActivatedEvent is too late
-- Runtime systems must be explicitly registered via:
-  The.Game.RequireSystem<T>()
+    The mod must not overwrite or damage important vanilla generated content.
 
+If safety initialization fails, generation should fail closed.
 
+---
 
-2. Source Code Catalog + Builder Testing
+## 1. Runtime System / Bootstrap Tests
 
-Goals:
-- Review relevant vanilla builders
-- Identify usable builders vs reference-only builders
-- Test builders in controlled zones
+### 1A. Genesis bootstrap
 
-Status:
-- Mostly complete for the current phase
-- Continuing as needed
+Scenario:
 
-Results:
-- BasicLair is usable
-- SultanDungeon is usable but requires a setup pipeline
-- Mines2 and similar builders are decorator-style
-- Path-related builders still need additional study
+    Mod installed before creating a new world.
 
+Expected:
 
-
-3. Procedural Generation POC
-
-Goals:
-- Validate deterministic selection
-- Validate stable seeded decisions
-- Confirm zones can independently recompute their role
+- `JoppaWorldBuilderExtension.OnAfterBuild(...)` runs.
+- `RuntimeZoneBuilderInjectionSystem` is required.
+- Safety initialization runs.
+- Site/path generation can proceed if safety passes.
 
 Status:
-- Complete
 
-Results:
-- Deterministic RNG model validated
-- Site identity should derive from:
-  world seed + matrix ID
-- Builder internals do not need to be perfectly deterministic as long as site identity and registration decisions are deterministic
+    Passed
 
+### 1B. Retrofit bootstrap
 
+Scenario:
 
-3.5. Runtime Pre-Registration Test
+    Mod installed into an existing save.
 
-This occurred during stacked site development.
+Expected:
+
+- `[CallAfterGameLoaded]` bootstrap runs on save load.
+- `RuntimeZoneBuilderInjectionSystem` is required.
+- Safety initialization runs.
+- Site/path generation can proceed if safety passes.
+
+Status:
+
+    Passed
+
+Notes:
+
+- This resolved the earlier new-world-only assumption.
+- Existing saves are now supported in principle, pending collision testing.
+
+---
+
+## 2. Runtime Pre-Registration Tests
 
 Goal:
-- Test the preferred architecture where generated site builders are registered before the player reaches the zones
 
-Steps:
-- Run a one-time registration trigger near game start
-- Register a fixed stacked test site using ZoneManager.AddZoneBuilder
-- Do not directly call BasicLair.BuildZone
-- Enter the registered zones and observe whether they build correctly
+Confirm that generated content is registered before the player reaches it.
 
-Success Criteria:
-- Registered zones build correctly when entered
-- Current-zone direct build is not required
-- Site layers retain intended stair behavior
+Expected:
+
+- `ZoneManager.AddZoneBuilder(...)` registers builders for future zones.
+- Future zones build correctly when entered.
+- Current-zone direct building is not required.
+- Generated zones persist after re-entry.
 
 Status:
-- Complete
 
-Results:
-- Pre-registration works
-- AddZoneBuilder(...) works for future zones
-- Direct current-zone building is not required for the intended architecture
+    Passed
 
+Known constraint:
 
+    AddZoneBuilder(...) does not affect the zone already in the current build pipeline.
 
-4. Stacked Site Development
+---
 
-Goals:
-- Generate vertical multi-layer sites
-- Use existing vanilla builders where possible
-- Confirm stairs and bottom-layer content
-- Control unwanted lateral exits
+## 3. Determinism Tests
 
-Status:
-- Active / partially complete
+Goal:
 
-4A. BasicLair Stacked Site
+Confirm stable mod-level decisions from stable inputs.
 
-Status:
-- Working prototype
+Tested:
 
-Results:
-- BasicLair-style vertical site works
-- Custom tiered singles/team population tables work
-- BasicLair can serve as a future archetype for:
-  - legendary lair
-  - dense mob lair
-  - vendor/workshop lair
+- world seed
+- zone ID / future matrix ID style inputs
+- `XRLCore.Core.Game.GetWorldSeed(...)`
+- `System.Random(seed)`
 
-Not currently wired into selector:
-- Intentional for now
+Expected:
 
-Reason:
-- Keep current committed code tight around the working SultanHistoric archetype
-- Add BasicLair archetypes later after path/matrix framework is clearer
-
-
-
-4B. SultanDungeon / Historical-Site Stacked Site
+- Same world seed + same input gives same site decision.
+- Same matrix ID should eventually give same site definition.
+- Site type, origin, layer count, and path definition should be deterministic.
 
 Status:
-- Working prototype
-- Feature-complete for first archetype
 
-Results:
-- SultanDungeon can be reused outside vanilla historical site placement
-- Existing generated sultan/region history can be reused
-- Cult mobs populate correctly
-- Region name, tier, and period diagnostics worked
-- Bottom vault relic works
-- Bottom vault hero/leader works via vanilla Relicstyle = Vault behavior
-- Site code now sits behind archetype selector as SultanHistoric
+    Basic deterministic RNG passed.
 
+Still needed after matrix implementation:
 
+- Same seed produces same matrix/site decisions.
+- Same matrix ID produces same archetype.
+- Same matrix ID produces same origin/layer count.
+- Processed matrices do not duplicate generation.
 
-5. Path Development
+---
 
-Goals:
-- Generate deterministic discovery paths
-- Render path mouths and path materials
-- Add holes / vertical path transitions as needed
-- Connect paths to site entrances
+## 4. Site Archetype Functional Tests
 
-Status:
-- Next major phase
+### 4A. SultanHistoric
 
-Expected direction:
-- Path system should be separate from site builders
-- Path builder likely runs near site registration
-- Path should guide players toward site entrance
-- Paths may extend upward/outward from the site
-- Paths should avoid destructive overwrites
+Expected:
 
-Open design questions:
-- Path material types:
-  - stone
-  - dirt
-  - river/water
-  - ruins-like path
-- How often paths cross Z-levels
-- How visible path mouths should be
-- How path interacts with natural caves and special zones
-
-
-
-6. Matrix Development
-
-Goals:
-- Partition underground space into deterministic matrices
-- Assign at most one site per matrix
-- Ensure sites and paths remain within intended bounds
-- Register relevant nearby matrices before the player enters generated content
+- Multi-layer SultanDungeon site generates.
+- Sultan/history/region data are reused successfully.
+- Cult mobs appear.
+- Cult social-role text appears.
+- Bottom vault/relic behavior works.
+- Cult leader/hero behavior works.
+- Relic chest appears with tier-appropriate relic.
 
 Status:
-- Upcoming
 
-Core idea:
-- world seed + matrix ID
-  → deterministic site decision
-  → deterministic site type
-  → deterministic site origin
-  → deterministic path
+    Passed
 
-Need dynamic detection:
-- On zone entry:
-  - determine current matrix
-  - process current matrix
-  - if at matrix edge, process neighbor
-  - if at matrix corner, process diagonal as needed
+### 4B. ProperLair
 
-Important edge case:
-- Portal/drop/forced movement may place player in a matrix before normal edge-trigger registration
+Expected:
 
-Fallback needed:
-- If matrix has not been processed:
-  - attempt late registration
-  - avoid overwriting current/player-occupied zone
-  - skip/defer if unsafe
-
-
-
-7. Safeguards / Base Game Protection
-
-Goals:
-- Avoid overwriting story sites, quest zones, historical sites, and special content
-- Reject risky matrices or zones
-- Prefer skipping mod content over damaging vanilla content
+- Tier-appropriate lair owner table is selected.
+- Lair population is coherent.
+- Extra heroes can spawn.
+- Reward chest appears.
+- Upgraded/rare chest blueprint works.
 
 Status:
-- Partially implemented
-- Needs formal testing
 
-Current safety behavior:
-- Site zones check existing builders
-- Owned zones use:
-  SubterraneanSites_Owner
+    Passed
 
-Future behavior likely needed:
-- If any critical site zone conflicts:
-  - reject whole site
+### 4C. BasicLairChaos
 
-- If path zone conflicts:
-  - skip or route around where possible
+Expected:
 
-- If player is already in a zone:
-  - do not overwrite that zone
-
-Known safety test target:
-- Waterlogged Tunnel
-
-
-
-8. Final Tuning and Gameplay Decisions
-
-Goals:
-- Tune site density
-- Tune path length and visibility
-- Tune rewards, bosses, merchants, factions, and difficulty
-- Decide what feels fun and Qud-like
+- BasicLair layout generates.
+- Tiered singles/team tables populate.
+- Extra faction encounters can spawn.
+- Reward chests can spawn.
+- `SubterraneanSiteMobs` builder remains present and functional.
 
 Status:
-- Future
 
-Candidate site archetype weights discussed earlier:
-- SultanHistoric: about 40%
-- BasicLairLegendary: about 30%
-- BasicLairDense: about 20%
-- BasicLairVendor: about 10%
+    Passed
 
-These are not final.
+### 4D. MerchantHive / Underworld Bazaar
 
+Expected:
 
+- Multi-layer merchant site generates.
+- Merchants use tier-appropriate behavior/stock.
+- Guards or equivalent supporting NPCs appear.
+- Site feels distinct from hostile dungeon archetypes.
 
-9. Test Plan / Release Confidence
+Status:
 
-Testing will be difficult because:
-- Qud world space is large
-- Generation is procedural
-- Sites may be rare
-- Safety failures could be location-specific
-- Special content may be distributed unpredictably
+    Passed
 
-Future test categories:
+---
 
-Functional tests:
-- site generation
-- path generation
-- stairs/holes
-- relic placement
-- cult mobs
-- BasicLair population
-- matrix selection
+## 5. Path Functional Tests
 
-Safety tests:
-- Waterlogged Tunnel
-- known story locations
+Current status:
+
+    Prototype working
+
+Expected current behavior:
+
+- Path zone IDs generate from site origin.
+- Path instructions contain entry/exit directions.
+- Path builder draws visible path material.
+- Vertical transitions can place holes/pits.
+- Path zones pass through safety checks before registration.
+
+Still needed:
+
+- Tie path generation to matrix/site definitions.
+- Clip paths at matrix boundaries.
+- Confirm paths remain discoverable mid-route.
+- Confirm path holes/vertical transitions are usable and visible.
+- Confirm paths do not overwrite protected content.
+
+---
+
+## 6. Runtime Safety Initialization Tests
+
+Goal:
+
+Confirm required protected-location sources are available before generation.
+
+Expected:
+
+- `EnsureSafetyReady()` runs before generation.
+- If safety init fails, no content is registered.
+- Future release behavior should show one player-facing failure popup.
+
+Tested sources:
+
+### 6A. Vanilla lairs / legendary merchant lairs
+
+Source:
+
+    The.Game.GetObjectGameState("JoppaWorldInfo")
+    reflected field: lairs
+
+Expected:
+
+- Recover 125 lairs.
+- Convert lairs to protected Z columns.
+- Spot-check coordinates in game.
+
+Status:
+
+    Passed
+
+### 6B. Historical sites
+
+Source:
+
+    SultanDungeonPlacementOrder_i
+    sultanRegionPosition_[regionName]
+
+Expected:
+
+- Recover historical-site parasang positions.
+- Protect historical site center-zone columns.
+
+Status:
+
+    Passed / previously verified
+
+### 6C. Named special lairs
+
+Source:
+
+    JournalAPI map-note secrets
+
+Targets:
+
+- Oboroqoru
+- Qas/Qon
+- Rermadon
+- Shug’ruith mouth
+- Shug’ruith lair
+
+Expected:
+
+- Recover map-note zone IDs.
+- Protect exact zone columns or parasang columns as appropriate.
+
+Status:
+
+    Passed / previously verified
+
+---
+
+## 7. Collision Safety Tests
+
+Goal:
+
+Confirm site/path registration skips or rejects protected vanilla content.
+
+General expected behavior:
+
+- Protected site zones are removed before registration.
+- `RegisterLayeredSite(...)` checks protection again.
+- Protected path instructions are removed before registration.
+- `RegisterRoadPathZone(...)` checks protection again.
+- If all critical site zones are protected, site generation should skip safely.
+
+Priority targets:
+
+- vanilla lairs
+- legendary merchant lairs
 - vanilla historical sites
-- villages
-- lairs
-- ruins
-- surface regions
+- named special lairs
+- Girsh-related locations
+- villages / settlements if needed
+- known story or special-builder zones
+- Waterlogged Tunnel
 - current-zone late-registration edge case
 
-Determinism tests:
-- same seed produces same matrix/site decisions
-- same matrix ID produces same archetype
-- registration does not duplicate
+Status:
 
-Possible publication artifact:
-- Safety test list / results summary
+    Partially tested.
+    More collision tests required after matrix implementation.
 
-Only publish safety tests if they are good enough and complete enough to provide real confidence.
+---
+
+## 8. Matrix System Tests
+
+Status:
+
+    Upcoming
+
+Expected behavior:
+
+- Player zone converts to matrix ID.
+- Current matrix is processed once.
+- Processed matrix is recorded in game state.
+- Matrix site definition is deterministic.
+- Matrix origin avoids horizontal edges.
+- Surface-containing matrix only places origins at safe depth.
+- Origin leaves enough downward room for site layers.
+- Current/adjacent matrices are registered before the player reaches generated content.
+- Edge and corner logic process needed neighbors.
+- Matrix paths are clipped at matrix boundaries.
+
+Test categories:
+
+### 8A. Basic matrix detection
+
+- enter zones in same matrix
+- confirm same matrix ID
+- cross boundary
+- confirm new matrix ID
+
+### 8B. Process-once behavior
+
+- enter same matrix repeatedly
+- confirm generation does not duplicate
+
+### 8C. Edge/corner behavior
+
+- enter matrix interior
+- enter matrix edge
+- enter matrix corner
+- confirm intended neighbor processing
+
+### 8D. Origin constraints
+
+- confirm no origin appears on matrix edge
+- confirm no invalid shallow origin in surface matrix
+- confirm enough Z-depth for full site
+
+### 8E. Safety interaction
+
+- force/test matrix origin near protected locations
+- confirm protected zones are skipped or site generation fails safely
+
+---
+
+## 9. Retrofit Save Tests
+
+Goal:
+
+Confirm existing-save installs behave safely.
+
+Test scenarios:
+
+- install mod into an existing save near ordinary underground zones
+- install mod into an existing save near known lairs
+- install mod into an existing save near historical/special content if possible
+- load/save/reload after runtime system has been added
+- confirm system does not duplicate behavior after reload
+
+Expected:
+
+- retrofit bootstrap runs once per load as needed
+- runtime system exists after load
+- safety init succeeds or fails closed
+- generated content does not collide with protected vanilla content
+
+Status:
+
+    Bootstrap passed.
+    Full matrix/collision testing still needed.
+
+---
+
+## 10. Release Cleanup Tests
+
+Before release:
+
+- remove obsolete debug popups
+- keep only intentional debug flags
+- add one player-facing safety failure popup
+- confirm no debug zone names appear unless debug flag is enabled
+- confirm README / brief / decisions / spike log are current
+- run genesis and retrofit smoke tests
+- run repeated collision tests after matrix implementation
+
+Expected release behavior:
+
+- no unexplained debug popups
+- no accidental zone renaming
+- no generation when safety init fails
+- no known collisions with protected vanilla content
+
+---
+
+## 11. Current Status Summary
+
+Passed:
+
+- runtime pre-registration
+- genesis bootstrap
+- retrofit bootstrap
+- deterministic RNG proof of concept
+- multiple vertical site archetypes
+- path builder prototype
+- runtime lair recovery from `JoppaWorldInfo.lairs`
+- historical-site protection source
+- named special-site protection source
+
+Remaining critical tests:
+
+- matrix detection
+- matrix process-once behavior
+- matrix edge/corner registration
+- path clipping
+- full collision safety testing
+- retrofit collision safety testing
+- release smoke tests

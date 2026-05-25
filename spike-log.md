@@ -1,380 +1,476 @@
-Spike Log
+# Subterranean Sites — Spike Log
 
-Runtime Injection Discovery
-- AddZoneBuilder(...) does not affect the zone that is already in the current build pipeline
-- BeforeZoneBuiltEvent fires early enough to modify zones and/or register future zones
-- ZoneManager.ApplyBuilderToZone(...) successfully applies builders directly
-- Direct builder application is no longer the preferred primary architecture
+## Runtime Injection / Registration
 
-Conclusion:
-- Direct runtime builder application can work inside BeforeZoneBuiltEvent
-- However, the preferred architecture is now runtime pre-registration:
-  - register builders before the player reaches the generated zone
-  - allow ZoneManager to build the zone normally when entered
+Early testing confirmed that `BeforeZoneBuiltEvent` fires early enough to modify zone metadata and register future builders.
 
+Important finding:
 
-
-IGameSystem Behavior
-- Systems are NOT auto-registered
-- Must call:
-  The.Game.RequireSystem<T>()
-
-Current entry point:
-[JoppaWorldBuilderExtension]
-public class UndergroundSiteJoppaWorldBuilderExtension : IJoppaWorldBuilderExtension
-{
-    public override void OnAfterBuild(JoppaWorldBuilder builder)
-    {
-        The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
-    }
-}
+    ZoneManager.AddZoneBuilder(...) does not affect the zone already in the current build pipeline.
+    It does work for future zones that have not yet been built.
 
 Conclusion:
-- Runtime systems must be explicitly registered during world initialization
-- OnAfterBuild is a good place to require the runtime site-registration system
 
+- Direct builder application can work as a diagnostic or fallback.
+- The primary architecture is runtime pre-registration.
+- Generated sites and paths should be registered before the player reaches them.
 
+Current model:
 
-Event Timing
-- ZoneActivatedEvent → too late; the zone has already been built
-- BeforeZoneBuiltEvent → correct timing for mutation and pre-registration logic
+    BeforeZoneBuiltEvent
+    → detect/generate site or matrix definition
+    → register future zone builders
+    → let ZoneManager build zones normally on entry
+
+---
+
+## IGameSystem / Bootstrap Discovery
+
+Initial understanding:
+
+- `IGameSystem` classes are not automatically added to the save.
+- The runtime system must be explicitly required with:
+
+    The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>()
+
+Genesis bootstrap:
+
+    JoppaWorldBuilderExtension.OnAfterBuild(...)
+    → RequireSystem<RuntimeZoneBuilderInjectionSystem>()
+
+This works for new worlds, but not for existing saves where world generation has already happened.
+
+Retrofit bootstrap discovery:
+
+- `XRLGame.LoadGame(...)` calls `ModManager.CallAfterGameLoaded()`.
+- `CallAfterGameLoaded` invokes methods marked with:
+  - `[HasCallAfterGameLoaded]`
+  - `[CallAfterGameLoaded]`
 
 Conclusion:
-- Procedural site registration should occur from a runtime system responding to BeforeZoneBuiltEvent
-- The long-term design is not to mutate the current zone directly
-- Instead, use the event as a trigger to pre-register future site/path zones
 
+- Genesis installs use `OnAfterBuild`.
+- Retrofit installs use `CallAfterGameLoaded`.
+- Both paths now require the same runtime system and call the same safety initialization gate.
 
+---
 
-Builder Types Identified
+## Event Timing
 
-1. Full builders
-   - SnapjawStockadeMaker
-   - BasicLair
-   - SultanDungeon
+Findings:
 
-2. Decorators
-   - Mines2
-   - Adds features, but does not necessarily define a full layout
+- `ZoneActivatedEvent` is too late to modify the already-built zone.
+- `ZoneActivatedEvent` is useful for discovery behavior after a generated site exists.
+- `BeforeZoneBuiltEvent` is the correct runtime hook for generation/pre-registration logic.
 
-3. Context-dependent builders
-   - SultanDungeon
-   - Requires setup pipeline, arguments, zone properties, and/or game-state objects
+Current use:
 
+- `BeforeZoneBuiltEvent`: generation and registration trigger.
+- `ZoneActivatedEvent`: site discovery popup when entering a site origin zone.
 
+---
 
-Zone Naming Test
-- The.ZoneManager.SetZoneName(...) works in runtime hooks
-- Useful for debugging:
-  - deterministic behavior
-  - selected tier
-  - selected sultan period
-  - selected historic region
-  - site layer index
-
-
-
-Current Capability
-- Deterministic runtime registration into specific underground zones
-- Verified with registered future-zone builders
-- Verified stacked vertical sites
-- Verified that zone modifications persist after re-entry
-- Verified two working site archetype prototypes:
-  - BasicLair-style vertical site
-  - SultanDungeon / historical-site-style vertical site
-
-
-
-ZoneBuilder Definition Tests
-- Moved to: Spike-Log_ZoneBuilderTestCatalog.md
-
-
-
-Deterministic Zone RNG Test
+## Deterministic RNG Test
 
 Goal:
-- Confirm that a stable string input produces repeatable deterministic results across separate new games
 
-Test Setup:
-- Targeted underground zones only (Z > 10)
-- Used ZoneID as the stable input
-- Generated seed using:
-  XRLCore.Core.Game.GetWorldSeed(ZoneID + worldSeed)
-- Created:
-  System.Random(seed)
-- Rolled:
-  - rollA = rng.Next(0, 2)
-  - rollB = rng.Next(1, 101)
-- Wrote seed and rolls into zone name
-- Repeated test across two separate new games
+Confirm that stable string inputs produce repeatable mod decisions across separate new games.
+
+Test setup:
+
+- Used underground ZoneID strings as stable inputs.
+- Generated seed with:
+
+    XRLCore.Core.Game.GetWorldSeed(ZoneID + worldSeed)
+
+- Created `System.Random(seed)`.
+- Wrote seed/roll results into zone names.
+- Repeated test across separate new games.
 
 Result:
-- Same zones selected in both games
-- Selected zones had identical generated names
-- Out of 4 tested zones, the same 2 were selected in both runs
+
+- Same zones selected across repeated new games.
+- Same generated names/rolls appeared for matching zones.
 
 Conclusion:
-- Deterministic selection and RNG behavior is confirmed when using stable inputs
 
-
-
-Important Limitation
-- This does NOT prove that every vanilla builder output is deterministic
-- Builders such as BasicLair and SultanDungeon use Qud internal RNG
-- Only the pre-builder decision layer is deterministic
-- The deterministic layer we control is:
-  - whether a site exists
-  - where it exists
-  - what type it is
-  - what registered builders/properties it receives
-
-
-
-Decision
-- Deterministic RNG model is validated
+- The mod can make deterministic registration decisions from stable inputs.
 - Future site generation should use:
-  world seed + matrix ID
 
-Preferred API:
-- XRLCore.Core.Game.GetWorldSeed("SubterraneanSites:" + matrixId)
+    world seed + matrix ID
 
+Important limitation:
 
+- This does not prove vanilla builders produce identical internal layouts.
+- Only the mod-controlled registration layer must be deterministic.
 
-Notes
-- Displayed game seed and GetWorldSeed() output are different formats
-- GetWorldSeed() returns the internal numeric seed derived from the game seed
-- GetStringGameState("WorldSeed") is not suitable
-- Correct API:
-  XRLCore.Core.Game.GetWorldSeed()
-- World seed is constant across a given game
+---
 
-
-
-Builder Registration Timing Test
+## Builder Registration Timing Test
 
 Observation:
-- Registering a builder with ZoneManager.AddZoneBuilder during BeforeZoneBuiltEvent does not affect the current zone already being built
-- The same registration does affect future zones that have not yet been built
-- Zone metadata such as names/properties can still update immediately
+
+- Registering builders with `AddZoneBuilder(...)` during the build event does not affect the current zone.
+- The same registration affects future unbuilt zones.
+- Zone names/properties can update immediately.
 
 Conclusion:
-- Direct BuildZone calls work for the current zone, but can produce behavior that differs from vanilla registered builders
-- Future site generation should prefer pre-registering builders before the player enters generated zones
 
+- Runtime pre-registration is the correct long-term approach.
+- Direct current-zone build calls are not the preferred architecture.
 
+---
 
-BasicLair Vertical Site Spike
+## BasicLair / Proper Lair Spikes
 
 Goal:
-- Test a stacked underground site using BasicLair as a reusable vertical-site archetype
+
+Determine whether vanilla lair systems can support vertical site archetypes.
 
 Results:
-- Multi-layer BasicLair-style site generation works
-- Stairs can be controlled per layer:
-  - top: down
-  - middle: up/down
-  - bottom: up
-- BasicLair structure is usable as a site archetype
-- Additional custom population can be layered on after layout generation
 
-Population Work:
-- Created tiered single-mob XML tables
-- Created tiered team/encounter XML tables
-- Confirmed that XML population tables can be loaded from the active Qud mod folder
-- Confirmed that custom builder calls can roll XML population tables
-- Confirmed that Number="2-4" style entries spawn multiple objects when selected
-- Confirmed that repeated table rolls are useful for density
+- Multi-layer BasicLair-style sites work.
+- Stairs can be controlled per layer.
+- Tiered XML population tables load from the active mod folder.
+- Repeated population rolls work for density.
+- Team/packet-style tables feel more Qud-like than flat individual mobs.
+- Proper lair generation can use tier-appropriate lair-owner tables.
+- Extra heroes and upgraded reward chests work.
+- Rare chest blueprints can be used for visible reward chests.
 
-Important Finding:
-- Vanilla-style team tables are better than flat random individual mobs
-- Qud encounter feel often comes from groups/packets:
-  - snapjaw parties
-  - baboon groups
-  - spider/ooze lairs
-  - faction parties
-  - boss/leader packets
+Conclusion:
 
-Status:
-- BasicLair is a proven site archetype
-- Current code does not yet include BasicLair in the site selector
-- This is intentional for now to keep the current committed code tight around the working SultanHistoric branch
+- BasicLair is usable as a chaotic/combat archetype.
+- ProperLair is usable as a coherent lair archetype.
+- Lair-style sites should use vanilla table/owner logic where possible.
 
+---
 
-
-SultanDungeon / Historical Site Spike
+## SultanDungeon / Historical Site Spike
 
 Goal:
-- Reuse Qud’s SultanDungeon system to create additional historical-site-like underground sites
-- Avoid creating new sultans, quests, or map secrets during the first working implementation
 
-Key Discovery:
-- SultanDungeon requires a matching game-state object:
-  The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args)
+Reuse Qud’s `SultanDungeon` system for additional historical-site-like underground sites.
 
-- Then each layer can register:
-  The.ZoneManager.AddZoneBuilder(
-      zoneId,
-      6000,
-      "SultanDungeon",
-      "locationName", locationName,
-      "regionName", regionName,
-      "stairs", stairs
-  );
+Key discovery:
 
-- regionName must match the suffix used in:
-  sultanDungeonArgs_<regionName>
+`SultanDungeon` requires a matching game-state object:
 
-SultanDungeonArgs Construction:
-- Working pattern:
-  SultanDungeonArgs args = new SultanDungeonArgs();
+    The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args)
 
-  args.UpdateFromEntity(periodSultan.GetCurrentSnapshot());
-  args.UpdateWalls(period);
-  args.UpdateFromEntity(regionSnapshot);
+Then each layer can register:
 
-  if (50.in100())
-  {
-      args.wallTypes.Add("*SultanWall*");
-  }
+    The.ZoneManager.AddZoneBuilder(
+        zoneId,
+        6000,
+        "SultanDungeon",
+        "locationName", locationName,
+        "regionName", regionName,
+        "stairs", stairs
+    );
 
-Historical Inputs:
-- Existing generated sultan history can be reused
-- Existing generated region snapshots can be reused
-- Existing sultan periods can be mapped from site tier using:
-  SultanDungeon.GetSultanPeriodFromTier(targetTier)
+Working approach:
 
-Working Runtime Strategy:
-- Pick an existing historical region matching the target period when possible
-- Build SultanDungeonArgs from:
-  - a period-matched sultan snapshot
-  - the selected region snapshot
-- Store args under a mod-specific region key:
-  SubterraneanSites_<sourceRegionName>
-- Register SultanDungeon on each vertical layer
+- Reuse existing generated sultan history.
+- Reuse existing generated historical region snapshots.
+- Build `SultanDungeonArgs` from sultan/region snapshots.
+- Store args under a mod-specific region key.
+- Register `SultanDungeon` across vertical layers.
 
-Test Results:
-- SultanDungeon site generation works outside vanilla AddSultanHistoryLocations
-- Sites generated as multi-layer historical-site-like dungeons
-- WFC/template structures appeared correctly
-- Cult mobs appeared
-- Cult mobs had cult-member social role text
-- Region name appeared in diagnostic zone naming
-- Tier/period diagnostic worked
-- Repeated crash testing passed after one non-repeating early crash
-- Top layer can preserve existing builders/connectors while lower layers are fully controlled
+Results:
 
-Vault / Relic / Hero Discovery:
-- Setting:
-  The.ZoneManager.SetZoneProperty(zoneId, "Relicstyle", "Vault");
+- Multi-layer historical-site-like dungeons generate successfully.
+- WFC/template structures appear correctly.
+- Cult mobs appear.
+- Cult social-role text appears.
+- Bottom-layer vault/relic behavior works.
+- Cult leader/hero behavior works.
+- Relic chest and tier-appropriate relic placement work.
 
-- before SultanDungeon builds the bottom layer causes vanilla behavior:
-  Relicstyle = Vault
-  → SultanDungeon creates a vault region
-  → SultanDungeon places a cult leader/hero
-  → SultanDungeon creates or uses a relic chest/container
-  → PlaceRelicBuilder places the relic in the vault chest if available
+Conclusion:
 
-Relic Test Result:
-- Bottom-layer pink relic chest appeared
-- Tier-appropriate relic appeared inside
-- Cybernetics credit wedge appeared
-- Cult leader/hero appeared consistently or near-consistently
+- `SultanDungeon` is a working site archetype.
+- The archetype is now represented as `SultanHistoric`.
 
-Status:
-- SultanDungeon / historical-site-like archetype is now working
-- Current committed selector forces this archetype
-- The archetype has been wrapped in a nested registrar class:
-  SultanHistoricSiteRegistrar
+---
 
+## Merchant Hive / Underworld Bazaar Spike
 
+Goal:
 
-Current Code Organization Spike
+Create a non-hostile or semi-hostile merchant-focused underground site.
 
-Current Architecture:
-RuntimeZoneBuilderInjectionSystem
-    HandleEvent
-    BuildSiteZoneIds
-    RegisterSelectedSite
-    RollSiteKind
+Results:
 
-    Shared helpers:
-        GetStairsForLayer
-        GetZFromZoneId
-        GetTierFromZ
-        IsClaimedByOtherContent
+- Multi-layer merchant-heavy site works.
+- Tier-appropriate merchant behavior works.
+- Legendary/vendor-style gameplay is viable as a rare site type.
+- The site is currently named “Underworld Bazaar.”
 
-    Nested archetype registrar:
-        SultanHistoricSiteRegistrar
-            Register
-            PickRegionForPeriod
-            BuildSultanDungeonArgsFromHistory
-            AddBottomLayerVaultWithRelicAndHero
+Conclusion:
+
+- MerchantHive is a working archetype.
+- It should remain a rarer site type.
+
+---
+
+## Chaos Lair Spike
+
+Goal:
+
+Create a less coherent combat site with mixed encounters.
+
+Results:
+
+- `BasicLair` can provide base structure.
+- Custom tiered singles/team population tables can add density.
+- Extra faction encounters work.
+- Reward chests work.
+- Required `SubterraneanSiteMobs` custom builder must remain available even if IDE shows few direct references.
+
+Conclusion:
+
+- BasicLairChaos is a working archetype.
+- It provides useful variation from coherent lairs and historical sites.
+
+---
+
+## Path System Spike
+
+Goal:
+
+Prototype deterministic paths leading outward/upward from generated sites.
+
+Results:
+
+- Path zone IDs can be generated deterministically.
+- Path instructions can describe entry/exit directions.
+- Custom path builder can draw visible path material.
+- Path builder can place vertical holes/pits.
+- Path material selection works.
+- Path system is separate from site archetype logic.
+
+Conclusion:
+
+- Path concept is viable.
+- Final path generation should be tied to matrix/site generation.
+- Paths must be clipped at matrix boundaries.
+- Paths must run through the same protection checks as sites.
+
+---
+
+## Runtime Safety Spike
+
+Problem:
+
+The mod can register builders into arbitrary world locations. This creates a risk of overwriting vanilla generated content.
+
+Design rule:
+
+    Never overwrite important vanilla content.
+    If safety data is unavailable, generate nothing.
+
+Safety architecture:
+
+- Static protected locations remain hardcoded.
+- Dynamic protected locations are recovered from runtime game state.
+- All protection sources feed `SubterraneanSafety.IsProtected(...)`.
+
+Enforcement points:
+
+- Site zones are filtered before registration.
+- `RegisterLayeredSite(...)` checks again.
+- Path instructions are filtered before registration.
+- `RegisterRoadPathZone(...)` checks again.
+
+Conclusion:
+
+- Safety should be redundant and fail closed.
+
+---
+
+## Vanilla Lair Protection Spike
+
+Problem:
+
+Earlier lair protection used `builder.worldInfo.lairs`, which only works during genesis/worldgen.
+
+Retrofit requirement:
+
+- Existing saves need the same protection.
+- Therefore lair data must be recovered from persistent runtime state.
+
+Discovery:
+
+- `The.Game.GetObjectGameState("JoppaWorldInfo")` exists in loaded saves.
+- It contains a reflected `lairs` field.
+- `JoppaWorldInfo.lairs` contains 125 vanilla lairs.
+
+Test results:
+
+- Runtime reflection recovered 125 lairs.
+- Coordinates were spot-checked in game and confirmed.
+- One checked lair was a legendary merchant lair.
+
+Conclusion:
+
+- Vanilla lair and legendary merchant protection can work in both genesis and retrofit.
+- Use `JoppaWorldInfo.lairs` instead of transient `builder.worldInfo.lairs`.
+
+Current protection:
+
+    each vanilla lair = protected zone column, Z 10–14
+
+---
+
+## Historical Site Protection Spike
+
+Goal:
+
+Protect vanilla historical sites from site/path collision.
+
+Source:
+
+    SultanDungeonPlacementOrder_i
+    sultanRegionPosition_[regionName]
+
+Finding:
+
+- Historical site region positions are stored in persistent game state.
+- Position objects expose `x` and `y` fields.
+- Historical sites can be protected as center-zone columns.
+
+Conclusion:
+
+- Historical site protection works from runtime game state.
+- No need to reconstruct historical sites from broader world-info tables.
+
+---
+
+## Named Special Site Protection Spike
+
+Goal:
+
+Protect important named special lairs and Girsh-related locations.
+
+Source:
+
+    JournalAPI.GetMapNote(secretId)
+
+Protected targets:
+
+- Oboroqoru
+- Qas/Qon
+- Rermadon
+- Shug’ruith mouth
+- Shug’ruith lair
+
+Finding:
+
+- Map-note secrets provide persistent zone IDs.
+- Some locations should be protected as exact zone columns.
+- Some should be protected as broader parasang columns.
+
+Conclusion:
+
+- JournalAPI map notes are the right source for named special-site protection.
+
+---
+
+## Code Organization Spike
+
+Current organization:
+
+- `RuntimeZoneBuilderInjectionSystem`
+  - runtime hooks
+  - site selection
+  - shared registration helpers
+  - path registration
+  - safety gate
+
+- `SubterraneanDynamicProtectedLocations`
+  - dynamic protected-location recovery
+  - lair/historical/special protection checks
+
+- `SubterraneanZoneBuilders.cs`
+  - site registrar classes
+  - archetype-specific registration logic
+
+- `SubterraneanPathBuilder`
+  - custom path drawing and hole placement
 
 Decision:
-- Keep BuildSiteZoneIds(...) shared
-- Keep site type selection outside the individual site archetypes
-- Keep Sultan-specific helper code grouped inside SultanHistoricSiteRegistrar
-- Add future site types as separate registrar classes rather than mixing all helper functions at the same level
 
-Future likely structure:
-- SultanHistoricSiteRegistrar
-- BasicLairLegendarySiteRegistrar
-- BasicLairDenseSiteRegistrar
-- BasicLairVendorSiteRegistrar
+- Keep shared registration helpers in the runtime system for now.
+- Keep archetype-specific logic in registrar classes.
+- Move site content code away from the main runtime file where practical.
 
+---
 
+## Matrix System Spike
 
-Crash / GPU Note
+Planned model:
 
-A prior crash occurred during testing and was later associated with an NVIDIA driver/system instability rather than clear mod fault.
+    underground space → deterministic 3D matrices
+    one site at most per matrix
+    world seed + matrix ID → site definition
+
+Current favored dimensions:
+
+    8 × 5 parasangs
+    20 Z-levels deep
+
+Rules under consideration:
+
+- No site origins on horizontal matrix edges.
+- Surface-containing matrix should place origins at −6 or deeper.
+- Origin must leave enough downward room for full site layers.
+- Paths should be clipped at matrix boundaries.
+- Processed matrices should be marked in game state.
+
+Conclusion:
+
+- Matrix system is the final major generation system.
+- Direct implementation is preferred over zone-level approximation.
+
+---
+
+## Crash / GPU Note
+
+A prior crash during testing was associated with system/GPU instability rather than clear mod fault.
 
 Summary:
-GPU Driver Crash Note (May 5, 2026)
-- BSOD: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED (0x7E)
+
+- BSOD: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED / 0x7E
 - Faulting module: nvlddmkm.sys
-- Occurred after a game crash while loading with mod script
-- Same mod scenario later loaded successfully
-- Current interpretation: likely GPU driver/rendering edge case, not direct mod fault
+- Same mod scenario later loaded successfully.
 
-Mitigation:
-- Keep current driver if it fixes worse Project Zomboid crashes
-- Prefer maximum performance GPU power mode if instability recurs
-- Monitor for recurrence
+Conclusion:
 
+- Track recurrence, but current interpretation is GPU/driver instability, not confirmed mod fault.
 
+---
 
-Next Work
+## Current Status
 
-Path System:
-- Next major implementation target:
-  deterministic discovery paths leading toward generated underground sites
+Working:
 
-Likely work:
-- Study vanilla path/trail systems again
-- Build path material placement
-- Build path holes / vertical transitions
-- Connect path to site entrance
-- Keep path system separate from site archetype builders
+- genesis bootstrap
+- retrofit bootstrap
+- runtime pre-registration
+- deterministic site decisions
+- multiple vertical site archetypes
+- path coordinate/path builder prototype
+- dynamic safety initialization
+- vanilla lair protection from `JoppaWorldInfo.lairs`
+- historical site protection
+- named special site protection
 
-Safety Testing:
-- Important future tests:
-  - Waterlogged Tunnel adjacency / collision test
-  - Known story-site collision tests
-  - Existing special builder collision tests
-  - Partial site behavior
-  - Whole-site rejection behavior
-  - Path collision behavior
-  - Portal/drop/forced-arrival fallback behavior
+Next work:
 
-Matrix System:
-- Future generation model:
-  matrix detection
-  → matrix site selection
-  → site pre-registration
-  → path pre-registration
-
-Need fallback for unusual arrival:
-- If player arrives in a matrix before normal edge-trigger registration:
-  - attempt late registration
-  - avoid overwriting current/player-occupied zone
-  - skip/defer if unsafe
+- implement matrix detection
+- generate per-matrix site definitions
+- register current/adjacent matrices
+- clip paths at matrix boundaries
+- add player-facing failure popup if safety initialization fails
+- run collision tests against protected vanilla content

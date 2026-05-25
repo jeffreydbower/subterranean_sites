@@ -1,209 +1,150 @@
-Subterranean Sites
+# Subterranean Sites
 
-Caves of Qud mod for deterministic underground site injection.
+Caves of Qud mod for deterministic underground site generation.
 
-The mod creates additional underground sites in a way that should feel compatible with Qud’s existing procedural world. The long-term goal is to place deterministic vertical sites underground, guide players toward them through discoverable paths, and avoid overwriting important vanilla content.
+Subterranean Sites adds discoverable underground sites that are intended to feel compatible with Qud’s existing procedural world. Sites are generated as deterministic vertical structures, registered through Qud’s zone-building system, and protected by safety checks intended to avoid overwriting important vanilla content.
 
+## Current Focus
 
+- Generate deterministic stacked underground sites
+- Use runtime pre-registration with `ZoneManager.AddZoneBuilder(...)`
+- Support both new worlds and existing saves
+- Protect vanilla generated content before registering mod content
+- Build path systems that lead players toward generated underground sites
+- Prepare for matrix-based site/path placement
 
-Current Focus
-
-- Develop deterministic stacked underground sites using registered ZoneManager builders
-- Move from direct runtime zone building toward runtime pre-registration
-- Prepare for matrix-based site/path registration
-- Build a path system that leads players toward generated underground sites
-- Preserve vanilla content by skipping or rejecting unsafe zones
-- Keep site generation deterministic from world seed + matrix ID
-
-
-
-Current Working Capabilities
+## Current Working Capabilities
 
 Runtime registration:
-- The mod can load a runtime IGameSystem
-- The system is registered from a JoppaWorldBuilderExtension using:
-  The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>()
-- BeforeZoneBuiltEvent works as the main runtime trigger
-- ZoneManager.AddZoneBuilder works for future zones
+- Runtime `IGameSystem` registration works
+- New-world bootstrap works through `JoppaWorldBuilderExtension.OnAfterBuild(...)`
+- Existing-save bootstrap works through `[CallAfterGameLoaded]`
+- `BeforeZoneBuiltEvent` works as the main runtime generation trigger
+- `ZoneManager.AddZoneBuilder(...)` works for future zones
 - Generated/registered zones persist after re-entry
 
-Shared site infrastructure:
-- BuildSiteZoneIds(...) creates a vertical stack of zone IDs from an origin zone
-- RegisterSelectedSite(...) provides an archetype-selection wrapper
-- RollSiteKind(...) currently forces one archetype, but is ready to become a deterministic weighted roll
-- Shared helpers handle:
-  - stairs per layer
-  - Z-depth parsing
-  - tier calculation
-  - basic ownership/collision checks
+Safety:
+- Safety initialization runs before site/path generation
+- Vanilla lairs and legendary merchant lairs are recovered from `JoppaWorldInfo.lairs`
+- Historical sites are protected from persistent sultan-region game state
+- Named special lairs are protected through `JournalAPI` map-note secrets
+- Sites and paths are skipped when protected zones are detected
 
+Site infrastructure:
+- Vertical site stacks are generated from a shared origin zone
+- Site archetypes are selected deterministically
+- Shared helpers handle stairs, tier calculation, reward chests, music, and zone metadata
+- Site discovery popup works on entering a site origin zone
 
+## Working Site Archetypes
 
-Current Active Archetype: SultanHistoric
+Current working archetypes:
 
-The current active site archetype is a historical-site-like vertical dungeon using Qud’s SultanDungeon builder.
+- `SultanHistoric`
+- `ProperLair`
+- `BasicLairChaos`
+- `MerchantHive` / Underworld Bazaar
+
+### SultanHistoric
+
+Historical-site-style vertical dungeon using Qud’s `SultanDungeon` builder.
 
 Working features:
-- Reuses existing generated sultan history
-- Reuses existing generated historical region snapshots
-- Builds and stores SultanDungeonArgs
-- Registers SultanDungeon across multiple vertical layers
-- Uses existing SultanDungeon WFC/template layout behavior
+- Reuses generated sultan history and region data
+- Registers `SultanDungeon` across multiple vertical layers
 - Generates cult-themed mobs
-- Cult mobs receive cult-member social role text
-- Bottom layer creates a vault
-- Bottom layer receives a tier-appropriate relic/artifact
-- Relicstyle="Vault" causes SultanDungeon to create a cult leader/hero near the vault
-- Top layer preserves existing builders/connectors so natural entrances can survive
-- Lower layers clear existing builders and let SultanDungeon control the level
+- Supports relic/vault behavior on lower layers
 
-Current status:
-- Working prototype
-- Feature-complete for first archetype
-- Currently the only archetype selected by RollSiteKind(...)
+### ProperLair
 
-
-
-Secondary Proven Archetype: BasicLair
-
-A BasicLair-style vertical site was also prototyped successfully.
+Coherent vertical lair using vanilla lair-owner and minion logic.
 
 Working features:
-- Multi-layer lair generation
-- Controlled stairs
-- Tiered single-mob XML population tables
-- Tiered team/encounter XML population tables
-- Custom population post-builder
-- Bottom-layer special content logic
+- Tier-appropriate lair owner selection
+- Lair-style population coherence
+- Extra hero encounters
+- Upgraded reward chests
 
-Current status:
-- Working prototype
-- Not currently wired into the selector
-- Intentionally left out of the active code for now to keep the committed implementation tight around SultanHistoric
+### BasicLairChaos
 
+Mixed combat site using `BasicLair` plus additional population and faction encounters.
 
+Working features:
+- Tiered singles/team population tables
+- Extra faction encounters
+- Reward chest support
 
-Past Direction
+### MerchantHive / Underworld Bazaar
 
-Originally explored:
-- world generation injection
-- direct runtime zone mutation
-- direct builder application to current zones
+Merchant-heavy underground site.
 
-Current direction:
-- runtime pre-registration
-- generated content registered before the player reaches it
-- deterministic decisions based on world seed + matrix/site IDs
+Working features:
+- Multi-layer merchant site
+- Tier-appropriate merchant behavior
+- Guard/merchant-style structure rather than dungeon reward structure
 
-Reason for transition:
-- AddZoneBuilder works cleanly for future zones
-- Direct current-zone building can behave differently from vanilla registered builders
-- Runtime pre-registration better matches how Qud expects zones to be built
+## Planned Path System
 
+The path system is partially implemented.
 
+Current:
+- Deterministic path zone IDs
+- Entry/exit path instructions
+- Custom path builder for visible path material
+- Vertical holes/pits for path transitions
 
-Planned Path System
+Planned:
+- Tie paths to matrix/site generation
+- Clip paths at matrix boundaries
+- Avoid protected vanilla content
+- Make paths discoverable mid-route
 
-The next major feature is deterministic discovery paths.
+## Planned Matrix System
 
-Goals:
-- Create paths leading outward/upward from generated sites
-- Allow players to discover paths naturally underground
-- Use visible path material so players can follow them
-- Add holes or vertical transitions where needed
-- Connect paths to site entrances
-- Keep path generation separate from site archetype generation
+The next major system is deterministic matrix placement.
 
-Possible inspirations:
-- Shug’ruith-style cradle paths
-- Amaranthine Prism river/path behavior
-- Klang path behavior
-- Girsh/cradle-style vertical transitions
+Planned behavior:
+- Divide underground space into 3D matrices
+- Generate at most one site per matrix
+- Derive site definition from world seed + matrix ID
+- Process each matrix once
+- Register current and adjacent matrices before the player reaches generated content
+- Reject or skip protected site/path zones
 
+Current favored matrix size:
+- 8 × 5 parasangs
+- 20 Z-levels deep
 
-
-Planned Matrix System
-
-Long-term site placement will use deterministic 3D matrices.
-
-Each matrix should:
-- be derived from world seed + matrix ID
-- contain at most one generated site
-- determine site existence, site type, site origin, depth, and path behavior
-- be processed once
-
-Future runtime behavior:
-- detect current matrix on zone entry
-- process current matrix
-- process adjacent matrices when near an edge
-- process diagonal neighbors when at a corner
-- support late registration if the player arrives unexpectedly by portal/drop/forced movement
-
-
-
-Safety Philosophy
+## Safety Philosophy
 
 Primary rule:
-- Never overwrite important vanilla content
+
+- Never overwrite important vanilla content.
 
 Preferred behavior:
 - Skip mod content rather than damage vanilla content
-- Reject unsafe sites or matrices when needed
-- Allow imperfect or partial paths if safe
-- Eventually reject whole sites if critical site zones collide with important content
+- Reject unsafe sites or paths
+- Allow partial paths only when safe
+- Disable generation if required safety data cannot initialize
 
-Known future safety test target:
-- Waterlogged Tunnel
+Safety testing remains required before release.
 
-Other safety areas:
-- vanilla historical sites
-- story zones
-- villages
-- special builders
-- surface entrances
-- player-current-zone late registration edge cases
-
-
-
-Current Code Shape
-
-RuntimeZoneBuilderInjectionSystem:
-- handles runtime trigger
-- builds shared vertical site zone IDs
-- selects site archetype
-- owns shared helper functions
-
-SultanHistoricSiteRegistrar:
-- nested archetype-specific registrar
-- selects historical region/sultan data
-- builds SultanDungeonArgs
-- registers SultanDungeon layers
-- adds bottom vault/relic behavior
-
-Future expected registrar classes:
-- BasicLairLegendarySiteRegistrar
-- BasicLairDenseSiteRegistrar
-- BasicLairVendorSiteRegistrar
-
-
-
-Current Status
+## Current Status
 
 Working:
-- Runtime system loads
-- BeforeZoneBuiltEvent hook works
-- Future-zone builder registration works
-- Deterministic RNG model validated
-- BasicLair vertical prototype works
-- SultanDungeon historical-site prototype works
-- Relic vault + cult leader behavior works
-- Site selector wrapper exists
-- SultanHistoric archetype is wrapped in a nested registrar
+- runtime pre-registration
+- genesis bootstrap
+- retrofit bootstrap
+- dynamic safety initialization
+- vanilla lair recovery from persistent runtime state
+- historical-site protection
+- named special-site protection
+- multiple vertical site archetypes
+- path coordinate/path builder prototype
 
 Next:
-- start path system
-- safety tests near Waterlogged Tunnel
-- matrix implementation
-- later add BasicLair archetypes back into selector
-
-
+- implement matrix detection and generation
+- connect matrix system to site/path registration
+- clip paths at matrix boundaries
+- run collision tests against vanilla lairs, historical sites, special lairs, and other important content
+- add a player-facing failure popup if safety initialization fails

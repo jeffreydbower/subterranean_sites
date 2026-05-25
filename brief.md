@@ -1,327 +1,300 @@
-Subterranean Sites
+# Subterranean Sites — Brief
 
-Overview
+## Overview
 
-Subterranean Sites is a Caves of Qud mod that introduces deterministic, multi-zone underground “sites” that players can discover through exploration.
+Subterranean Sites is a Caves of Qud mod that introduces deterministic underground sites that can be discovered through exploration.
 
-These sites:
-- are generated/registered when the player first approaches or encounters their broader area
-- exist at arbitrary underground depths
-- consist primarily of stacked dungeon layouts of about 3–7 layers
-- use vertical column structure: same X/Y, varying Z
-- use existing vanilla zone builders where possible
-- will eventually have generated paths extending outward and upward from the site
-- may use path materials such as water, dirt, stone, brick, ruins-like material, or Girsh resin
+The mod currently generates vertical, multi-zone underground sites composed of stacked Z-levels at a shared X/Y coordinate. Sites are registered at runtime and built by vanilla zone builders where possible.
 
-Critical note:
-- Sites are vertical structures, not multi-parasang horizontal layouts.
-- Path systems may extend across many zones, but the site itself is currently treated as a vertical stack.
+The long-term design is that each site is discoverable through an upward/outward path system, allowing players to find generated deep content organically without relying on map markers, compasses, or explicit quest pointers.
 
+## Current Design
 
-
-Core Mechanics
-
-Site Generation
-
-Original plan:
-- Sites were injected at runtime using BeforeZoneBuiltEvent
-- Builders were applied directly to zones using:
-  ZoneManager.ApplyBuilderToZone(...)
-
-Updated plan:
-- BeforeZoneBuiltEvent remains the runtime trigger
-- The preferred architecture is now runtime pre-registration
-- Builders are registered for future zones using:
-  ZoneManager.AddZoneBuilder(...)
-- ZoneManager then builds those zones normally when the player enters them
-
-Critical note:
-- AddZoneBuilder(...) does not affect the zone already in the current build pipeline
-- Therefore, site/path zones must be registered before the player enters them
-- Direct BuildZone / ApplyBuilderToZone behavior is retained only as a fallback or diagnostic approach
-
-Site membership:
-- Site membership must be computed deterministically
-- Future site identity should derive from:
-  world seed + matrix ID
-- Site layers must agree on shared site parameters:
-  - site type
-  - origin
-  - depth/layer count
-  - path definition
-  - reward/bottom-layer behavior
-
-
-
-Navigation
-
-Players should discover sites organically.
-
-The planned discovery system is:
-- an outward and upward path from each generated site
-- paths may extend roughly 30–40 zones, subject to tuning
-- paths should provide a traversable and visible route toward the site
-- paths may be discovered mid-route
-- paths may use distinct materials such as:
-  - water
-  - dirt
-  - stone
-  - brick
-  - ruins-like material
-  - Girsh resin
-
-Removed:
-- compass system
-- directional feedback system
-- attunement stones
-
-Critical note:
-- The path system must be deterministic and reconstructible from the same matrix/site seed
-- Paths are separate from site generation
-- Paths should not depend on the internals of any particular site builder
-- Paths may use holes or other vertical transitions, while sites generally use stairs
-
-
-
-Progression
-
-There is no explicit progression system.
-
-Player goal:
-- discover a path or entrance
-- follow it to the site
-- explore downward through the stacked site
-- reach the bottom layer
-
-Bottom layer should usually contain:
-- artifact/relic reward
-- boss, cult leader, legendary NPC, or equivalent special encounter
-
-Potential future additions:
-- rare legendary merchant sites
-- vendor/workshop lairs
-- dense combat lairs
-- alternate reward structures
-
-Critical note:
-- Reward placement should be tied to the site definition
-- Reward behavior should not depend on uncontrolled per-zone randomness where avoidable
-
-
-
-Current Working Site Archetypes
-
-SultanHistoric
-
-Status:
-- Working
-- Current active archetype
-- Feature-complete for the first historical-site-style prototype
-
-Description:
-- Uses Qud’s SultanDungeon builder
-- Reuses existing generated sultan history
-- Reuses existing generated historical region snapshots
-- Builds and stores SultanDungeonArgs
-- Registers SultanDungeon across multiple vertical layers
-- Produces historical-site-like layouts and cult populations
-
-Working behavior:
-- Multi-layer SultanDungeon site generates successfully
-- Cult mobs appear
-- Cult mobs receive cult-member social role text
-- Region name, tier, and sultan period diagnostics worked
-- Top layer preserves existing builders/connectors so natural entrances can survive
-- Lower layers clear existing builders and let SultanDungeon control the zone
-- Bottom layer uses Relicstyle="Vault"
-- Relicstyle="Vault" causes SultanDungeon to create a vault region and cult leader/hero
-- PlaceRelicBuilder places a tier-appropriate relic/artifact into the vault chest
-
-Important implementation bridge:
-- SultanDungeon requires:
-  The.Game.SetObjectGameState("sultanDungeonArgs_" + regionName, args)
-
-- Then each layer registers:
-  The.ZoneManager.AddZoneBuilder(
-      zoneId,
-      6000,
-      "SultanDungeon",
-      "locationName", locationName,
-      "regionName", regionName,
-      "stairs", stairs
-  );
-
-Current code organization:
-- Sultan-specific logic is wrapped in:
-  SultanHistoricSiteRegistrar
-
-
-
-BasicLair
-
-Status:
-- Working prototype
-- Not currently wired into the active site selector
-
-Description:
-- Uses BasicLair as a vertical lair-style archetype
-- Tested with custom tiered singles/team population tables
-- Intended future variants:
-  - BasicLairLegendary
-  - BasicLairDense
-  - BasicLairVendor
-
-Working behavior:
-- Multi-layer BasicLair-style site generation works
-- Controlled stairs work
-- Tiered XML population tables load from the active mod folder
-- Singles and team tables can populate levels
-- Bottom-layer special content logic was prototyped
-
-Reason it is not currently active:
-- The current committed code keeps only the working SultanHistoric archetype wired into the selector
-- BasicLair variants will be reintroduced after path/matrix infrastructure is clearer
-
-
-
-Current Focus
-
-Current development focus:
-- Start deterministic path generation
-- Keep path generation separate from site archetype generation
-- Prepare for matrix-based site/path registration
-- Begin safety testing near known special content, especially Waterlogged Tunnel
-- Preserve vanilla content by skipping/rejecting unsafe zones or matrices
-
-Completed:
-- Identify usable zone builders
-- Confirm BasicLair as a usable vertical site archetype
-- Confirm SultanDungeon as a usable historical-site archetype
-- Confirm runtime pre-registration works
-- Confirm deterministic RNG model for site decisions
-- Confirm relic vault + vanilla cult leader behavior
-- Refactor SultanHistoric code into a nested registrar behind a site selector
-
-
-
-Current Technical Status
-
-Confirmed:
-- Runtime system registration works through JoppaWorldBuilderExtension
-- BeforeZoneBuiltEvent works as the runtime trigger
-- AddZoneBuilder(...) works for future zones
-- Direct current-zone building is not required for the intended architecture
-- Generated zones persist after re-entry
-- Multi-zone deterministic selection works
-- Stable ZoneID/world-seed-based RNG produces repeatable decisions across separate new games
-- Constructed static-location multi-layer sites
-- Deterministic layer count implemented
-- BasicLair stacked site works
-- SultanDungeon stacked site works
-- SultanDungeon can be used outside vanilla AddSultanHistoryLocations
-- Bottom-layer relic vault and cult leader behavior works through vanilla systems
-
-Critical note:
-- Future system must ensure all layers agree on site parameters
-- The seed should be site/matrix based, not independently recalculated per layer in a way that can diverge
-- Builder internals do not need to be perfectly deterministic if site identity and registration decisions remain deterministic
-
-
-
-Architecture Update
-
-The project still uses a runtime system registered through JoppaWorldBuilderExtension.
-
-The architecture has shifted:
-
-Old model:
-- direct runtime zone mutation
-- direct builder application to current zone
+Subterranean Sites uses a runtime registration system rather than directly mutating already-built zones.
 
 Current model:
-- runtime pre-registration
-- register builders for future zones
-- allow ZoneManager to build zones normally when entered
 
-Current runtime system responsibilities:
-- respond to BeforeZoneBuiltEvent
-- build shared vertical zone ID stacks
-- select site archetype
-- register future site zones
-- mark owned zones
-- avoid obvious collisions
+- The runtime system registers site and path builders before target zones are built.
+- `ZoneManager.AddZoneBuilder(...)` is used for future zones.
+- Zones are then built normally by the game when entered.
+- Site identity and layout decisions are deterministic.
+- Generation decisions are based on world seed plus deterministic site/matrix inputs.
+- Sites currently use vertical stacks of about 3–7 layers.
+- Paths are generated separately from site archetypes.
 
-Future runtime system responsibilities:
-- detect current matrix
-- detect nearby matrix boundaries
-- generate deterministic site definitions
-- register site builders
-- register path builders
-- process adjacent matrices near edges/corners
-- attempt safe late registration if the player arrives by portal/drop/forced movement
-- avoid directly building the current zone except as a fallback
+Important constraint:
 
+- `AddZoneBuilder(...)` does not affect the zone already in the current build pipeline.
+- Therefore, final matrix/path logic must register generated content before the player reaches it.
 
+## Site Archetypes
 
-Safety Direction
+Several site archetypes are now working or near-working.
+
+### SultanHistoric
+
+Status: working.
+
+Uses Qud’s `SultanDungeon` builder to create historical-site-like underground structures.
+
+Behavior:
+
+- Builds stacked SultanDungeon layers.
+- Reuses vanilla sultan history and generated region data.
+- Uses `SultanDungeonArgs` stored in game state.
+- Can create cult populations, cult leaders, and relic vault behavior.
+- Bottom layers can use vault/relic-style reward behavior.
+
+### ProperLair
+
+Status: working.
+
+Uses vanilla lair-owner logic and tier-appropriate lair owner tables selected from terrain/lair-owner sources.
+
+Behavior:
+
+- Selects a tier-appropriate terrain/lair-owner table.
+- Generates a coherent lair around a lair owner/minion population.
+- Supports extra hero encounters.
+- Supports upgraded reward chests.
+- Uses shared reward chest helpers.
+
+### MerchantHive / Underworld Bazaar
+
+Status: working.
+
+Creates a multi-layer underground merchant site.
+
+Behavior:
+
+- Generates merchant-heavy layers.
+- Uses tier-appropriate merchant stock behavior.
+- Uses guard/merchant-style gameplay rather than hostile dungeon reward structure.
+- Currently named “Underworld Bazaar.”
+
+### BasicLairChaos
+
+Status: working.
+
+Creates a mixed combat/dungeon site using BasicLair plus extra hostile population and occasional faction/chest encounters.
+
+Behavior:
+
+- Uses `BasicLair`.
+- Adds tiered singles/team population rolls.
+- Can add faction encounters and reward chests.
+- Intended to provide a less coherent but more chaotic combat site.
+
+## Current Site Selection
+
+Site type is selected deterministically from the site seed.
+
+Current rough weighting:
+
+- SultanHistoric: major/default historical archetype
+- ProperLair: major lair archetype
+- BasicLairChaos: combat-chaos archetype
+- MerchantHive: rarer merchant archetype
+
+The exact weighting is still tunable.
+
+## Path System
+
+The path system is partially implemented.
+
+Current behavior:
+
+- Generates deterministic path zone IDs from a site origin.
+- Paths move outward and upward.
+- Path instructions describe entry/exit connections.
+- A custom path zone builder can draw visible paths through zones.
+- Paths may use road/brick/stone/ruin-like materials.
+- Vertical path transitions can place holes/pits.
+
+Planned behavior:
+
+- Path generation will be tied to matrix/site generation.
+- Paths should be clipped at matrix boundaries.
+- Paths should avoid protected vanilla content.
+- Paths should be discoverable mid-route.
+- Paths should make deep sites findable without direct map hints.
+
+## Matrix System
+
+The matrix system is the next major development step.
+
+Planned matrix model:
+
+- Divide underground space into deterministic 3D matrices.
+- Candidate size currently favored: 8 × 5 parasangs horizontally and 20 Z-levels deep.
+- Each matrix may generate at most one site.
+- Matrix ID plus world seed determines:
+  - site type
+  - origin
+  - layer count
+  - path direction/material
+  - reward/site parameters
+
+Planned constraints:
+
+- Site origins should not appear on horizontal matrix edges.
+- In the surface-containing matrix, origins should begin at depth −6 or deeper.
+- Site origin must leave enough downward room for the full vertical site.
+- Generation should happen once per matrix and be recorded in game state.
+
+## Runtime Bootstrap
+
+The mod now supports both major install scenarios.
+
+### Genesis
+
+“Genesis” means the mod is installed before a new world is created.
+
+Bootstrap path:
+
+- `JoppaWorldBuilderExtension.OnAfterBuild(...)`
+- requires `RuntimeZoneBuilderInjectionSystem`
+- initializes runtime safety
+
+### Retrofit
+
+“Retrofit” means the mod is installed into an already-existing save.
+
+Bootstrap path:
+
+- `[HasCallAfterGameLoaded]`
+- `[CallAfterGameLoaded]`
+- requires `RuntimeZoneBuilderInjectionSystem`
+- initializes runtime safety after save load
+
+This was added because `OnAfterBuild(...)` only covers world-generation flow and is not sufficient for existing saves.
+
+## Safety System
+
+The safety system is now release-critical and central to the project.
 
 Primary rule:
-- Never overwrite important vanilla content
 
-Current safety behavior:
-- Uses SubterraneanSites_Owner metadata
-- Checks for existing builders such as SultanDungeon, Village, and BasicLair
-- Skips zones that appear claimed by other content
+- Never overwrite important vanilla generated content.
 
-Future safety behavior:
-- Reject whole sites if critical site zones conflict
-- Allow paths to route around, skip, or partially fail if needed
-- Avoid overwriting the current player-occupied zone during late registration
-- Test near known special content
+Before any site/path generation, the runtime system calls `EnsureSafetyReady()`.
 
-Known future safety test target:
-- Waterlogged Tunnel
+If safety initialization fails:
 
-Other safety targets:
-- vanilla historical sites
-- villages
-- story zones
-- lairs
-- ruins
-- special builder zones
-- surface entrances
-- portal/drop/forced-arrival edge cases
+- generation does not proceed
+- no site/path builders are registered
 
+Protected-content sources currently include:
 
+### Static protected locations
 
-Next Technical Direction
+Hardcoded known important areas.
 
-Path system:
-- Study vanilla path/trail systems
-- Build deterministic path material placement
-- Add path mouths
-- Add path holes or vertical transitions
-- Connect paths to site entrances
-- Ensure path generation does not depend on a specific site builder
+### Historical sites
 
-Matrix system:
-- Partition underground space into deterministic 3D matrices
-- Assign at most one site per matrix
-- Generate site definition from world seed + matrix ID
-- Register current/adjacent matrices before player reaches generated content
-- Add safety checks and processed-matrix markers
+Read from persistent game state:
 
-Site archetype expansion:
-- Keep SultanHistoric active for now
-- Later add BasicLair archetypes back into selector:
-  - BasicLairLegendary
-  - BasicLairDense
-  - BasicLairVendor
+- `SultanDungeonPlacementOrder_i`
+- `sultanRegionPosition_[regionName]`
 
-Testing:
-- Build functional tests for path/site generation
-- Build safety tests for vanilla-content collisions
-- Build determinism tests across repeated worlds/seeds
-- Document safety tests if they become complete enough to provide confidence
+Historical site columns are protected across their relevant Z range.
 
+### Vanilla lairs and legendary merchant lairs
 
+Read from persistent runtime world state:
+
+- `The.Game.GetObjectGameState("JoppaWorldInfo")`
+- reflected field: `lairs`
+- expected count: 125
+
+Each lair is protected as a surface-origin column from Z 10–14.
+
+This replaced the earlier genesis-only capture from `builder.worldInfo.lairs`.
+
+### Named special lairs / Girsh-related sites
+
+Read from `JournalAPI` map-note secrets, including:
+
+- Oboroqoru
+- Qas/Qon
+- Rermadon
+- Shug’ruith mouth
+- Shug’ruith lair
+
+Some are protected as exact zone columns; others are protected as broader parasang columns.
+
+## Safety Enforcement Points
+
+Protection is enforced in multiple places:
+
+- Candidate site zones are filtered before registration.
+- `RegisterLayeredSite(...)` checks protection again before registering each site layer.
+- Candidate path zones are filtered before path registration.
+- `RegisterRoadPathZone(...)` checks protection again before adding path builders.
+
+This creates redundant protection against accidental site/path collisions.
+
+## Testing Completed
+
+Confirmed:
+
+- Runtime system registration works in new worlds.
+- Runtime system registration works when the mod is installed into existing saves.
+- `CallAfterGameLoaded` bootstrap works for retrofit installs.
+- `JoppaWorldInfo.lairs` persists in existing saves.
+- Runtime reflection can recover 125 vanilla lairs.
+- Recovered lair coordinates were spot-checked in game and confirmed.
+- Historical site coordinate protection works from game-state vectors.
+- Special lair map notes can be read through `JournalAPI`.
+- Site/path registration is blocked when protection rejects a zone.
+- Multi-layer sites generate and persist.
+- ProperLair, MerchantHive, BasicLairChaos, and SultanHistoric archetypes all have working prototypes.
+- Path builder can place visible path material and vertical holes.
+
+## Remaining Work
+
+### Matrix generation
+
+Implement deterministic matrix detection and per-matrix site generation.
+
+Needed:
+
+- Convert player zone to matrix ID.
+- Track generated matrices in game state.
+- Pick deterministic origin within matrix.
+- Roll deterministic site type/layers.
+- Reject protected origins/site layers.
+- Generate and clip paths within matrix bounds.
+- Register site/path zones.
+
+### Collision testing
+
+Perform dedicated collision tests against:
+
+- vanilla lairs
+- legendary merchant lairs
+- historical sites
+- Girsh/special lairs
+- villages/settlements if needed
+- known story/special content
+- matrix edge cases
+- retrofit saves
+
+### Release cleanup
+
+Before release:
+
+- remove obsolete debug popups
+- keep only intentional debug flags
+- document safety limitations honestly
+- add a player-facing failure popup if safety initialization fails
+- finish README, decisions, spike log, and test plan updates
+- run repeated no-collision tests after the final matrix implementation
+
+## Current Status
+
+The project has moved from proof-of-concept site injection to a near-release architecture.
+
+The main remaining critical system is matrix-based generation. The major recent detour resolved a release-blocking safety issue: retrofit installs can now initialize the runtime system and recover vanilla generated lair locations from persistent game state before generating any mod content.
+
+This means the mod is no longer limited conceptually to new worlds only, provided continued testing confirms that protected-location detection remains reliable.
