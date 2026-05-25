@@ -13,11 +13,30 @@ using System.Reflection;
 using System.Text;
 using Qud.API;
 using XRL.Language;
-using System.Text;
+using System.Collections;
 
 
 namespace SubterraneanSites
 {
+
+    [HasCallAfterGameLoaded]
+    public static class SubterraneanSitesBootstrap
+    {
+        [CallAfterGameLoaded]
+        public static void AfterGameLoaded()
+        {
+            if (The.Game == null)
+            {
+                return;
+            }
+
+            RuntimeZoneBuilderInjectionSystem system =
+                The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
+
+            system.EnsureSafetyReady();
+        }
+    }
+
     internal struct SubterraneanZoneCoord
     {
         public string World;
@@ -305,68 +324,358 @@ namespace SubterraneanSites
 
     internal static class SubterraneanDynamicProtectedLocations
     {
-        internal static string DescribeVanillaLairProtectionSample(int maxCount)
+
+        internal static bool InitializeRuntimeProtection()
         {
-            StringBuilder text = new StringBuilder();
+            ClearRuntimeProtection();
 
-            text.AppendLine("vanilla lairs captured: " + VanillaLairColumns.Count.ToString());
+            bool lairsOk = CaptureVanillaLairsFromRuntimeWorldInfo();
+            bool historicalOk = CanReadHistoricalSiteProtection();
+            bool specialsOk = CanReadSpecialProtectionSources();
 
-            int count = 0;
-
-            foreach (ProtectedZoneColumn column in VanillaLairColumns)
-            {
-                if (count >= maxCount)
-                {
-                    break;
-                }
-
-                text.AppendLine(
-                    count.ToString() +
-                    ": " +
-                    column.Name +
-                    " = " +
-                    column.World + "." +
-                    column.ParasangX.ToString() + "." +
-                    column.ParasangY.ToString() + "." +
-                    column.ZoneX.ToString() + "." +
-                    column.ZoneY.ToString() +
-                    ".10-14"
-                );
-
-                count++;
-            }
-
-            return text.ToString();
+            return lairsOk && historicalOk && specialsOk;
         }
 
-        internal static string GetVanillaLairTestZoneId(int index, int z)
+        internal static bool HasRuntimeProtectionData()
+        {
+            return VanillaLairColumns != null && VanillaLairColumns.Count > 0;
+        }
+
+        private static void ClearRuntimeProtection()
         {
             if (VanillaLairColumns == null)
             {
-                return "";
+                VanillaLairColumns = new List<ProtectedZoneColumn>();
             }
 
-            if (index < 0 || index >= VanillaLairColumns.Count)
-            {
-                return "";
-            }
-
-            if (z < 10)
-            {
-                z = 10;
-            }
-
-            ProtectedZoneColumn column = VanillaLairColumns[index];
-
-            return
-                column.World + "." +
-                column.ParasangX.ToString() + "." +
-                column.ParasangY.ToString() + "." +
-                column.ZoneX.ToString() + "." +
-                column.ZoneY.ToString() + "." +
-                z.ToString();
+            VanillaLairColumns.Clear();
         }
 
+        internal static bool CaptureVanillaLairsFromRuntimeWorldInfo()
+        {
+            if (VanillaLairColumns == null)
+            {
+                VanillaLairColumns = new List<ProtectedZoneColumn>();
+            }
+
+            VanillaLairColumns.Clear();
+
+            if (The.Game == null)
+            {
+                return false;
+            }
+
+            object worldInfo = null;
+
+            try
+            {
+                worldInfo = The.Game.GetObjectGameState("JoppaWorldInfo");
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (worldInfo == null)
+            {
+                return false;
+            }
+
+            FieldInfo lairsField = worldInfo.GetType().GetField(
+                "lairs",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            if (lairsField == null)
+            {
+                return false;
+            }
+
+            object lairsObject = null;
+
+            try
+            {
+                lairsObject = lairsField.GetValue(worldInfo);
+            }
+            catch
+            {
+                return false;
+            }
+
+            IEnumerable lairs = lairsObject as IEnumerable;
+
+            if (lairs == null)
+            {
+                return false;
+            }
+
+            foreach (object lair in lairs)
+            {
+                TryAddVanillaLairColumnFromGeneratedLocationInfo(lair);
+            }
+
+            return VanillaLairColumns.Count > 0;
+        }
+
+        private static bool TryAddVanillaLairColumnFromGeneratedLocationInfo(object lair)
+        {
+            if (lair == null)
+            {
+                return false;
+            }
+
+            Type type = lair.GetType();
+
+            FieldInfo zoneLocationField = type.GetField(
+                "zoneLocation",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            if (zoneLocationField == null)
+            {
+                return false;
+            }
+
+            object zoneLocation = null;
+
+            try
+            {
+                zoneLocation = zoneLocationField.GetValue(lair);
+            }
+            catch
+            {
+                return false;
+            }
+
+            int x;
+            int y;
+
+            if (!TryGetLocationXY(zoneLocation, out x, out y))
+            {
+                return false;
+            }
+
+            string surfaceZoneId = Zone.XYToID("JoppaWorld", x, y, 10);
+
+            SubterraneanZoneCoord lairCoord;
+
+            try
+            {
+                lairCoord = SubterraneanZoneCoord.Parse(surfaceZoneId);
+            }
+            catch
+            {
+                return false;
+            }
+
+            string name = TryGetStringField(lair, "name");
+
+            if (name == null || name == "")
+            {
+                name = "vanilla lair";
+            }
+            else
+            {
+                name = "vanilla lair: " + name;
+            }
+
+            VanillaLairColumns.Add(
+                new ProtectedZoneColumn(
+                    name,
+                    lairCoord.World,
+                    lairCoord.ParasangX,
+                    lairCoord.ParasangY,
+                    lairCoord.ZoneX,
+                    lairCoord.ZoneY,
+                    10,
+                    14
+                )
+            );
+
+            return true;
+        }
+
+        private static string TryGetStringField(object obj, string fieldName)
+        {
+            if (obj == null || fieldName == null || fieldName == "")
+            {
+                return "";
+            }
+
+            FieldInfo field = obj.GetType().GetField(
+                fieldName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            if (field == null)
+            {
+                return "";
+            }
+
+            try
+            {
+                object value = field.GetValue(obj);
+
+                if (value == null)
+                {
+                    return "";
+                }
+
+                return value.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static bool TryGetLocationXY(object location, out int x, out int y)
+        {
+            x = 0;
+            y = 0;
+
+            if (location == null)
+            {
+                return false;
+            }
+
+            int foundX;
+            int foundY;
+
+            if (TryGetIntMember(location, "X", out foundX) &&
+                TryGetIntMember(location, "Y", out foundY))
+            {
+                x = foundX;
+                y = foundY;
+                return true;
+            }
+
+            if (TryGetIntMember(location, "x", out foundX) &&
+                TryGetIntMember(location, "y", out foundY))
+            {
+                x = foundX;
+                y = foundY;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryGetIntMember(object obj, string name, out int value)
+        {
+            value = 0;
+
+            if (obj == null || name == null || name == "")
+            {
+                return false;
+            }
+
+            Type type = obj.GetType();
+
+            PropertyInfo property = type.GetProperty(
+                name,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            if (property != null)
+            {
+                try
+                {
+                    object propertyValue = property.GetValue(obj, null);
+
+                    if (propertyValue != null)
+                    {
+                        value = Convert.ToInt32(propertyValue);
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            FieldInfo field = type.GetField(
+                name,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            if (field != null)
+            {
+                try
+                {
+                    object fieldValue = field.GetValue(obj);
+
+                    if (fieldValue != null)
+                    {
+                        value = Convert.ToInt32(fieldValue);
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return false;
+        }
+
+        private static bool CanReadHistoricalSiteProtection()
+        {
+            if (The.Game == null)
+            {
+                return false;
+            }
+
+            int found = 0;
+
+            for (int i = 0; i < 8; i++)
+            {
+                string regionName =
+                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
+
+                if (regionName == null || regionName == "")
+                {
+                    continue;
+                }
+
+                object position = null;
+
+                try
+                {
+                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                int x;
+                int y;
+
+                if (TryGetXY(position, out x, out y))
+                {
+                    found++;
+                }
+            }
+
+            return found == 8;
+        }
+
+        private static bool CanReadSpecialProtectionSources()
+        {
+            return
+                HasSecretZoneId("$oboroqorulair") &&
+                HasSecretZoneId("$qasqonlair") &&
+                HasSecretZoneId("$rermadonlair") &&
+                HasSecretZoneId("$shugruithmouth") &&
+                HasSecretZoneId("$shugruithlair");
+        }
+
+        private static bool HasSecretZoneId(string secretId)
+        {
+            string zoneId = GetSecretZoneId(secretId);
+            return zoneId != null && zoneId != "";
+        }
 
         private static List<ProtectedZoneColumn> VanillaLairColumns =  new List<ProtectedZoneColumn>();
 
@@ -427,78 +736,6 @@ namespace SubterraneanSites
 
             reason = "";
             return false;
-        }
-
-        internal static void CaptureVanillaLairsFromWorldInfo(JoppaWorldBuilder builder)
-        {
-            VanillaLairColumns.Clear();
-
-            if (builder == null)
-            {
-                return;
-            }
-
-            if (builder.worldInfo == null)
-            {
-                return;
-            }
-
-            if (builder.worldInfo.lairs == null)
-            {
-                return;
-            }
-
-            foreach (GeneratedLocationInfo lair in builder.worldInfo.lairs)
-            {
-                if (lair == null)
-                {
-                    continue;
-                }
-
-                if (lair.zoneLocation == null)
-                {
-                    continue;
-                }
-
-                string surfaceZoneId =
-                    Zone.XYToID(
-                        "JoppaWorld",
-                        lair.zoneLocation.X,
-                        lair.zoneLocation.Y,
-                        10
-                    );
-
-                SubterraneanZoneCoord lairCoord;
-
-                try
-                {
-                    lairCoord = SubterraneanZoneCoord.Parse(surfaceZoneId);
-                }
-                catch
-                {
-                    continue;
-                }
-
-                string name = "vanilla lair";
-
-                if (lair.name != null && lair.name != "")
-                {
-                    name = "vanilla lair: " + lair.name;
-                }
-
-                VanillaLairColumns.Add(
-                    new ProtectedZoneColumn(
-                        name,
-                        lairCoord.World,
-                        lairCoord.ParasangX,
-                        lairCoord.ParasangY,
-                        lairCoord.ZoneX,
-                        lairCoord.ZoneY,
-                        10,
-                        14
-                    )
-                );
-            }
         }
 
         private static bool IsProtectedHistoricalSite(SubterraneanZoneCoord coord, out string reason)
@@ -707,9 +944,10 @@ namespace SubterraneanSites
     {
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
-            SubterraneanDynamicProtectedLocations.CaptureVanillaLairsFromWorldInfo(builder);
+            RuntimeZoneBuilderInjectionSystem system =
+                The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
 
-            The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
+            system.EnsureSafetyReady();
         }
     }
 
@@ -725,11 +963,11 @@ namespace SubterraneanSites
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
         private const bool DebugNameVisitedZonesWithZoneId = false;
-        private const bool DebugShowCriticalSecretCoordinates = false;
-        private const string CriticalSecretProbeFlag = "SubterraneanSites_CriticalSecretProbeShown_2";
 
-        private const bool DebugShowVanillaLairProtectionSample = false;
-        private const string VanillaLairProbeFlag = "SubterraneanSites_VanillaLairProbeShown_1";
+        private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
+
+
+        private bool safetyReadyThisSession;
 
         private enum SiteKind
         {
@@ -758,15 +996,18 @@ namespace SubterraneanSites
                 );
             }
 
+            if (!EnsureSafetyReady())
+            {
+                return true;
+            }
+
             //this will become the entry to the system that generates sites as the 
             //player moves through the game.
             //Current plan is detect if player appears in a matrix, and just build. could be a problem
             //if player is a zone that is being built by a very small chance. most of the time this will happen 
             //when the player pops down from the map.
-            //if a player is moving through zones, the code will detect if they are in the tile adjacent 
-            //to another matrix and generate the sites in that adjacent matrix. if the player for some horrible reason
-            //just happens to go to the very corner tile of a matrix then the system has to generate 3. Actually,
-            //I think for the corners, if that happens we can fall back on the first system.
+            //The site origin will not be allowed to be on the edge of a matrix and 
+            // we just generate the site when the player enters the matrix.
             if (The.Game.GetStringGameState(InitFlag) == "Yes")
             {
                 return true;
@@ -785,10 +1026,6 @@ namespace SubterraneanSites
             }*/
 
 
-
-
-
-
             The.Game.SetStringGameState(InitFlag, "Yes");
 
             int rawSeed = XRLCore.Core.Game.GetWorldSeed();
@@ -796,7 +1033,7 @@ namespace SubterraneanSites
             //int zoneSeed = XRLCore.Core.Game.GetWorldSeed(targetZoneId + rawSeed);
             System.Random rng = new System.Random(zoneSeed);
 
-            int layers = rng.Next(3, 6); // 3-5 layers for now, but I may make it 3-7 at final
+            int layers = rng.Next(3, 7); // 3-5 layers for now, but I may make it 3-7 at final
 
             List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
             //List<string> siteZoneIds = BuildSiteZoneIds(targetZoneId, layers);
@@ -842,6 +1079,51 @@ namespace SubterraneanSites
             string pathMaterial = PickPathMaterial(rng);
 
             RegisterHorizontalRoadPath(pathInstructions, pathMaterial);
+
+            return true;
+        }
+
+        public override bool HandleEvent(ZoneActivatedEvent zoneActivatedEvent)
+        {
+            if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
+            {
+                return true;
+            }
+
+            string zoneId = zoneActivatedEvent.Zone.ZoneID;
+
+            string isSiteOrigin =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin") as string;
+
+            if (isSiteOrigin != "Yes")
+            {
+                return true;
+            }
+
+            string siteDisplayName =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName") as string;
+
+            if (siteDisplayName == null || siteDisplayName == "")
+            {
+                siteDisplayName = "a forgotten historical site";
+            }
+
+            string discoveryKey =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey") as string;
+
+            if (discoveryKey == null || discoveryKey == "")
+            {
+                discoveryKey = "SubterraneanSites_Discovered_" + zoneId;
+            }
+
+            if (The.Game.GetStringGameState(discoveryKey) == "Yes")
+            {
+                return true;
+            }
+
+            The.Game.SetStringGameState(discoveryKey, "Yes");
+
+            Popup.Show("You have discovered " + siteDisplayName + ".");
 
             return true;
         }
@@ -942,6 +1224,50 @@ namespace SubterraneanSites
             }
 
             return SiteKind.MerchantHive;
+        }
+
+        internal bool EnsureSafetyReady()
+        {
+            if (safetyReadyThisSession &&
+                SubterraneanDynamicProtectedLocations.HasRuntimeProtectionData())
+            {
+                return true;
+            }
+
+            bool ok =
+                SubterraneanDynamicProtectedLocations
+                    .InitializeRuntimeProtection();
+
+            if (!ok)
+            {
+                safetyReadyThisSession = false;
+                MaybeReportSafetyFailure();
+                return false;
+            }
+
+            safetyReadyThisSession = true;
+            return true;
+        }
+
+        private void MaybeReportSafetyFailure()
+        {
+            if (The.Game == null)
+            {
+                return;
+            }
+
+            if (The.Game.GetStringGameState(SafetyFailureReportedFlag) == "Yes")
+            {
+                return;
+            }
+
+            The.Game.SetStringGameState(SafetyFailureReportedFlag, "Yes");
+
+            Popup.Show(
+                "Subterranean Sites failed to initialize its protected-location safety system.\n\n" +
+                "To avoid overwriting or damaging vanilla generated locations, the mod has disabled subterranean site generation for this save.\n\n" +
+                "Existing game content is unchanged."
+            );
         }
 
         private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
@@ -1053,265 +1379,8 @@ namespace SubterraneanSites
             return tier;
         }
 
-        public override bool HandleEvent(ZoneActivatedEvent zoneActivatedEvent)
-        {
-            //debug popup for girsh lair test
-            MaybeShowCriticalSecretCoordinateProbe();
-            MaybeShowVanillaLairProtectionProbe();
 
-            if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
-            {
-                return true;
-            }
-
-            string zoneId = zoneActivatedEvent.Zone.ZoneID;
-
-            string isSiteOrigin =
-                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin") as string;
-
-            if (isSiteOrigin != "Yes")
-            {
-                return true;
-            }
-
-            string siteDisplayName =
-                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName") as string;
-
-            if (siteDisplayName == null || siteDisplayName == "")
-            {
-                siteDisplayName = "a forgotten historical site";
-            }
-
-            string discoveryKey =
-                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey") as string;
-
-            if (discoveryKey == null || discoveryKey == "")
-            {
-                discoveryKey = "SubterraneanSites_Discovered_" + zoneId;
-            }
-
-            if (The.Game.GetStringGameState(discoveryKey) == "Yes")
-            {
-                return true;
-            }
-
-            The.Game.SetStringGameState(discoveryKey, "Yes");
-
-            Popup.Show("You have discovered " + siteDisplayName + ".");
-
-            return true;
-        }
-
-        private void MaybeShowVanillaLairProtectionProbe()
-        {
-            if (!DebugShowVanillaLairProtectionSample)
-            {
-                return;
-            }
-
-            if (The.Game.GetStringGameState(VanillaLairProbeFlag) == "Yes")
-            {
-                return;
-            }
-
-            The.Game.SetStringGameState(VanillaLairProbeFlag, "Yes");
-
-            Popup.Show(
-                SubterraneanDynamicProtectedLocations
-                    .DescribeVanillaLairProtectionSample(5)
-            );
-        }
-
-        private void MaybeShowCriticalSecretCoordinateProbe()
-        {
-            if (!DebugShowCriticalSecretCoordinates)
-            {
-                return;
-            }
-
-            if (The.Game.GetStringGameState(CriticalSecretProbeFlag) == "Yes")
-            {
-                return;
-            }
-
-            The.Game.SetStringGameState(CriticalSecretProbeFlag, "Yes");
-
-            string message =
-                DescribeMapNoteSecret("$shugruithmouth") + ", " +
-                DescribeMapNoteSecret("$shugruithlair") + ", " +
-                DescribeMapNoteSecret("$qasqonlair") + ", " +
-                DescribeMapNoteSecret("$rermadonlair") + ", " +
-                DescribeMapNoteSecret("$oboroqorulair") + "\n\n" +
-                DescribeHistoricalSiteCoordinates();
-
-            Popup.Show(message);
-        }
-        private string DescribeMapNoteSecret(string secretId)
-        {
-            JournalMapNote note = null;
-
-            try
-            {
-                note = JournalAPI.GetMapNote(secretId);
-            }
-            catch (Exception ex)
-            {
-                return secretId + "=ERR:" + ex.GetType().Name;
-            }
-
-            if (note == null)
-            {
-                return secretId + "=NULL";
-            }
-
-            if (note.ZoneID == null || note.ZoneID == "")
-            {
-                return secretId + "=FOUND_NO_ZONE";
-            }
-
-            return secretId + "=" + note.ZoneID;
-        }
-        private string DescribeHistoricalSiteCoordinates()
-        {
-            StringBuilder text = new StringBuilder();
-
-            text.AppendLine("historical sites:");
-
-            for (int i = 0; i < 8; i++)
-            {
-                string regionName =
-                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
-
-                if (regionName == null || regionName == "")
-                {
-                    text.AppendLine("hist" + i.ToString() + "=NO_REGION");
-                    continue;
-                }
-
-                object position = null;
-
-                try
-                {
-                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
-                    
-                    text.AppendLine(
-                        "hist" + i.ToString() +
-                        " " +
-                        DescribeStoredVectorObject(position)
-                    );
-                }
-                catch (Exception ex)
-                {
-                    text.AppendLine("hist" + i.ToString() + "=" + regionName + "=ERR:" + ex.GetType().Name);
-                    continue;
-                }
-
-                string zoneId = TryBuildHistoricalSiteZoneIdFromStoredVector(position);
-
-                if (zoneId == null || zoneId == "")
-                {
-                    text.AppendLine(
-                        "hist" + i.ToString() +
-                        "=" + regionName +
-                        "=NO_POS:" +
-                        (position == null ? "null" : position.GetType().FullName + ":" + position.ToString())
-                    );
-
-                    continue;
-                }
-
-                text.AppendLine(
-                    "hist" + i.ToString() +
-                    "=" + zoneId +
-                    "-20"
-                );
-            }
-
-            return text.ToString();
-        }
-        private string DescribeStoredVectorObject(object position)
-        {
-            if (position == null)
-            {
-                return "type=null";
-            }
-
-            Type type = position.GetType();
-
-            StringBuilder text = new StringBuilder();
-
-            text.Append("type=");
-            text.Append(type.FullName);
-            text.Append(" asm=");
-            text.Append(type.Assembly.GetName().Name);
-
-            FieldInfo[] fields =
-                type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            foreach (FieldInfo field in fields)
-            {
-                object value = null;
-
-                try
-                {
-                    value = field.GetValue(position);
-                }
-                catch
-                {
-                    value = "?";
-                }
-
-                text.Append(" field ");
-                text.Append(field.Name);
-                text.Append(":");
-                text.Append(field.FieldType.Name);
-                text.Append("=");
-                text.Append(value == null ? "null" : value.ToString());
-            }
-
-            return text.ToString();
-        }
-        // Vanilla AddSultanHistoryLocations stores location2D.Vector2i in
-        // sultanRegionPosition_[regionName]. At runtime this is Vector2i from
-        // Assembly-CSharp with int fields x and y. These are parasang coordinates.
-        // Historical sites use the center local zone: JoppaWorld.x.y.1.1.Z.
-        private string TryBuildHistoricalSiteZoneIdFromStoredVector(object position)
-        {
-            if (position == null)
-            {
-                return "";
-            }
-
-            Type type = position.GetType();
-
-            FieldInfo xField = type.GetField(
-                "x",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-            );
-
-            FieldInfo yField = type.GetField(
-                "y",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-            );
-
-            if (xField == null || yField == null)
-            {
-                return "";
-            }
-
-            try
-            {
-                int x = Convert.ToInt32(xField.GetValue(position));
-                int y = Convert.ToInt32(yField.GetValue(position));
-
-                return "JoppaWorld." + x.ToString() + "." + y.ToString() + ".1.1.10";
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
+        
         internal void RegisterLayeredSite(
             List<string> siteZoneIds,
             string siteDisplayName,
