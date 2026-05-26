@@ -1284,10 +1284,18 @@ namespace SubterraneanSites
             List<string> siteZoneIds = BuildSiteZoneIds(originZoneId, layers);
 
             List<string> rejectedSiteZones = new List<string>();
-            siteZoneIds = RemoveProtectedZonesWithReport(siteZoneIds, "site zone", rejectedSiteZones);
 
-            if (siteZoneIds.Count == 0)
+            string blockedSiteZoneId;
+            string blockedSiteReason;
+
+            if (AnyBlockedForSubterraneanGeneration(
+                siteZoneIds,
+                out blockedSiteZoneId,
+                out blockedSiteReason
+            ))
             {
+                rejectedSiteZones.Add(blockedSiteZoneId + " : " + blockedSiteReason);
+
                 SetMatrixStatus(matrix, "SkippedProtected");
 
                 if (DebugShowMatrixGenerationPopup)
@@ -1310,7 +1318,31 @@ namespace SubterraneanSites
             }
 
             SiteKind siteKind = RollSiteKind(rng);
-            RegisterSelectedSite(siteZoneIds, siteKind, rng);
+
+            bool siteRegistered = RegisterSelectedSite(siteZoneIds, siteKind, rng);
+
+            if (!siteRegistered)
+            {
+                SetMatrixStatus(matrix, "FailedSiteRegistration");
+
+                if (DebugShowMatrixGenerationPopup)
+                {
+                    Popup.Show(
+                        BuildMatrixDebugMessage(
+                            matrix,
+                            "FailedSiteRegistration",
+                            originZoneId,
+                            siteKind.ToString(),
+                            "",
+                            layers,
+                            rejectedSiteZones,
+                            new List<string>()
+                        )
+                    );
+                }
+
+                return;
+            }
 
             SubterraneanPathCoordinateGenerator pathGenerator =
                 new SubterraneanPathCoordinateGenerator();
@@ -1466,6 +1498,33 @@ namespace SubterraneanSites
             return false;
         }
 
+        private bool AnyBlockedForSubterraneanGeneration(
+            List<string> zoneIds,
+            out string blockedZoneId,
+            out string reason
+        )
+        {
+            blockedZoneId = "";
+            reason = "";
+
+            if (zoneIds == null || zoneIds.Count == 0)
+            {
+                reason = "empty site zone list";
+                return true;
+            }
+
+            foreach (string zoneId in zoneIds)
+            {
+                if (IsBlockedForSubterraneanGeneration(zoneId, out reason))
+                {
+                    blockedZoneId = zoneId;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
 
 
@@ -1511,7 +1570,7 @@ namespace SubterraneanSites
             return siteZoneIds;
         }
 
-        private void RegisterSelectedSite(
+        private bool RegisterSelectedSite(
             List<string> siteZoneIds,
             SiteKind siteKind,
             System.Random rng
@@ -1520,24 +1579,19 @@ namespace SubterraneanSites
             switch (siteKind)
             {
             case SiteKind.SultanHistoric:
-                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
-                break;
+                return new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
 
             case SiteKind.BasicLairChaos:
-                new BasicLairChaosSiteRegistrar(this).Register(siteZoneIds);
-                break;
+                return new BasicLairChaosSiteRegistrar(this).Register(siteZoneIds);
 
             case SiteKind.ProperLair:
-                new ProperLairSiteRegistrar(this).Register(siteZoneIds);
-                break;
+                return new ProperLairSiteRegistrar(this).Register(siteZoneIds);
 
             case SiteKind.MerchantHive:
-                new MerchantHiveSiteRegistrar(this).Register(siteZoneIds);
-                break;
+                return new MerchantHiveSiteRegistrar(this).Register(siteZoneIds);
 
             default:
-                new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
-                break;
+                return new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
             }
         }
 
@@ -1870,8 +1924,7 @@ namespace SubterraneanSites
         }
 
 
-        
-        internal void RegisterLayeredSite(
+        internal bool RegisterLayeredSite(
             List<string> siteZoneIds,
             string siteDisplayName,
             string discoveryKey,
@@ -1880,7 +1933,25 @@ namespace SubterraneanSites
         {
             if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                return;
+                return false;
+            }
+
+            string blockedZoneId;
+            string blockedReason;
+
+            if (AnyBlockedForSubterraneanGeneration(
+                siteZoneIds,
+                out blockedZoneId,
+                out blockedReason
+            ))
+            {
+                The.ZoneManager.SetZoneName(
+                    blockedZoneId,
+                    "site out: " + blockedReason + " at " + blockedZoneId,
+                    Proper: false
+                );
+
+                return false;
             }
 
             for (int i = 0; i < siteZoneIds.Count; i++)
@@ -1897,7 +1968,7 @@ namespace SubterraneanSites
                         Proper: false
                     );
 
-                    continue;
+                    return false;
                 }
 
                 string stairs = GetStairsForLayer(i, siteZoneIds.Count);
@@ -1938,8 +2009,9 @@ namespace SubterraneanSites
                     Proper: true
                 );
             }
-        }
 
+            return true;
+        }
         private void RegisterHorizontalRoadPath(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
             string pathMaterial,

@@ -92,19 +92,19 @@ namespace SubterraneanSites
             this.parent = parent;
         }
 
-        public void Register(List<string> siteZoneIds)
+        public bool Register(List<string> siteZoneIds)
         {
             if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                return;
+                return false;
             }
 
             if (!PrepareMerchantHive(siteZoneIds))
             {
-                return;
+                return false;
             }
 
-            parent.RegisterLayeredSite(
+            return parent.RegisterLayeredSite(
                 siteZoneIds,
                 siteDisplayName,
                 discoveryKey,
@@ -414,19 +414,19 @@ namespace SubterraneanSites
             this.parent = parent;
         }
 
-        public void Register(List<string> siteZoneIds)
+        public bool Register(List<string> siteZoneIds)
         {
             if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                return;
+                return false;
             }
 
             if (!PrepareProperLair(siteZoneIds))
             {
-                return;
+                return false;
             }
 
-            parent.RegisterLayeredSite(
+            return parent.RegisterLayeredSite(
                 siteZoneIds,
                 siteDisplayName,
                 discoveryKey,
@@ -957,11 +957,11 @@ namespace SubterraneanSites
             this.parent = parent;
         }
 
-        public void Register(List<string> siteZoneIds)
+        public bool Register(List<string> siteZoneIds)
         {
             if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                return;
+                return false;
             }
 
             string siteDisplayName = "A Contested Subterranean Lair";
@@ -969,7 +969,7 @@ namespace SubterraneanSites
                 "SubterraneanSites_Discovered_BasicLairChaos_" +
                 siteZoneIds[0];
 
-            parent.RegisterLayeredSite(
+            return parent.RegisterLayeredSite(
                 siteZoneIds,
                 siteDisplayName,
                 discoveryKey,
@@ -1080,21 +1080,21 @@ namespace SubterraneanSites
             this.parent = parent;
         }
 
-        public void Register(List<string> siteZoneIds)
+        public bool Register(List<string> siteZoneIds)
         {
             if (siteZoneIds == null || siteZoneIds.Count == 0)
             {
-                return;
+                return false;
             }
 
             if (!PrepareSultanSite(siteZoneIds))
             {
-                return;
+                return false;
             }
 
             string discoveryKey = "SubterraneanSites_Discovered_" + regionName;
 
-            parent.RegisterLayeredSite(
+            return parent.RegisterLayeredSite(
                 siteZoneIds,
                 siteDisplayName,
                 discoveryKey,
