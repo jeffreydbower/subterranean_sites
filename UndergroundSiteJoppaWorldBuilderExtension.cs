@@ -958,16 +958,80 @@ namespace SubterraneanSites
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
-        private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 13-down, 1-west from Joppa
+        //private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 13-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.10.22.2.1.13"; // this is 3-down, 2-west from Joppa
+
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
-        private const bool DebugNameVisitedZonesWithZoneId = false;
+        private const bool DebugNameVisitedZonesWithZoneId = true;
 
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
 
+        private const int MatrixParasangWidth = 4;
+        private const int MatrixParasangHeight = 5;
+        private const int MatrixDepth = 5;
+        private const int SurfaceZ = 10;
+        private const int MatrixSiteChancePercent = 100; // testing; tune later
+        private const int MinSurfaceMatrixOriginZ = 11;
+
+        private const int MinPathSteps = 30;
+        private const int MaxPathStepsExclusive = 41;
+
+        private const bool DebugShowMatrixGenerationPopup = true;
+
 
         private bool safetyReadyThisSession;
+
+        private struct SubterraneanMatrixCoord
+        {
+            public string World;
+            public int X;
+            public int Y;
+            public int Z;
+
+            public string ToId()
+            {
+                return World + ":" + X.ToString() + ":" + Y.ToString() + ":" + Z.ToString();
+            }
+
+            public string ToGameStateKey()
+            {
+                return "SubterraneanSites_MatrixStatus_" + ToId();
+            }
+        }
+
+        private SubterraneanMatrixCoord GetMatrixForZone(SubterraneanZoneCoord coord)
+        {
+            SubterraneanMatrixCoord matrix = new SubterraneanMatrixCoord();
+
+            matrix.World = coord.World;
+            matrix.X = coord.ParasangX / MatrixParasangWidth;
+            matrix.Y = coord.ParasangY / MatrixParasangHeight;
+            matrix.Z = (coord.Z - SurfaceZ) / MatrixDepth;
+
+            if (matrix.Z < 0)
+            {
+                matrix.Z = 0;
+            }
+
+            return matrix;
+        }
+
+        private string GetMatrixStatus(SubterraneanMatrixCoord matrix)
+        {
+            return The.Game.GetStringGameState(matrix.ToGameStateKey());
+        }
+
+        private void SetMatrixStatus(SubterraneanMatrixCoord matrix, string status)
+        {
+            The.Game.SetStringGameState(matrix.ToGameStateKey(), status);
+        }
+
+        private bool IsMatrixProcessed(SubterraneanMatrixCoord matrix)
+        {
+            string status = GetMatrixStatus(matrix);
+            return status != null && status != "";
+        }
 
         private enum SiteKind
         {
@@ -984,6 +1048,20 @@ namespace SubterraneanSites
             registrar.Register(ZoneActivatedEvent.ID);
         }
 
+        public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
+        {
+            if (DebugNameVisitedZonesWithZoneId && zoneBuildEvent != null && zoneBuildEvent.Zone != null)
+            {
+                The.ZoneManager.SetZoneName(
+                    zoneBuildEvent.Zone.ZoneID,
+                    "ZONE " + zoneBuildEvent.Zone.ZoneID,
+                    Proper: false
+                );
+            }
+
+            return true;
+        }
+        /*
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
 
@@ -1012,18 +1090,6 @@ namespace SubterraneanSites
             {
                 return true;
             }
-
-            /*
-            //Debug code for lair saftey test
-            string targetZoneId = TargetZoneId;
-
-            string lairTestZoneId =
-                SubterraneanDynamicProtectedLocations.GetVanillaLairTestZoneId(0, 13);
-
-            if (lairTestZoneId != null && lairTestZoneId != "")
-            {
-                targetZoneId = lairTestZoneId;
-            }*/
 
 
             The.Game.SetStringGameState(InitFlag, "Yes");
@@ -1082,22 +1148,35 @@ namespace SubterraneanSites
 
             return true;
         }
-
+        */
         public override bool HandleEvent(ZoneActivatedEvent zoneActivatedEvent)
         {
-            if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
+             if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
             {
                 return true;
             }
 
-            string zoneId = zoneActivatedEvent.Zone.ZoneID;
+            if (!EnsureSafetyReady())
+            {
+                return true;
+            }
 
+            ProcessMatrixForZone(zoneActivatedEvent.Zone.ZoneID);
+
+            HandleSiteDiscovery(zoneActivatedEvent.Zone.ZoneID);
+
+            return true;
+
+        }
+
+        private void HandleSiteDiscovery(string zoneId)
+        {
             string isSiteOrigin =
                 The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin") as string;
 
             if (isSiteOrigin != "Yes")
             {
-                return true;
+                return;
             }
 
             string siteDisplayName =
@@ -1118,14 +1197,287 @@ namespace SubterraneanSites
 
             if (The.Game.GetStringGameState(discoveryKey) == "Yes")
             {
-                return true;
+                return;
             }
 
             The.Game.SetStringGameState(discoveryKey, "Yes");
 
             Popup.Show("You have discovered " + siteDisplayName + ".");
+        }
 
-            return true;
+        private void ProcessMatrixForZone(string zoneId)
+        {
+            if (zoneId == null || zoneId == "")
+            {
+                return;
+            }
+
+            SubterraneanZoneCoord current;
+
+            try
+            {
+                current = SubterraneanZoneCoord.Parse(zoneId);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (current.World != "JoppaWorld")
+            {
+                return;
+            }
+
+            SubterraneanMatrixCoord matrix = GetMatrixForZone(current);
+
+            if (IsMatrixProcessed(matrix))
+            {
+                return;
+            }
+
+            ProcessMatrix(matrix, current);
+        }
+
+        private void ProcessMatrix(SubterraneanMatrixCoord matrix, SubterraneanZoneCoord current)
+        {
+            if (!EnsureSafetyReady())
+            {
+                return;
+            }
+
+            string matrixId = matrix.ToId();
+
+            int rawSeed = XRLCore.Core.Game.GetWorldSeed();
+            int matrixSeed = XRLCore.Core.Game.GetWorldSeed(
+                "SubterraneanSites:Matrix:" + matrixId + ":" + rawSeed.ToString()
+            );
+
+            System.Random rng = new System.Random(matrixSeed);
+
+            if (rng.Next(1, 101) > MatrixSiteChancePercent)
+            {
+                SetMatrixStatus(matrix, "NoSite");
+
+                if (DebugShowMatrixGenerationPopup)
+                {
+                    Popup.Show("SubterraneanSites matrix processed: NoSite\n" + matrixId);
+                }
+
+                return;
+            }
+
+            int layers = rng.Next(3, 6); //check with alignment to origin distance form matrix bottom
+            string originZoneId = PickSiteOriginZoneId(matrix, current, layers, rng);
+
+            if (originZoneId == null || originZoneId == "")
+            {
+                SetMatrixStatus(matrix, "FailedNoOrigin");
+
+                if (DebugShowMatrixGenerationPopup)
+                {
+                    Popup.Show("SubterraneanSites matrix failed: no origin\n" + matrixId);
+                }
+
+                return;
+            }
+
+            List<string> siteZoneIds = BuildSiteZoneIds(originZoneId, layers);
+
+            List<string> rejectedSiteZones = new List<string>();
+            siteZoneIds = RemoveProtectedZonesWithReport(siteZoneIds, "site zone", rejectedSiteZones);
+
+            if (siteZoneIds.Count == 0)
+            {
+                SetMatrixStatus(matrix, "SkippedProtected");
+
+                if (DebugShowMatrixGenerationPopup)
+                {
+                    Popup.Show(
+                        BuildMatrixDebugMessage(
+                            matrix,
+                            "SkippedProtected",
+                            originZoneId,
+                            "",
+                            "",
+                            layers,
+                            rejectedSiteZones,
+                            new List<string>()
+                        )
+                    );
+                }
+
+                return;
+            }
+
+            SiteKind siteKind = RollSiteKind(rng);
+            RegisterSelectedSite(siteZoneIds, siteKind, rng);
+
+            SubterraneanPathCoordinateGenerator pathGenerator =
+                new SubterraneanPathCoordinateGenerator();
+
+            int steps = rng.Next(MinPathSteps, MaxPathStepsExclusive);
+
+            List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
+                siteZoneIds[0],
+                steps,
+                rng
+            );
+
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
+                pathGenerator.BuildPathInstructions(pathZoneIds);
+
+            List<string> rejectedPathZones = new List<string>();
+            pathInstructions = RemoveProtectedPathInstructionsWithReport(
+                pathInstructions,
+                rejectedPathZones,
+                originZoneId
+            );
+
+            string pathMaterial = PickPathMaterial(rng);
+            //RegisterHorizontalRoadPath(pathInstructions, pathMaterial);
+            RegisterHorizontalRoadPath(pathInstructions, pathMaterial, originZoneId);
+
+            string pathMouth = "";
+
+            if (pathInstructions != null && pathInstructions.Count > 0)
+            {
+                pathMouth = pathInstructions[pathInstructions.Count - 1].ZoneId;
+            }
+
+            SetMatrixStatus(matrix, "Generated");
+
+            if (DebugShowMatrixGenerationPopup)
+            {
+                Popup.Show(
+                    BuildMatrixDebugMessage(
+                        matrix,
+                        "Generated",
+                        originZoneId,
+                        siteKind.ToString(),
+                        pathMouth,
+                        layers,
+                        rejectedSiteZones,
+                        rejectedPathZones
+                    )
+                );
+            }
+        }
+
+        private string PickSiteOriginZoneId(
+            SubterraneanMatrixCoord matrix,
+            SubterraneanZoneCoord current,
+            int layers,
+            System.Random rng
+        )
+        {
+            int minPX = matrix.X * MatrixParasangWidth;
+            int maxPX = minPX + MatrixParasangWidth - 1;
+
+            int minPY = matrix.Y * MatrixParasangHeight;
+            int maxPY = minPY + MatrixParasangHeight - 1;
+
+            int minZ = SurfaceZ + matrix.Z * MatrixDepth;
+            int maxZ = minZ + MatrixDepth - 1;
+
+            if (matrix.Z == 0 && minZ < MinSurfaceMatrixOriginZ)
+            {
+                minZ = MinSurfaceMatrixOriginZ;
+            }
+
+            if (maxZ < minZ)
+            {
+                return "";
+            }
+
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                int px = rng.Next(minPX + 1, maxPX); // excludes horizontal matrix edges
+                int py = rng.Next(minPY + 1, maxPY); // excludes horizontal matrix edges
+
+                int zoneX = rng.Next(0, 3);
+                int zoneY = rng.Next(0, 3);
+                int z = rng.Next(minZ, maxZ + 1);
+
+                SubterraneanZoneCoord origin = new SubterraneanZoneCoord(
+                    matrix.World,
+                    px,
+                    py,
+                    zoneX,
+                    zoneY,
+                    z
+                );
+
+                if (IsSameZone(origin, current))
+                {
+                    continue;
+                }
+
+                List<string> siteZoneIds = BuildSiteZoneIds(origin.ToZoneId(), layers);
+
+                string reason;
+                bool protectedHit = false;
+
+                foreach (string siteZoneId in siteZoneIds)
+                {
+                    if (IsBlockedForSubterraneanGeneration(siteZoneId, out reason))
+                    {
+                        protectedHit = true;
+                        break;
+                    }
+                }
+
+                if (protectedHit)
+                {
+                    continue;
+                }
+
+                return origin.ToZoneId();
+            }
+
+            return "";
+        }
+
+        private bool IsOwnedBySubterraneanSites(string zoneId)
+        {
+            string owner =
+                The.ZoneManager.GetZoneProperty(zoneId, OwnerProperty) as string;
+
+            return owner == "Yes";
+        }
+
+        private bool IsBlockedForSubterraneanGeneration(
+            string zoneId,
+            out string reason,
+            string allowedOwnedZoneId = ""
+        )
+        {
+            if (IsOwnedBySubterraneanSites(zoneId) && zoneId != allowedOwnedZoneId)
+            {
+                reason = "already claimed by Subterranean Sites";
+                return true;
+            }
+
+            if (SubterraneanSafety.IsProtected(zoneId, out reason))
+            {
+                return true;
+            }
+
+            reason = "";
+            return false;
+        }
+
+
+
+
+        private bool IsSameZone(SubterraneanZoneCoord a, SubterraneanZoneCoord b)
+        {
+            return
+                a.World == b.World &&
+                a.ParasangX == b.ParasangX &&
+                a.ParasangY == b.ParasangY &&
+                a.ZoneX == b.ZoneX &&
+                a.ZoneY == b.ZoneY &&
+                a.Z == b.Z;
         }
 
         private List<string> BuildSiteZoneIds(string originZoneId, int layers)
@@ -1270,7 +1622,111 @@ namespace SubterraneanSites
             );
         }
 
-        private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
+        private string BuildMatrixDebugMessage(
+            SubterraneanMatrixCoord matrix,
+            string status,
+            string originZoneId,
+            string siteKind,
+            string pathMouth,
+            int layers,
+            List<string> rejectedSiteZones,
+            List<string> rejectedPathZones
+        )
+        {
+            StringBuilder text = new StringBuilder();
+
+            text.AppendLine("SubterraneanSites matrix");
+            text.AppendLine("matrix=" + matrix.ToId());
+            text.AppendLine("status=" + status);
+
+            if (siteKind != null && siteKind != "")
+            {
+                text.AppendLine("siteKind=" + siteKind);
+            }
+
+            if (originZoneId != null && originZoneId != "")
+            {
+                text.AppendLine("origin=" + originZoneId);
+            }
+
+            text.AppendLine("layers=" + layers.ToString());
+
+            if (pathMouth != null && pathMouth != "")
+            {
+                text.AppendLine("pathMouth=" + pathMouth);
+            }
+
+            AppendRejectedList(text, "rejectedSiteZones", rejectedSiteZones);
+            AppendRejectedList(text, "rejectedPathZones", rejectedPathZones);
+
+            return text.ToString();
+        }
+
+        private void AppendRejectedList(
+            StringBuilder text,
+            string label,
+            List<string> rejected
+        )
+        {
+            if (rejected == null || rejected.Count == 0)
+            {
+                text.AppendLine(label + "=none");
+                return;
+            }
+
+            text.AppendLine(label + "=" + rejected.Count.ToString());
+
+            int max = Math.Min(rejected.Count, 6);
+
+            for (int i = 0; i < max; i++)
+            {
+                text.AppendLine("  " + rejected[i]);
+            }
+
+            if (rejected.Count > max)
+            {
+                text.AppendLine("  ...");
+            }
+        }
+
+        private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructionsWithReport(
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
+            List<string> rejected,
+            string allowedOwnedZoneId
+        )
+        {
+            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> safeInstructions =
+                new List<SubterraneanPathCoordinateGenerator.PathZoneInstruction>();
+
+            if (pathInstructions == null)
+            {
+                return safeInstructions;
+            }
+
+            foreach (SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction in pathInstructions)
+            {
+                string safetyReason;
+
+                if (IsBlockedForSubterraneanGeneration(instruction.ZoneId,out safetyReason,allowedOwnedZoneId))
+                {
+                    if (rejected != null)
+                    {
+                        rejected.Add(instruction.ZoneId + " : " + safetyReason);
+                    }
+
+                    continue;
+                }
+
+                safeInstructions.Add(instruction);
+            }
+
+            return safeInstructions;
+        }
+
+
+
+        //old
+        /*private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions
         )
         {
@@ -1301,9 +1757,43 @@ namespace SubterraneanSites
             }
 
             return safeInstructions;
-        }
+        }*/
 
-        private List<string> RemoveProtectedZones(
+        private List<string> RemoveProtectedZonesWithReport(
+            List<string> zoneIds,
+            string debugLabel,
+            List<string> rejected
+        )
+        {
+            List<string> safeZoneIds = new List<string>();
+
+            if (zoneIds == null)
+            {
+                return safeZoneIds;
+            }
+
+            foreach (string zoneId in zoneIds)
+            {
+                string safetyReason;
+
+                if (IsBlockedForSubterraneanGeneration(zoneId, out safetyReason))
+                {
+                    if (rejected != null)
+                    {
+                        rejected.Add(zoneId + " : " + safetyReason);
+                    }
+
+                    continue;
+                }
+
+                safeZoneIds.Add(zoneId);
+            }
+
+            return safeZoneIds;
+        }
+        
+        //old
+        /*private List<string> RemoveProtectedZones(
             List<string> zoneIds,
             string debugLabel
         )
@@ -1336,7 +1826,7 @@ namespace SubterraneanSites
             }
 
             return safeZoneIds;
-        }
+        }*/
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
         {
@@ -1399,7 +1889,7 @@ namespace SubterraneanSites
 
                 string safetyReason;
 
-                if (SubterraneanSafety.IsProtected(zoneId, out safetyReason))
+                if (IsBlockedForSubterraneanGeneration(zoneId, out safetyReason))
                 {
                     The.ZoneManager.SetZoneName(
                         zoneId,
@@ -1452,10 +1942,10 @@ namespace SubterraneanSites
 
         private void RegisterHorizontalRoadPath(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
-            string pathMaterial
+            string pathMaterial,
+            string pathSeedBase
         )
         {
-            
             if (pathInstructions == null || pathInstructions.Count == 0)
             {
                 return;
@@ -1463,18 +1953,19 @@ namespace SubterraneanSites
 
             foreach (SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction in pathInstructions)
             {
-                RegisterRoadPathZone(instruction, pathMaterial);
+                RegisterRoadPathZone(instruction, pathMaterial, pathSeedBase);
             }
         }
 
         private void RegisterRoadPathZone(
             SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
-            string pathMaterial
+            string pathMaterial,
+            string pathSeedBase
         )
         {
             string safetyReason;
 
-            if (SubterraneanSafety.IsProtected(instruction.ZoneId, out safetyReason))
+            if (IsBlockedForSubterraneanGeneration(instruction.ZoneId,out safetyReason,pathSeedBase))
             {
                 The.ZoneManager.SetZoneName(
                     instruction.ZoneId,
@@ -1485,13 +1976,21 @@ namespace SubterraneanSites
                 return;
             }
 
-            int entryHoleX = GetEntryHoleXForInstruction(instruction);
-            int entryHoleY = GetEntryHoleYForInstruction(instruction);
-            int exitHoleX = GetExitHoleXForInstruction(instruction);
-            int exitHoleY = GetExitHoleYForInstruction(instruction);
+            //int entryHoleX = GetEntryHoleXForInstruction(instruction);
+            //int entryHoleY = GetEntryHoleYForInstruction(instruction);
+            //int exitHoleX = GetExitHoleXForInstruction(instruction);
+            //int exitHoleY = GetExitHoleYForInstruction(instruction);
+
+            int entryHoleX = GetEntryHoleXForInstruction(instruction, pathSeedBase);
+            int entryHoleY = GetEntryHoleYForInstruction(instruction, pathSeedBase);
+            int exitHoleX = GetExitHoleXForInstruction(instruction, pathSeedBase);
+            int exitHoleY = GetExitHoleYForInstruction(instruction, pathSeedBase);
 
             string entryHole = entryHoleX.ToString() + "," + entryHoleY.ToString();
             string exitHole = exitHoleX.ToString() + "," + exitHoleY.ToString();
+
+            The.ZoneManager.SetZoneProperty(instruction.ZoneId, OwnerProperty, "Yes");
+            The.ZoneManager.SetZoneProperty(instruction.ZoneId, "SubterraneanSites_IsPath", "Yes");
 
             The.ZoneManager.AddZoneBuilder(
                 instruction.ZoneId,
@@ -1524,8 +2023,82 @@ namespace SubterraneanSites
 
             return materials[rng.Next(materials.Length)];
         }
-        
 
+        private int GetEntryHoleXForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
+            string pathSeedBase
+        )
+        {
+            if (instruction.Entry == "Down")
+            {
+                return GetHoleXForVerticalTransition(instruction.Index - 1, pathSeedBase);
+            }
+
+            return GetHoleXForVerticalTransition(instruction.Index, pathSeedBase);
+        }
+
+        private int GetEntryHoleYForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
+            string pathSeedBase
+        )
+        {
+            if (instruction.Entry == "Down")
+            {
+                return GetHoleYForVerticalTransition(instruction.Index - 1, pathSeedBase);
+            }
+
+            return GetHoleYForVerticalTransition(instruction.Index, pathSeedBase);
+        }
+
+        private int GetExitHoleXForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
+            string pathSeedBase
+        )
+        {
+            return GetHoleXForVerticalTransition(instruction.Index, pathSeedBase);
+        }
+
+        private int GetExitHoleYForInstruction(
+            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction,
+            string pathSeedBase
+        )
+        {
+            return GetHoleYForVerticalTransition(instruction.Index, pathSeedBase);
+        }
+
+        private int GetHoleXForVerticalTransition(int verticalIndex, string pathSeedBase)
+        {
+            if (pathSeedBase == null || pathSeedBase == "")
+            {
+                pathSeedBase = "SubterraneanSites:Path";
+            }
+
+            int seed = XRLCore.Core.Game.GetWorldSeed(
+                pathSeedBase + ":HoleX:" + verticalIndex.ToString()
+            );
+
+            System.Random rng = new System.Random(seed);
+
+            return 40 + rng.Next(-16, 17);
+        }
+
+        private int GetHoleYForVerticalTransition(int verticalIndex, string pathSeedBase)
+        {
+            if (pathSeedBase == null || pathSeedBase == "")
+            {
+                pathSeedBase = "SubterraneanSites:Path";
+            }
+
+            int seed = XRLCore.Core.Game.GetWorldSeed(
+                pathSeedBase + ":HoleY:" + verticalIndex.ToString()
+            );
+
+            System.Random rng = new System.Random(seed);
+
+            return 12 + rng.Next(-8, 9);
+        }
+        
+        /*
         private int GetEntryHoleXForInstruction(
             SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
         )
@@ -1594,6 +2167,7 @@ namespace SubterraneanSites
 
             return 12 + rng.Next(-8, 9);
         }
+        */
     }
 
     internal class SubterraneanPathCoordinateGenerator
