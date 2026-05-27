@@ -124,7 +124,8 @@ namespace SubterraneanSites
                 string zoneId = siteZoneIds[i];
 
                 int z = parent.GetZFromZoneId(zoneId);
-                int tier = parent.GetTierFromZ(z);
+                //int tier = parent.GetTierFromZ(z);
+                int tier = parent.GetTierForZoneId(zoneId);
 
                 bool isBottom = i == siteZoneIds.Count - 1;
 
@@ -437,7 +438,8 @@ namespace SubterraneanSites
         private bool PrepareProperLair(List<string> siteZoneIds)
         {
             int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
-            int tier = parent.GetTierFromZ(originZ);
+            //int tier = parent.GetTierFromZ(originZ);
+            int tier = parent.GetTierForZoneId(siteZoneIds[0]);
 
             string terrainBlueprint = PickProperLairTerrainForTier(tier);
 
@@ -1105,7 +1107,9 @@ namespace SubterraneanSites
         private bool PrepareSultanSite(List<string> siteZoneIds)
         {
             int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
-            int targetTier = parent.GetTierFromZ(originZ);
+            //int targetTier = parent.GetTierFromZ(originZ);
+            int targetTier = parent.GetTierForZoneId(siteZoneIds[0]);
+
             int period = SultanDungeon.GetSultanPeriodFromTier(targetTier);
 
             History sultanHistory = The.Game.sultanHistory;

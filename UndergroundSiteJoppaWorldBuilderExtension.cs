@@ -972,6 +972,94 @@ namespace SubterraneanSites
 
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
+        /*private void DebugShowSurfaceTierForOrigin(string originZoneId)
+        {
+            SubterraneanZoneCoord coord;
+
+            try
+            {
+                coord = SubterraneanZoneCoord.Parse(originZoneId);
+            }
+            catch
+            {
+                Popup.Show("Surface tier debug failed: could not parse\n" + originZoneId);
+                return;
+            }
+
+            int globalX = coord.ParasangX * 3 + coord.ZoneX;
+            int globalY = coord.ParasangY * 3 + coord.ZoneY;
+
+            string terrainObjectName = "(null)";
+            string terrainObjectTier = "(none)";
+
+            try
+            {
+                XRL.World.GameObject terrainObject =
+                    ZoneManager.GetTerrainObjectForZone(
+                        coord.ParasangX,
+                        coord.ParasangY,
+                        coord.World
+                    );
+
+                if (terrainObject != null)
+                {
+                    terrainObjectName = terrainObject.Blueprint;
+                    terrainObjectTier = terrainObject.GetTag("RegionTier", "(missing)");
+                }
+            }
+            catch (Exception ex)
+            {
+                terrainObjectName = "GetTerrainObjectForZone failed: " + ex.GetType().Name;
+            }
+
+            string worldCellObjectName = "(null)";
+            string worldCellObjectTier = "(none)";
+
+            try
+            {
+                Zone worldMap = The.ZoneManager.GetZone(coord.World);
+
+                if (worldMap != null)
+                {
+                    Cell cell = worldMap.GetCell(coord.ParasangX, coord.ParasangY);
+
+                    if (cell != null)
+                    {
+                        XRL.World.GameObject obj = cell.GetObjectInCell(0);
+
+                        if (obj != null)
+                        {
+                            worldCellObjectName = obj.Blueprint;
+                            worldCellObjectTier = obj.GetTag("RegionTier", "(missing)");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                worldCellObjectName = "world cell lookup failed: " + ex.GetType().Name;
+            }
+
+            Popup.Show(
+                "Surface tier debug\n" +
+                "origin=" + originZoneId + "\n" +
+                "world=" + coord.World + "\n" +
+                "parasang=" + coord.ParasangX + "," + coord.ParasangY + "\n" +
+                "local zone=" + coord.ZoneX + "," + coord.ZoneY + "\n" +
+                "global XY=" + globalX + "," + globalY + "\n\n" +
+                "GetTerrainObjectForZone:\n" +
+                "  object=" + terrainObjectName + "\n" +
+                "  RegionTier=" + terrainObjectTier + "\n\n" +
+                "World-map cell object:\n" +
+                "  object=" + worldCellObjectName + "\n" +
+                "  RegionTier=" + worldCellObjectTier + "\n\n" +
+                "effective tier=" + GetTierForZoneId(originZoneId).ToString()
+            );
+        }*/
+
+
+
+
         //Left in from static site development
         //These are good references on the coordinates fro the starting location around Joppa
         // May be handy later
@@ -1234,6 +1322,13 @@ namespace SubterraneanSites
             int layers = rng.Next(3, 7);
             //Origin zone is important for generation
             string originZoneId = PickSiteOriginZoneId(matrix, current, layers, rng);
+
+            //if (DebugShowMatrixGenerationPopup)
+            //{
+              //  DebugShowSurfaceTierForOrigin(originZoneId);
+            //}
+
+
 
             //This a catch for the rare cases that an origin zone could not 
             //be found or selected by PickSiteOriginZoneId
@@ -1825,7 +1920,77 @@ namespace SubterraneanSites
             return tier;
         }
 
+      internal int GetTierForZoneId(string zoneId)
+        {
+            SubterraneanZoneCoord coord;
 
+            try
+            {
+                coord = SubterraneanZoneCoord.Parse(zoneId);
+            }
+            catch
+            {
+                return 1;
+            }
+
+            int depthTier = GetTierFromZ(coord.Z);
+            int surfaceTier = GetSurfaceRegionTierFloor(coord);
+
+            int tier = Math.Max(depthTier, surfaceTier);
+
+            if (tier < 1)
+            {
+                tier = 1;
+            }
+
+            if (tier > 8)
+            {
+                tier = 8;
+            }
+
+            return tier;
+        }
+        private int GetSurfaceRegionTierFloor(SubterraneanZoneCoord coord)
+        {
+            XRL.World.GameObject terrainObject = null;
+
+            try
+            {
+                terrainObject = ZoneManager.GetTerrainObjectForZone(
+                    coord.ParasangX,
+                    coord.ParasangY,
+                    coord.World
+                );
+            }
+            catch
+            {
+                return 1;
+            }
+
+            if (terrainObject == null)
+            {
+                return 1;
+            }
+
+            int tier;
+
+            if (!int.TryParse(terrainObject.GetTag("RegionTier", "1"), out tier))
+            {
+                tier = 1;
+            }
+
+            if (tier < 1)
+            {
+                tier = 1;
+            }
+
+            if (tier > 8)
+            {
+                tier = 8;
+            }
+
+            return tier;
+        }
         internal bool RegisterLayeredSite(
             List<string> siteZoneIds,
             string siteDisplayName,
@@ -1875,7 +2040,8 @@ namespace SubterraneanSites
 
                 string stairs = GetStairsForLayer(i, siteZoneIds.Count);
                 int z = GetZFromZoneId(zoneId);
-                int tier = GetTierFromZ(z);
+                int tier = GetTierForZoneId(zoneId);
+                //int tier = GetTierFromZ(z);
 
                 if (i != 0)
                 {
