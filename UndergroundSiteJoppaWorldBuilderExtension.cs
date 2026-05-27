@@ -1079,8 +1079,8 @@ namespace SubterraneanSites
 
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
 
-        private const int MatrixParasangWidth = 1; // 4 is normal
-        private const int MatrixParasangHeight = 1; // 5 is normal
+        private const int MatrixParasangWidth = 4; // 4 is normal
+        private const int MatrixParasangHeight = 5; // 5 is normal
         private const int MatrixDepth = 5;
         private const int SurfaceZ = 10;
         private const int MatrixSiteChancePercent = 100; // testing; tune later
@@ -1144,6 +1144,95 @@ namespace SubterraneanSites
         {
             string status = GetMatrixStatus(matrix);
             return status != null && status != "";
+        }
+
+        private enum MatrixSiteSlot
+        {
+            A,
+            B,
+            C,
+            D
+        }
+
+        private bool GetOriginBoundsForSlot(
+            SubterraneanMatrixCoord matrix,
+            MatrixSiteSlot slot,
+            out int minGlobalZoneX,
+            out int maxGlobalZoneX,
+            out int minGlobalZoneY,
+            out int maxGlobalZoneY
+        )
+        {
+            int minPX = matrix.X * MatrixParasangWidth;
+            int maxPX = minPX + MatrixParasangWidth - 1;
+
+            int minPY = matrix.Y * MatrixParasangHeight;
+            int maxPY = minPY + MatrixParasangHeight - 1;
+
+            int slotMinPX = minPX;
+            int slotMaxPX = maxPX;
+            int slotMinPY = minPY;
+            int slotMaxPY = maxPY;
+
+            switch (slot)
+            {
+                case MatrixSiteSlot.A:
+                    slotMinPX = minPX;
+                    slotMaxPX = minPX + 1;
+                    slotMinPY = minPY;
+                    slotMaxPY = minPY + 2;
+                    break;
+
+                case MatrixSiteSlot.B:
+                    slotMinPX = minPX + 2;
+                    slotMaxPX = maxPX;
+                    slotMinPY = minPY;
+                    slotMaxPY = minPY + 2;
+                    break;
+
+                case MatrixSiteSlot.C:
+                    slotMinPX = minPX;
+                    slotMaxPX = minPX + 1;
+                    slotMinPY = minPY + 2;
+                    slotMaxPY = maxPY;
+                    break;
+
+                case MatrixSiteSlot.D:
+                    slotMinPX = minPX + 2;
+                    slotMaxPX = maxPX;
+                    slotMinPY = minPY + 2;
+                    slotMaxPY = maxPY;
+                    break;
+            }
+
+            // Convert slot parasang bounds to global zone bounds.
+            minGlobalZoneX = slotMinPX * 3;
+            maxGlobalZoneX = slotMaxPX * 3 + 2;
+
+            minGlobalZoneY = slotMinPY * 3;
+            maxGlobalZoneY = slotMaxPY * 3 + 2;
+
+            // Exclude only the outermost zone border of the whole top matrix.
+            int matrixMinGlobalZoneX = minPX * 3 + 1;
+            int matrixMaxGlobalZoneX = maxPX * 3 + 1;
+
+            int matrixMinGlobalZoneY = minPY * 3 + 1;
+            int matrixMaxGlobalZoneY = maxPY * 3 + 1;
+
+            minGlobalZoneX = Math.Max(minGlobalZoneX, matrixMinGlobalZoneX);
+            maxGlobalZoneX = Math.Min(maxGlobalZoneX, matrixMaxGlobalZoneX);
+
+            minGlobalZoneY = Math.Max(minGlobalZoneY, matrixMinGlobalZoneY);
+            maxGlobalZoneY = Math.Min(maxGlobalZoneY, matrixMaxGlobalZoneY);
+
+            return
+                maxGlobalZoneX >= minGlobalZoneX &&
+                maxGlobalZoneY >= minGlobalZoneY;
+        }
+
+        private string GetSlotName(MatrixSiteSlot slot)
+        {
+            return slot.ToString();
         }
 
         private enum SiteKind
@@ -1285,63 +1374,157 @@ namespace SubterraneanSites
             ProcessMatrix(matrix, current);
         }
 
-        private void ProcessMatrix(SubterraneanMatrixCoord matrix, SubterraneanZoneCoord current)
+        private void ProcessMatrix(
+            SubterraneanMatrixCoord matrix,
+            SubterraneanZoneCoord current
+        )
         {
-            //Saftey First!!!
             if (!EnsureSafetyReady())
             {
                 return;
             }
 
-            string matrixId = matrix.ToId();
-
-            //This raw seed is unchanging after worldgen
-            int rawSeed = XRLCore.Core.Game.GetWorldSeed();
-            //This creates the matrix specific unique seed to 
-            //make random rolls deterministic
-            int matrixSeed = XRLCore.Core.Game.GetWorldSeed(
-                "SubterraneanSites:Matrix:" + matrixId + ":" + rawSeed.ToString()
-            );
-
-            System.Random rng = new System.Random(matrixSeed);
-
-            //This will likley be removed in release
-            if (rng.Next(1, 101) > MatrixSiteChancePercent)
+            if (IsMatrixProcessed(matrix))
             {
-                SetMatrixStatus(matrix, "NoSite");
-
-                if (DebugShowMatrixGenerationPopup)
-                {
-                    Popup.Show("SubterraneanSites matrix processed: NoSite\n" + matrixId);
-                }
-
                 return;
             }
 
-            //Target final # of layers is 3 to 6
-            int layers = rng.Next(3, 7);
-            //Origin zone is important for generation
-            string originZoneId = PickSiteOriginZoneId(matrix, current, layers, rng);
+            bool anyGenerated = false;
 
-            //if (DebugShowMatrixGenerationPopup)
-            //{
-              //  DebugShowSurfaceTierForOrigin(originZoneId);
-            //}
+            List<string> slotReports = new List<string>();
 
-
-
-            //This a catch for the rare cases that an origin zone could not 
-            //be found or selected by PickSiteOriginZoneId
-            if (originZoneId == null || originZoneId == "")
+            MatrixSiteSlot[] slots =
             {
-                SetMatrixStatus(matrix, "FailedNoOrigin");
+                MatrixSiteSlot.A,
+                MatrixSiteSlot.B,
+                MatrixSiteSlot.C,
+                MatrixSiteSlot.D
+            };
 
-                if (DebugShowMatrixGenerationPopup)
+            foreach (MatrixSiteSlot slot in slots)
+            {
+                string slotReport;
+
+                bool generated = TryProcessMatrixSlot(
+                    matrix,
+                    current,
+                    slot,
+                    out slotReport
+                );
+
+                if (generated)
                 {
-                    Popup.Show("SubterraneanSites matrix failed: no origin\n" + matrixId);
+                    anyGenerated = true;
                 }
 
-                return;
+                if (slotReport != null && slotReport != "")
+                {
+                    slotReports.Add(slotReport);
+                }
+            }
+
+            if (anyGenerated)
+            {
+                SetMatrixStatus(matrix, "Generated");
+            }
+            else
+            {
+                SetMatrixStatus(matrix, "NoSitesGenerated");
+            }
+
+            if (DebugShowMatrixGenerationPopup)
+            {
+                StringBuilder text = new StringBuilder();
+
+                text.AppendLine("SubterraneanSites matrix quads");
+                text.AppendLine("matrix=" + matrix.ToId());
+                text.AppendLine("status=" + GetMatrixStatus(matrix));
+
+                foreach (string slotReport in slotReports)
+                {
+                    text.AppendLine("");
+                    text.Append(slotReport);
+                }
+
+                Popup.Show(text.ToString());
+            }
+        }
+
+        private bool TryProcessMatrixSlot(
+            SubterraneanMatrixCoord matrix,
+            SubterraneanZoneCoord current,
+            MatrixSiteSlot slot,
+            out string report
+        )
+        {
+            StringBuilder slotReport = new StringBuilder();
+
+            string slotName = GetSlotName(slot);
+
+            slotReport.AppendLine("slot=" + slotName);
+
+            report = "";
+
+            string matrixId = matrix.ToId();
+
+            int rawSeed = XRLCore.Core.Game.GetWorldSeed();
+
+            int slotSeed = XRLCore.Core.Game.GetWorldSeed(
+                "SubterraneanSites:Matrix:" +
+                matrixId +
+                ":Slot:" +
+                slotName +
+                ":" +
+                rawSeed.ToString()
+            );
+
+            System.Random rng = new System.Random(slotSeed);
+
+            if (rng.Next(1, 101) > MatrixSiteChancePercent)
+            {
+                slotReport.AppendLine("status=NoSite");
+                report = slotReport.ToString();
+                return false;
+            }
+
+            int minGX;
+            int maxGX;
+            int minGY;
+            int maxGY;
+
+            if (!GetOriginBoundsForSlot(
+                matrix,
+                slot,
+                out minGX,
+                out maxGX,
+                out minGY,
+                out maxGY
+            ))
+            {
+                slotReport.AppendLine("status=NoBounds");
+                report = slotReport.ToString();
+                return false;
+            }
+
+            int layers = rng.Next(3, 7);
+
+            string originZoneId = PickSiteOriginZoneId(
+                matrix,
+                current,
+                layers,
+                rng,
+                minGX,
+                maxGX,
+                minGY,
+                maxGY
+            );
+
+            if (originZoneId == null || originZoneId == "")
+            {
+                slotReport.AppendLine("status=FailedNoOrigin");
+                slotReport.AppendLine("layers=" + layers.ToString());
+                report = slotReport.ToString();
+                return false;
             }
 
             List<string> siteZoneIds = BuildSiteZoneIds(originZoneId, layers);
@@ -1351,10 +1534,6 @@ namespace SubterraneanSites
             string blockedSiteZoneId;
             string blockedSiteReason;
 
-
-            // Final all-or-nothing site-stack check before registration.
-            // If any proposed site layer is blocked, reject the whole site and
-            // record the first blocked zone/reason for debug reporting.
             if (AnyBlockedForSubterraneanGeneration(
                 siteZoneIds,
                 out blockedSiteZoneId,
@@ -1363,25 +1542,13 @@ namespace SubterraneanSites
             {
                 rejectedSiteZones.Add(blockedSiteZoneId + " : " + blockedSiteReason);
 
-                SetMatrixStatus(matrix, "SkippedProtected");
+                slotReport.AppendLine("status=SkippedProtected");
+                slotReport.AppendLine("origin=" + originZoneId);
+                slotReport.AppendLine("layers=" + layers.ToString());
+                AppendRejectedList(slotReport, "rejectedSiteZones", rejectedSiteZones);
 
-                if (DebugShowMatrixGenerationPopup)
-                {
-                    Popup.Show(
-                        BuildMatrixDebugMessage(
-                            matrix,
-                            "SkippedProtected",
-                            originZoneId,
-                            "",
-                            "",
-                            layers,
-                            rejectedSiteZones,
-                            new List<string>()
-                        )
-                    );
-                }
-
-                return;
+                report = slotReport.ToString();
+                return false;
             }
 
             SiteKind siteKind = RollSiteKind(rng);
@@ -1390,37 +1557,26 @@ namespace SubterraneanSites
 
             if (!siteRegistered)
             {
-                SetMatrixStatus(matrix, "FailedSiteRegistration");
+                slotReport.AppendLine("status=FailedSiteRegistration");
+                slotReport.AppendLine("siteKind=" + siteKind.ToString());
+                slotReport.AppendLine("origin=" + originZoneId);
+                slotReport.AppendLine("layers=" + layers.ToString());
+                AppendRejectedList(slotReport, "rejectedSiteZones", rejectedSiteZones);
 
-                if (DebugShowMatrixGenerationPopup)
-                {
-                    Popup.Show(
-                        BuildMatrixDebugMessage(
-                            matrix,
-                            "FailedSiteRegistration",
-                            originZoneId,
-                            siteKind.ToString(),
-                            "",
-                            layers,
-                            rejectedSiteZones,
-                            new List<string>()
-                        )
-                    );
-                }
-
-                return;
+                report = slotReport.ToString();
+                return false;
             }
 
+            int originZ = GetZFromZoneId(originZoneId);
+            int pathUpWeight = GetPathUpWeightForOriginZ(originZ);
+
             SubterraneanPathCoordinateGenerator pathGenerator =
-                new SubterraneanPathCoordinateGenerator();
+                new SubterraneanPathCoordinateGenerator(pathUpWeight);
+
+            //SubterraneanPathCoordinateGenerator pathGenerator =
+            //    new SubterraneanPathCoordinateGenerator();
 
             int steps = rng.Next(MinPathSteps, MaxPathStepsExclusive);
-
-            /*List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
-                siteZoneIds[0],
-                steps,
-                rng
-            );*/
 
             List<string> rejectedPathCandidates = new List<string>();
 
@@ -1443,6 +1599,7 @@ namespace SubterraneanSites
                         rejectedPathCandidates.Add(
                             candidateZoneId + " : " + safetyReason
                         );
+
                         return false;
                     }
 
@@ -1450,10 +1607,12 @@ namespace SubterraneanSites
                 }
             );
 
+
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
                 pathGenerator.BuildPathInstructions(pathZoneIds);
 
             List<string> rejectedPathZones = new List<string>();
+
             pathInstructions = RemoveProtectedPathInstructionsWithReport(
                 pathInstructions,
                 rejectedPathZones,
@@ -1461,7 +1620,12 @@ namespace SubterraneanSites
             );
 
             string pathMaterial = PickPathMaterial(rng);
-            RegisterHorizontalRoadPath(pathInstructions, pathMaterial, originZoneId);
+
+            RegisterHorizontalRoadPath(
+                pathInstructions,
+                pathMaterial,
+                originZoneId
+            );
 
             string pathMouth = "";
 
@@ -1470,52 +1634,137 @@ namespace SubterraneanSites
                 pathMouth = pathInstructions[pathInstructions.Count - 1].ZoneId;
             }
 
-            SetMatrixStatus(matrix, "Generated");
+            slotReport.AppendLine("status=Generated");
+            slotReport.AppendLine("siteKind=" + siteKind.ToString());
+            slotReport.AppendLine("origin=" + originZoneId);
+            slotReport.AppendLine("layers=" + layers.ToString());
+            slotReport.AppendLine("pathUpWeight=" + pathUpWeight.ToString());
+            slotReport.AppendLine("pathStepsRequested=" + steps.ToString());
+            slotReport.AppendLine("pathZoneIds=" + pathZoneIds.Count.ToString());
+            slotReport.AppendLine("pathInstructions=" + pathInstructions.Count.ToString());
 
-            string candidateReport = "";
-
-            if (rejectedPathCandidates.Count > 0)
+            if (pathMouth != null && pathMouth != "")
             {
-                candidateReport += "\n\nRejected path candidates:";
-                int limit = Math.Min(rejectedPathCandidates.Count, 8);
-
-                for (int i = 0; i < limit; i++)
-                {
-                    candidateReport += "\n- " + rejectedPathCandidates[i];
-                }
-
-                if (rejectedPathCandidates.Count > limit)
-                {
-                    candidateReport +=
-                        "\n... +" +
-                        (rejectedPathCandidates.Count - limit).ToString() +
-                        " more";
-                }
-            }
-            else
-            {
-                candidateReport += "\n\nRejected path candidates: none";
+                slotReport.AppendLine("pathMouth=" + pathMouth);
             }
 
-            if (DebugShowMatrixGenerationPopup)
-            {
-                Popup.Show(
-                    BuildMatrixDebugMessage(
-                        matrix,
-                        "Generated",
-                        originZoneId,
-                        siteKind.ToString(),
-                        pathMouth,
-                        layers,
-                        rejectedSiteZones,
-                        rejectedPathZones
-                    ) +
-                    candidateReport
-                );
-            }
+            AppendRejectedList(slotReport, "rejectedSiteZones", rejectedSiteZones);
+            AppendRejectedList(slotReport, "rejectedPathZones", rejectedPathZones);
+            AppendRejectedList(slotReport, "rejectedPathCandidates", rejectedPathCandidates);
+
+            report = slotReport.ToString();
+            return true;
         }
 
         private string PickSiteOriginZoneId(
+            SubterraneanMatrixCoord matrix,
+            SubterraneanZoneCoord current,
+            int layers,
+            System.Random rng,
+            int minGlobalZoneX,
+            int maxGlobalZoneX,
+            int minGlobalZoneY,
+            int maxGlobalZoneY
+        )
+        {
+
+            /*int minPX = matrix.X * MatrixParasangWidth;
+            int maxPX = minPX + MatrixParasangWidth - 1;
+
+            int minPY = matrix.Y * MatrixParasangHeight;
+            int maxPY = minPY + MatrixParasangHeight - 1;
+
+            int minGlobalZoneX = minPX * 3;
+            int maxGlobalZoneX = maxPX * 3 + 2;
+
+            int minGlobalZoneY = minPY * 3;
+            int maxGlobalZoneY = maxPY * 3 + 2;
+
+            // Exclude only the outermost zone border of the matrix footprint,
+            // not whole edge parasangs.
+            minGlobalZoneX += 1;
+            maxGlobalZoneX -= 1;
+            minGlobalZoneY += 1;
+            maxGlobalZoneY -= 1;
+
+            if (maxGlobalZoneX < minGlobalZoneX || maxGlobalZoneY < minGlobalZoneY)
+            {
+                return "";
+            }*/
+
+            int minZ = SurfaceZ + matrix.Z * MatrixDepth;
+            int maxZ = minZ + MatrixDepth - 1;
+
+            if (matrix.Z == 0 && minZ < MinSurfaceMatrixOriginZ)
+            {
+                minZ = MinSurfaceMatrixOriginZ;
+            }
+
+            if (maxZ < minZ)
+            {
+                return "";
+            }
+
+            //1. Pick a possible origin.
+            //2. Build the full proposed site stack from that origin.
+            //Example: origin Z 11, 4 layers → Z 11, 12, 13, 14.
+            //3. Check every layer in that proposed site stack.
+            //4. If any layer is blocked, reject this origin attempt.
+            //5. Try another random origin.
+            //6. If no layer is blocked, accept this origin and return it.
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                int globalZoneX = rng.Next(minGlobalZoneX, maxGlobalZoneX + 1);
+                int globalZoneY = rng.Next(minGlobalZoneY, maxGlobalZoneY + 1);
+
+                int px = globalZoneX / 3;
+                int zoneX = globalZoneX % 3;
+
+                int py = globalZoneY / 3;
+                int zoneY = globalZoneY % 3;
+
+                int z = rng.Next(minZ, maxZ + 1);
+
+                SubterraneanZoneCoord origin = new SubterraneanZoneCoord(
+                    matrix.World,
+                    px,
+                    py,
+                    zoneX,
+                    zoneY,
+                    z
+                );
+
+                if (IsSameZone(origin, current))
+                {
+                    continue;
+                }
+
+                List<string> siteZoneIds = BuildSiteZoneIds(origin.ToZoneId(), layers);
+
+                string reason;
+                bool protectedHit = false;
+
+                foreach (string siteZoneId in siteZoneIds)
+                {
+                    if (IsBlockedForSubterraneanGeneration(siteZoneId, out reason))
+                    {
+                        protectedHit = true;
+                        break;
+                    }
+                }
+
+                if (protectedHit)
+                {
+                    continue;
+                }
+
+                return origin.ToZoneId();
+            }
+
+            return "";
+        }
+
+        /*private string PickSiteOriginZoneId(
             SubterraneanMatrixCoord matrix,
             SubterraneanZoneCoord current,
             int layers,
@@ -1616,7 +1865,7 @@ namespace SubterraneanSites
             }
 
             return "";
-        }
+        }*/
 
         private bool IsOwnedBySubterraneanSites(string zoneId)
         {
@@ -1972,6 +2221,16 @@ namespace SubterraneanSites
             if (tier > 8) tier = 8;
 
             return tier;
+        }
+
+        private int GetPathUpWeightForOriginZ(int originZ)
+        {
+            if (originZ <= 15)
+            {
+                return 2;
+            }
+
+            return 9;
         }
 
       internal int GetTierForZoneId(string zoneId)
@@ -2374,7 +2633,18 @@ namespace SubterraneanSites
         private const int MainWeight = 33;
         private const int SideWeight = 17;
         private const int DiagonalComponentWeight = 33;
-        private const int UpWeight = 33;
+        //private const int UpWeight = 2; //was 33
+        private int upWeight = 2;
+
+        public SubterraneanPathCoordinateGenerator()
+        {
+            upWeight = 2;
+        }
+
+        public SubterraneanPathCoordinateGenerator(int upWeight)
+        {
+            this.upWeight = upWeight;
+        }
 
         public List<string> BuildPathZoneIds(
             string originZoneId,
@@ -2755,6 +3025,8 @@ namespace SubterraneanSites
             PathHeading heading
         )
         {
+
+
             List<WeightedDirection> candidates = GetWeightedDirectionsForHeading(heading);
 
             // Simple anti-backtracking rule.
@@ -2786,28 +3058,32 @@ namespace SubterraneanSites
             {
                 case PathHeading.North:
                     directions.Add(new WeightedDirection(PathDirection.North, MainWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
                     break;
 
                 case PathHeading.South:
                     directions.Add(new WeightedDirection(PathDirection.South, MainWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
                     break;
 
                 case PathHeading.East:
                     directions.Add(new WeightedDirection(PathDirection.East, MainWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
                     break;
 
                 case PathHeading.West:
                     directions.Add(new WeightedDirection(PathDirection.West, MainWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
                     break;
@@ -2815,24 +3091,28 @@ namespace SubterraneanSites
                 case PathHeading.NorthEast:
                     directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
 
                 case PathHeading.NorthWest:
                     directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
 
                 case PathHeading.SouthEast:
                     directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
                 case PathHeading.SouthWest:
                     directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
-                    directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
+                    directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
             }
 
