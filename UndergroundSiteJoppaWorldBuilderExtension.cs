@@ -19,6 +19,11 @@ using System.Collections;
 namespace SubterraneanSites
 {
 
+    //This is the bootstrab that allows runs 
+    //after a game is loaded () and registers RuntimeZoneBuilderInjectionSystem
+    //which is needed first to do anything. 
+    //Also launches the saftey system and dynamic site detections/protections
+    //HasCAllAfterGameliaded tags the class with that meta distinction
     [HasCallAfterGameLoaded]
     public static class SubterraneanSitesBootstrap
     {
@@ -286,12 +291,18 @@ namespace SubterraneanSites
 
     internal static class SubterraneanSafety
     {
+        // Convenience overload for callers that only have a zone ID string.
+        // Converts the zone ID into SubterraneanZoneCoord, then delegates to
+        // the coordinate-based protection check below.
         public static bool IsProtected(string zoneId, out string reason)
         {
             SubterraneanZoneCoord coord = SubterraneanZoneCoord.Parse(zoneId);
             return IsProtected(coord, out reason);
         }
 
+        // Core protection check. Tests a parsed coordinate against static
+        // protected zone columns, static protected parasang columns, and
+        // dynamically recovered vanilla protected locations.
         public static bool IsProtected(SubterraneanZoneCoord coord, out string reason)
         {
             foreach (ProtectedZoneColumn column in SubterraneanProtectedLocations.Columns)
@@ -910,6 +921,7 @@ namespace SubterraneanSites
 
             Type type = position.GetType();
 
+            //reflection ---- reflection 
             FieldInfo xField = type.GetField(
                 "x",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
@@ -939,9 +951,16 @@ namespace SubterraneanSites
         
     }
 
+    // Marks this class as a Joppa world-builder extension.
+    // Qud discovers this class through the attribute during Joppa worldgen
+    // and calls OnAfterBuild(...) after the world has been generated.
+    // We use this as the genesis bootstrap path for new worlds.
     [JoppaWorldBuilderExtension]
     public class UndergroundSiteJoppaWorldBuilderExtension : IJoppaWorldBuilderExtension
     {
+        //OnAfterBuild runs after World Generation
+        //It is a hook we can and do use to register RuntimeZoneBuilderInjectionSystem
+        //Also to kick off the saftey system
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
             RuntimeZoneBuilderInjectionSystem system =
@@ -953,6 +972,9 @@ namespace SubterraneanSites
 
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
+        //Left in from static site development
+        //These are good references on the coordinates fro the starting location around Joppa
+        // May be handy later
         //Joppa is "JoppaWorld.11.22.1.1.10"
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.11"; // this is 1-down, 1-west from Joppa
         //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
@@ -963,6 +985,8 @@ namespace SubterraneanSites
 
         private const string OwnerProperty = "SubterraneanSites_Owner";
         private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
+
+        //This flat replaces zone names with zone coordinates
         private const bool DebugNameVisitedZonesWithZoneId = true;
 
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
@@ -973,12 +997,9 @@ namespace SubterraneanSites
         private const int SurfaceZ = 10;
         private const int MatrixSiteChancePercent = 100; // testing; tune later
         private const int MinSurfaceMatrixOriginZ = 11;
-
         private const int MinPathSteps = 30;
         private const int MaxPathStepsExclusive = 41;
-
         private const bool DebugShowMatrixGenerationPopup = true;
-
 
         private bool safetyReadyThisSession;
 
@@ -1022,6 +1043,10 @@ namespace SubterraneanSites
             return The.Game.GetStringGameState(matrix.ToGameStateKey());
         }
 
+        // Stores the matrix processing result in game state.
+        // Any non-empty matrix status means this matrix has already been processed
+        // and should not generate again. Status strings are useful for debugging
+        // why a matrix did or did not create content.
         private void SetMatrixStatus(SubterraneanMatrixCoord matrix, string status)
         {
             The.Game.SetStringGameState(matrix.ToGameStateKey(), status);
@@ -1039,15 +1064,23 @@ namespace SubterraneanSites
             BasicLairChaos,
             ProperLair,
             MerchantHive,
-
         }
 
+        // Called by Qud's IGameSystem infrastructure when this system is added
+        // or loaded. We do not call this directly. Registering these event IDs
+        // tells the game to route BeforeZoneBuiltEvent and ZoneActivatedEvent
+        // to this system's HandleEvent(...) methods.
         public override void Register(XRLGame game, IEventRegistrar registrar)
         {
+            //mod will not work if below are not registered
             registrar.Register(BeforeZoneBuiltEvent.ID);
             registrar.Register(ZoneActivatedEvent.ID);
         }
 
+        // Fires while a zone is being built. AddZoneBuilder(...) is too late
+        // to affect this same zone once it is already in the build pipeline,
+        // but this event is still useful for lightweight diagnostics such as
+        // debug zone naming.
         public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
         {
             if (DebugNameVisitedZonesWithZoneId && zoneBuildEvent != null && zoneBuildEvent.Zone != null)
@@ -1061,94 +1094,11 @@ namespace SubterraneanSites
 
             return true;
         }
-        /*
-        public override bool HandleEvent(BeforeZoneBuiltEvent zoneBuildEvent)
-        {
 
-            if (DebugNameVisitedZonesWithZoneId && zoneBuildEvent != null && zoneBuildEvent.Zone != null)
-            {
-                The.ZoneManager.SetZoneName(
-                    zoneBuildEvent.Zone.ZoneID,
-                    "ZONE " + zoneBuildEvent.Zone.ZoneID,
-                    Proper: false
-                );
-            }
-
-            if (!EnsureSafetyReady())
-            {
-                return true;
-            }
-
-            //this will become the entry to the system that generates sites as the 
-            //player moves through the game.
-            //Current plan is detect if player appears in a matrix, and just build. could be a problem
-            //if player is a zone that is being built by a very small chance. most of the time this will happen 
-            //when the player pops down from the map.
-            //The site origin will not be allowed to be on the edge of a matrix and 
-            // we just generate the site when the player enters the matrix.
-            if (The.Game.GetStringGameState(InitFlag) == "Yes")
-            {
-                return true;
-            }
-
-
-            The.Game.SetStringGameState(InitFlag, "Yes");
-
-            int rawSeed = XRLCore.Core.Game.GetWorldSeed();
-            int zoneSeed = XRLCore.Core.Game.GetWorldSeed(TargetZoneId + rawSeed);
-            //int zoneSeed = XRLCore.Core.Game.GetWorldSeed(targetZoneId + rawSeed);
-            System.Random rng = new System.Random(zoneSeed);
-
-            int layers = rng.Next(3, 7); // 3-5 layers for now, but I may make it 3-7 at final
-
-            List<string> siteZoneIds = BuildSiteZoneIds(TargetZoneId, layers);
-            //List<string> siteZoneIds = BuildSiteZoneIds(targetZoneId, layers);
-
-            //below checks if site zones are protected
-            siteZoneIds = RemoveProtectedZones(siteZoneIds, "site zone");
-
-            if (siteZoneIds.Count == 0)
-            {
-                The.ZoneManager.SetZoneName(
-                    TargetZoneId,
-                    //targetZoneId,
-                    "SubterraneanSites skipped: all site zones protected",
-                    Proper: false
-                );
-
-                return true;
-            }
-
-            //RegisterSultanDungeonSite(siteZoneIds);
-            //RegisterSelectedSite(siteZoneIds, rng);
-            SiteKind siteKind = RollSiteKind(rng);
-            RegisterSelectedSite(siteZoneIds, siteKind, rng);
-
-            // Temporary path coordinate test.
-            // For now this only generates zone IDs. It does not render path material yet.
-            SubterraneanPathCoordinateGenerator pathGenerator =
-                new SubterraneanPathCoordinateGenerator();
-
-            int steps = rng.Next(10, 16);
-
-            List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
-                siteZoneIds[0],
-                steps,
-                rng
-            );
-
-            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
-                pathGenerator.BuildPathInstructions(pathZoneIds);
-
-            pathInstructions = RemoveProtectedPathInstructions(pathInstructions);
-
-            string pathMaterial = PickPathMaterial(rng);
-
-            RegisterHorizontalRoadPath(pathInstructions, pathMaterial);
-
-            return true;
-        }
-        */
+        // Fires when a zone becomes the active/current zone. This is the main
+        // matrix trigger: use the player's active zone to determine the current
+        // matrix, process that matrix once, and register future site/path zones.
+        // Also handles site discovery when the activated zone is a site origin.
         public override bool HandleEvent(ZoneActivatedEvent zoneActivatedEvent)
         {
              if (zoneActivatedEvent == null || zoneActivatedEvent.Zone == null)
@@ -1156,19 +1106,25 @@ namespace SubterraneanSites
                 return true;
             }
 
+            //Saftey first!
+            //Skip if not safe... no site for you!
+            //uninstall mad and play Animal Croissing if this happens
             if (!EnsureSafetyReady())
             {
                 return true;
             }
 
+            //Entry for matrix system
             ProcessMatrixForZone(zoneActivatedEvent.Zone.ZoneID);
 
+            //checks if site is discovered and adds a popup if not
             HandleSiteDiscovery(zoneActivatedEvent.Zone.ZoneID);
 
             return true;
 
         }
 
+        //checks if site is discovered and adds a popup if not
         private void HandleSiteDiscovery(string zoneId)
         {
             string isSiteOrigin =
@@ -1184,7 +1140,7 @@ namespace SubterraneanSites
 
             if (siteDisplayName == null || siteDisplayName == "")
             {
-                siteDisplayName = "a forgotten historical site";
+                siteDisplayName = "A forgotten historical site";
             }
 
             string discoveryKey =
@@ -1230,16 +1186,20 @@ namespace SubterraneanSites
 
             SubterraneanMatrixCoord matrix = GetMatrixForZone(current);
 
+            //return if matrix has been discovered
+            //nothing more happens
             if (IsMatrixProcessed(matrix))
             {
                 return;
             }
 
+            //Let's Go!!!!!
             ProcessMatrix(matrix, current);
         }
 
         private void ProcessMatrix(SubterraneanMatrixCoord matrix, SubterraneanZoneCoord current)
         {
+            //Saftey First!!!
             if (!EnsureSafetyReady())
             {
                 return;
@@ -1247,13 +1207,17 @@ namespace SubterraneanSites
 
             string matrixId = matrix.ToId();
 
+            //This raw seed is unchanging after worldgen
             int rawSeed = XRLCore.Core.Game.GetWorldSeed();
+            //This creates the matrix specific unique seed to 
+            //make random rolls deterministic
             int matrixSeed = XRLCore.Core.Game.GetWorldSeed(
                 "SubterraneanSites:Matrix:" + matrixId + ":" + rawSeed.ToString()
             );
 
             System.Random rng = new System.Random(matrixSeed);
 
+            //This will likley be removed in release
             if (rng.Next(1, 101) > MatrixSiteChancePercent)
             {
                 SetMatrixStatus(matrix, "NoSite");
@@ -1266,9 +1230,13 @@ namespace SubterraneanSites
                 return;
             }
 
-            int layers = rng.Next(3, 6); //check with alignment to origin distance form matrix bottom
+            //Target final # of layers is 3 to 6
+            int layers = rng.Next(3, 7);
+            //Origin zone is important for generation
             string originZoneId = PickSiteOriginZoneId(matrix, current, layers, rng);
 
+            //This a catch for the rare cases that an origin zone could not 
+            //be found or selected by PickSiteOriginZoneId
             if (originZoneId == null || originZoneId == "")
             {
                 SetMatrixStatus(matrix, "FailedNoOrigin");
@@ -1288,6 +1256,10 @@ namespace SubterraneanSites
             string blockedSiteZoneId;
             string blockedSiteReason;
 
+
+            // Final all-or-nothing site-stack check before registration.
+            // If any proposed site layer is blocked, reject the whole site and
+            // record the first blocked zone/reason for debug reporting.
             if (AnyBlockedForSubterraneanGeneration(
                 siteZoneIds,
                 out blockedSiteZoneId,
@@ -1366,7 +1338,6 @@ namespace SubterraneanSites
             );
 
             string pathMaterial = PickPathMaterial(rng);
-            //RegisterHorizontalRoadPath(pathInstructions, pathMaterial);
             RegisterHorizontalRoadPath(pathInstructions, pathMaterial, originZoneId);
 
             string pathMouth = "";
@@ -1408,6 +1379,24 @@ namespace SubterraneanSites
             int minPY = matrix.Y * MatrixParasangHeight;
             int maxPY = minPY + MatrixParasangHeight - 1;
 
+            int minGlobalZoneX = minPX * 3;
+            int maxGlobalZoneX = maxPX * 3 + 2;
+
+            int minGlobalZoneY = minPY * 3;
+            int maxGlobalZoneY = maxPY * 3 + 2;
+
+            // Exclude only the outermost zone border of the matrix footprint,
+            // not whole edge parasangs.
+            minGlobalZoneX += 1;
+            maxGlobalZoneX -= 1;
+            minGlobalZoneY += 1;
+            maxGlobalZoneY -= 1;
+
+            if (maxGlobalZoneX < minGlobalZoneX || maxGlobalZoneY < minGlobalZoneY)
+            {
+                return "";
+            }
+
             int minZ = SurfaceZ + matrix.Z * MatrixDepth;
             int maxZ = minZ + MatrixDepth - 1;
 
@@ -1421,13 +1410,24 @@ namespace SubterraneanSites
                 return "";
             }
 
+            //1. Pick a possible origin.
+            //2. Build the full proposed site stack from that origin.
+            //Example: origin Z 11, 4 layers → Z 11, 12, 13, 14.
+            //3. Check every layer in that proposed site stack.
+            //4. If any layer is blocked, reject this origin attempt.
+            //5. Try another random origin.
+            //6. If no layer is blocked, accept this origin and return it.
             for (int attempt = 0; attempt < 30; attempt++)
             {
-                int px = rng.Next(minPX + 1, maxPX); // excludes horizontal matrix edges
-                int py = rng.Next(minPY + 1, maxPY); // excludes horizontal matrix edges
+                int globalZoneX = rng.Next(minGlobalZoneX, maxGlobalZoneX + 1);
+                int globalZoneY = rng.Next(minGlobalZoneY, maxGlobalZoneY + 1);
 
-                int zoneX = rng.Next(0, 3);
-                int zoneY = rng.Next(0, 3);
+                int px = globalZoneX / 3;
+                int zoneX = globalZoneX % 3;
+
+                int py = globalZoneY / 3;
+                int zoneY = globalZoneY % 3;
+
                 int z = rng.Next(minZ, maxZ + 1);
 
                 SubterraneanZoneCoord origin = new SubterraneanZoneCoord(
@@ -1539,6 +1539,7 @@ namespace SubterraneanSites
                 a.Z == b.Z;
         }
 
+        //Sets stacked site lower layer ids
         private List<string> BuildSiteZoneIds(string originZoneId, int layers)
         {
             List<string> siteZoneIds = new List<string>();
@@ -1743,6 +1744,12 @@ namespace SubterraneanSites
             }
         }
 
+
+        // Filters unsafe path instructions after path generation.
+        // Unlike sites, paths are allowed to be partial for now. Blocked path
+        // zones are removed and reported, while safe path zones continue.
+        // allowedOwnedZoneId permits the current site origin to be shared by
+        // the site and path builders.
         private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructionsWithReport(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
             List<string> rejected,
@@ -1776,111 +1783,6 @@ namespace SubterraneanSites
 
             return safeInstructions;
         }
-
-
-
-        //old
-        /*private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructions(
-            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions
-        )
-        {
-            List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> safeInstructions =
-                new List<SubterraneanPathCoordinateGenerator.PathZoneInstruction>();
-
-            if (pathInstructions == null)
-            {
-                return safeInstructions;
-            }
-
-            foreach (SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction in pathInstructions)
-            {
-                string safetyReason;
-
-                if (SubterraneanSafety.IsProtected(instruction.ZoneId, out safetyReason))
-                {
-                    The.ZoneManager.SetZoneName(
-                        instruction.ZoneId,
-                        "SubterraneanSites skipped path zone: " + safetyReason,
-                        Proper: false
-                    );
-
-                    continue;
-                }
-
-                safeInstructions.Add(instruction);
-            }
-
-            return safeInstructions;
-        }*/
-
-        private List<string> RemoveProtectedZonesWithReport(
-            List<string> zoneIds,
-            string debugLabel,
-            List<string> rejected
-        )
-        {
-            List<string> safeZoneIds = new List<string>();
-
-            if (zoneIds == null)
-            {
-                return safeZoneIds;
-            }
-
-            foreach (string zoneId in zoneIds)
-            {
-                string safetyReason;
-
-                if (IsBlockedForSubterraneanGeneration(zoneId, out safetyReason))
-                {
-                    if (rejected != null)
-                    {
-                        rejected.Add(zoneId + " : " + safetyReason);
-                    }
-
-                    continue;
-                }
-
-                safeZoneIds.Add(zoneId);
-            }
-
-            return safeZoneIds;
-        }
-        
-        //old
-        /*private List<string> RemoveProtectedZones(
-            List<string> zoneIds,
-            string debugLabel
-        )
-        {
-            List<string> safeZoneIds = new List<string>();
-
-            if (zoneIds == null)
-            {
-                return safeZoneIds;
-            }
-
-            foreach (string zoneId in zoneIds)
-            {
-                string safetyReason;
-
-                if (SubterraneanSafety.IsProtected(zoneId, out safetyReason))
-                {
-                    //in release we should remove this s owe dont overwrite 
-                    //the games native zone name of a protected site
-                    The.ZoneManager.SetZoneName(
-                        zoneId,
-                        "SubterraneanSites skipped " + debugLabel + ": " + safetyReason,
-                        Proper: false
-                    );
-
-                    continue;
-                }
-
-                safeZoneIds.Add(zoneId);
-            }
-
-            return safeZoneIds;
-        }*/
 
         private string GetStairsForLayer(int layerIndex, int layerCount)
         {
@@ -2169,77 +2071,6 @@ namespace SubterraneanSites
 
             return 12 + rng.Next(-8, 9);
         }
-        
-        /*
-        private int GetEntryHoleXForInstruction(
-            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
-        )
-        {
-            if (instruction.Entry == "Down")
-            {
-                return GetHoleXForVerticalTransition(instruction.Index - 1);
-            }
-
-            return GetHoleXForVerticalTransition(instruction.Index);
-        }
-
-        private int GetEntryHoleYForInstruction(
-            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
-        )
-        {
-            if (instruction.Entry == "Down")
-            {
-                return GetHoleYForVerticalTransition(instruction.Index - 1);
-            }
-
-            return GetHoleYForVerticalTransition(instruction.Index);
-        }
-
-        private int GetExitHoleXForInstruction(
-            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
-        )
-        {
-            if (instruction.Exit == "Up")
-            {
-                return GetHoleXForVerticalTransition(instruction.Index);
-            }
-
-            return GetHoleXForVerticalTransition(instruction.Index);
-        }
-
-        private int GetExitHoleYForInstruction(
-            SubterraneanPathCoordinateGenerator.PathZoneInstruction instruction
-        )
-        {
-            if (instruction.Exit == "Up")
-            {
-                return GetHoleYForVerticalTransition(instruction.Index);
-            }
-
-            return GetHoleYForVerticalTransition(instruction.Index);
-        }
-        private int GetHoleXForVerticalTransition(int verticalIndex)
-        {
-            int seed = XRLCore.Core.Game.GetWorldSeed(
-                TargetZoneId + ":HoleX:" + verticalIndex
-            );
-
-            System.Random rng = new System.Random(seed);
-
-            return 40 + rng.Next(-16, 17);
-        }
-
-        private int GetHoleYForVerticalTransition(int verticalIndex)
-        {
-            int seed = XRLCore.Core.Game.GetWorldSeed(
-                TargetZoneId + ":HoleY:" + verticalIndex
-            );
-
-            System.Random rng = new System.Random(seed);
-
-            return 12 + rng.Next(-8, 9);
-        }
-        */
     }
 
     internal class SubterraneanPathCoordinateGenerator
@@ -2345,10 +2176,6 @@ namespace SubterraneanSites
 
             for (int i = 0; i < steps; i++)
             {
-                // TEMPORARY TEST HACK:
-                // Use forced east only for Waterlogged Tunnel collision testing.
-                // Restore PickNextDirection before normal development.
-                //PathDirection direction = PathDirection.East;
 
                 // Normal behavior:
                 PathDirection direction = PickNextDirection(rng, previousDirection, heading);
@@ -2357,6 +2184,7 @@ namespace SubterraneanSites
 
                 pathZoneIds.Add(current.ToZoneId());
 
+                //stops genertion id on surface
                 if (current.Z <= 10)
                 {
                     break;
