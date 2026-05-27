@@ -1079,8 +1079,8 @@ namespace SubterraneanSites
 
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
 
-        private const int MatrixParasangWidth = 4;
-        private const int MatrixParasangHeight = 5;
+        private const int MatrixParasangWidth = 1; // 4 is normal
+        private const int MatrixParasangHeight = 1; // 5 is normal
         private const int MatrixDepth = 5;
         private const int SurfaceZ = 10;
         private const int MatrixSiteChancePercent = 100; // testing; tune later
@@ -1416,10 +1416,38 @@ namespace SubterraneanSites
 
             int steps = rng.Next(MinPathSteps, MaxPathStepsExclusive);
 
-            List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
+            /*List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
                 siteZoneIds[0],
                 steps,
                 rng
+            );*/
+
+            List<string> rejectedPathCandidates = new List<string>();
+
+            List<string> pathZoneIds = pathGenerator.BuildPathZoneIds(
+                siteZoneIds[0],
+                steps,
+                rng,
+                delegate(string candidateZoneId)
+                {
+                    string safetyReason;
+
+                    bool blocked = IsBlockedForSubterraneanGeneration(
+                        candidateZoneId,
+                        out safetyReason,
+                        originZoneId
+                    );
+
+                    if (blocked)
+                    {
+                        rejectedPathCandidates.Add(
+                            candidateZoneId + " : " + safetyReason
+                        );
+                        return false;
+                    }
+
+                    return true;
+                }
             );
 
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
@@ -1444,6 +1472,31 @@ namespace SubterraneanSites
 
             SetMatrixStatus(matrix, "Generated");
 
+            string candidateReport = "";
+
+            if (rejectedPathCandidates.Count > 0)
+            {
+                candidateReport += "\n\nRejected path candidates:";
+                int limit = Math.Min(rejectedPathCandidates.Count, 8);
+
+                for (int i = 0; i < limit; i++)
+                {
+                    candidateReport += "\n- " + rejectedPathCandidates[i];
+                }
+
+                if (rejectedPathCandidates.Count > limit)
+                {
+                    candidateReport +=
+                        "\n... +" +
+                        (rejectedPathCandidates.Count - limit).ToString() +
+                        " more";
+                }
+            }
+            else
+            {
+                candidateReport += "\n\nRejected path candidates: none";
+            }
+
             if (DebugShowMatrixGenerationPopup)
             {
                 Popup.Show(
@@ -1456,7 +1509,8 @@ namespace SubterraneanSites
                         layers,
                         rejectedSiteZones,
                         rejectedPathZones
-                    )
+                    ) +
+                    candidateReport
                 );
             }
         }
@@ -2239,6 +2293,8 @@ namespace SubterraneanSites
         }
     }
 
+    internal delegate bool PathCandidateValidator(string zoneId);
+
     internal class SubterraneanPathCoordinateGenerator
     {
         private enum PathDirection
@@ -2326,6 +2382,130 @@ namespace SubterraneanSites
             System.Random rng
         )
         {
+            return BuildPathZoneIds(originZoneId, steps, rng, null);
+        }
+
+        public List<string> BuildPathZoneIds(
+            string originZoneId,
+            int steps,
+            System.Random rng,
+            PathCandidateValidator isCandidateAllowed
+        )
+        {
+            List<string> pathZoneIds = new List<string>();
+            HashSet<string> usedZoneIds = new HashSet<string>();
+
+            if (steps <= 0)
+            {
+                return pathZoneIds;
+            }
+
+            SubterraneanZoneCoord current = SubterraneanZoneCoord.Parse(originZoneId);
+
+            PathHeading heading = PickPathHeading(rng);
+            PathDirection? previousDirection = null;
+
+            pathZoneIds.Add(current.ToZoneId());
+            usedZoneIds.Add(current.ToZoneId());
+
+            for (int i = 0; i < steps; i++)
+            {
+                List<PathDirection> candidateDirections =
+                    BuildCandidateDirections(rng, previousDirection, heading);
+
+                bool moved = false;
+
+                foreach (PathDirection direction in candidateDirections)
+                {
+                    SubterraneanZoneCoord candidate = Step(current, direction);
+                    string candidateZoneId = candidate.ToZoneId();
+
+                    if (usedZoneIds.Contains(candidateZoneId))
+                    {
+                        continue;
+                    }
+
+                    if (isCandidateAllowed != null &&
+                        !isCandidateAllowed(candidateZoneId))
+                    {
+                        continue;
+                    }
+
+                    current = candidate;
+                    pathZoneIds.Add(candidateZoneId);
+                    usedZoneIds.Add(candidateZoneId);
+
+                    previousDirection = direction;
+                    moved = true;
+                    break;
+                }
+
+                if (!moved)
+                {
+                    break;
+                }
+
+                if (current.Z <= 10)
+                {
+                    break;
+                }
+            }
+
+            return pathZoneIds;
+        }
+
+        private List<PathDirection> BuildCandidateDirections(
+            System.Random rng,
+            PathDirection? previousDirection,
+            PathHeading heading
+        )
+        {
+            List<PathDirection> directions = new List<PathDirection>();
+
+            PathDirection preferred =
+                PickNextDirection(rng, previousDirection, heading);
+
+            directions.Add(preferred);
+
+            AddDirectionIfMissing(directions, PathDirection.Up);
+            AddDirectionIfMissing(directions, PathDirection.North);
+            AddDirectionIfMissing(directions, PathDirection.South);
+            AddDirectionIfMissing(directions, PathDirection.East);
+            AddDirectionIfMissing(directions, PathDirection.West);
+
+            // Keep the preferred direction first, but shuffle the fallback directions.
+            for (int i = directions.Count - 1; i > 1; i--)
+            {
+                int j = rng.Next(1, i + 1);
+
+                PathDirection temp = directions[i];
+                directions[i] = directions[j];
+                directions[j] = temp;
+            }
+
+            return directions;
+        }
+
+        private void AddDirectionIfMissing(
+            List<PathDirection> directions,
+            PathDirection direction
+        )
+        {
+            if (!directions.Contains(direction))
+            {
+                directions.Add(direction);
+            }
+        }
+
+
+
+
+        /*public List<string> BuildPathZoneIds(
+            string originZoneId,
+            int steps,
+            System.Random rng
+        )
+        {
             List<string> pathZoneIds = new List<string>();
 
             if (steps <= 0)
@@ -2360,7 +2540,7 @@ namespace SubterraneanSites
             }
 
             return pathZoneIds;
-        }
+        }*/
 
         public List<PathZoneInstruction> BuildPathInstructions(
             List<string> pathZoneIds
