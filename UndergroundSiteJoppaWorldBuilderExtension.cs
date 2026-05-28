@@ -972,93 +972,6 @@ namespace SubterraneanSites
 
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
-        /*private void DebugShowSurfaceTierForOrigin(string originZoneId)
-        {
-            SubterraneanZoneCoord coord;
-
-            try
-            {
-                coord = SubterraneanZoneCoord.Parse(originZoneId);
-            }
-            catch
-            {
-                Popup.Show("Surface tier debug failed: could not parse\n" + originZoneId);
-                return;
-            }
-
-            int globalX = coord.ParasangX * 3 + coord.ZoneX;
-            int globalY = coord.ParasangY * 3 + coord.ZoneY;
-
-            string terrainObjectName = "(null)";
-            string terrainObjectTier = "(none)";
-
-            try
-            {
-                XRL.World.GameObject terrainObject =
-                    ZoneManager.GetTerrainObjectForZone(
-                        coord.ParasangX,
-                        coord.ParasangY,
-                        coord.World
-                    );
-
-                if (terrainObject != null)
-                {
-                    terrainObjectName = terrainObject.Blueprint;
-                    terrainObjectTier = terrainObject.GetTag("RegionTier", "(missing)");
-                }
-            }
-            catch (Exception ex)
-            {
-                terrainObjectName = "GetTerrainObjectForZone failed: " + ex.GetType().Name;
-            }
-
-            string worldCellObjectName = "(null)";
-            string worldCellObjectTier = "(none)";
-
-            try
-            {
-                Zone worldMap = The.ZoneManager.GetZone(coord.World);
-
-                if (worldMap != null)
-                {
-                    Cell cell = worldMap.GetCell(coord.ParasangX, coord.ParasangY);
-
-                    if (cell != null)
-                    {
-                        XRL.World.GameObject obj = cell.GetObjectInCell(0);
-
-                        if (obj != null)
-                        {
-                            worldCellObjectName = obj.Blueprint;
-                            worldCellObjectTier = obj.GetTag("RegionTier", "(missing)");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                worldCellObjectName = "world cell lookup failed: " + ex.GetType().Name;
-            }
-
-            Popup.Show(
-                "Surface tier debug\n" +
-                "origin=" + originZoneId + "\n" +
-                "world=" + coord.World + "\n" +
-                "parasang=" + coord.ParasangX + "," + coord.ParasangY + "\n" +
-                "local zone=" + coord.ZoneX + "," + coord.ZoneY + "\n" +
-                "global XY=" + globalX + "," + globalY + "\n\n" +
-                "GetTerrainObjectForZone:\n" +
-                "  object=" + terrainObjectName + "\n" +
-                "  RegionTier=" + terrainObjectTier + "\n\n" +
-                "World-map cell object:\n" +
-                "  object=" + worldCellObjectName + "\n" +
-                "  RegionTier=" + worldCellObjectTier + "\n\n" +
-                "effective tier=" + GetTierForZoneId(originZoneId).ToString()
-            );
-        }*/
-
-
-
 
         //Left in from static site development
         //These are good references on the coordinates fro the starting location around Joppa
@@ -1304,10 +1217,10 @@ namespace SubterraneanSites
         //checks if site is discovered and adds a popup if not
         private void HandleSiteDiscovery(string zoneId)
         {
-            string isSiteOrigin =
-                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin") as string;
+            string isSiteLayer =
+                The.ZoneManager.GetZoneProperty(zoneId, "SubterraneanSites_IsSiteLayer") as string;
 
-            if (isSiteOrigin != "Yes")
+            if (isSiteLayer != "Yes")
             {
                 return;
             }
@@ -1363,6 +1276,144 @@ namespace SubterraneanSites
 
             SubterraneanMatrixCoord matrix = GetMatrixForZone(current);
 
+            List<SubterraneanMatrixCoord> matrices =
+                GetCurrentAndNeighborMatrices(matrix);
+
+            foreach (SubterraneanMatrixCoord candidateMatrix in matrices)
+            {
+                if (!IsValidMatrix(candidateMatrix))
+                {
+                    continue;
+                }
+                ProcessMatrix(candidateMatrix, current);
+            }
+        }
+
+        private List<SubterraneanMatrixCoord> GetCurrentAndNeighborMatrices(
+            SubterraneanMatrixCoord matrix
+        )
+        {
+            List<SubterraneanMatrixCoord> matrices =
+                new List<SubterraneanMatrixCoord>();
+
+            HashSet<string> seen = new HashSet<string>();
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        SubterraneanMatrixCoord candidate =
+                            GetOffsetMatrix(matrix, dx, dy, dz);
+
+                        if (!IsValidMatrix(candidate))
+                        {
+                            continue;
+                        }
+
+                        string key = candidate.ToId();
+
+                        if (seen.Contains(key))
+                        {
+                            continue;
+                        }
+
+                        seen.Add(key);
+                        matrices.Add(candidate);
+                    }
+                }
+            }
+
+            return matrices;
+        }
+        /*private List<SubterraneanMatrixCoord> GetCurrentAndNeighborMatrices(
+            SubterraneanMatrixCoord matrix
+        )
+        {
+            List<SubterraneanMatrixCoord> matrices =
+                new List<SubterraneanMatrixCoord>();
+
+            matrices.Add(matrix);
+            matrices.Add(GetOffsetMatrix(matrix, 1, 0, 0));   // east
+            matrices.Add(GetOffsetMatrix(matrix, -1, 0, 0));  // west
+            matrices.Add(GetOffsetMatrix(matrix, 0, 1, 0));   // south
+            matrices.Add(GetOffsetMatrix(matrix, 0, -1, 0));  // north
+            matrices.Add(GetOffsetMatrix(matrix, 0, 0, 1));   // deeper
+            matrices.Add(GetOffsetMatrix(matrix, 0, 0, -1));  // shallower
+
+            return matrices;
+        }*/
+
+        private SubterraneanMatrixCoord GetOffsetMatrix(
+            SubterraneanMatrixCoord matrix,
+            int dx,
+            int dy,
+            int dz
+        )
+        {
+            SubterraneanMatrixCoord offset = matrix;
+
+            offset.X += dx;
+            offset.Y += dy;
+            offset.Z += dz;
+
+            return offset;
+        }
+
+        private bool IsValidMatrix(SubterraneanMatrixCoord matrix)
+        {
+            if (matrix.World != "JoppaWorld")
+            {
+                return false;
+            }
+
+            if (matrix.X < 0 || matrix.Y < 0 || matrix.Z < 0)
+            {
+                return false;
+            }
+
+            int matrixCountX = 80 / MatrixParasangWidth;
+            int matrixCountY = 25 / MatrixParasangHeight;
+
+            if (matrix.X >= matrixCountX)
+            {
+                return false;
+            }
+
+            if (matrix.Y >= matrixCountY)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /*private void ProcessMatrixForZone(string zoneId)
+        {
+            if (zoneId == null || zoneId == "")
+            {
+                return;
+            }
+
+            SubterraneanZoneCoord current;
+
+            try
+            {
+                current = SubterraneanZoneCoord.Parse(zoneId);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (current.World != "JoppaWorld")
+            {
+                return;
+            }
+
+            SubterraneanMatrixCoord matrix = GetMatrixForZone(current);
+
             //return if matrix has been discovered
             //nothing more happens
             if (IsMatrixProcessed(matrix))
@@ -1372,7 +1423,7 @@ namespace SubterraneanSites
 
             //Let's Go!!!!!
             ProcessMatrix(matrix, current);
-        }
+        }*/
 
         private void ProcessMatrix(
             SubterraneanMatrixCoord matrix,
@@ -2377,11 +2428,13 @@ namespace SubterraneanSites
 
                 registerLayer(context);
 
+                The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_IsSiteLayer", "Yes");
+                The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName", siteDisplayName);
+                The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey", discoveryKey);
+
                 if (context.IsOrigin)
                 {
                     The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_IsSiteOrigin", "Yes");
-                    The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_SiteDisplayName", siteDisplayName);
-                    The.ZoneManager.SetZoneProperty(zoneId, "SubterraneanSites_DiscoveryKey", discoveryKey);
                 }
 
                 The.ZoneManager.SetZoneName(
@@ -2464,7 +2517,7 @@ namespace SubterraneanSites
                 "DirtRoad",
                 //"DirtPath",
                 "SaltPath",
-                "FungalTrailBrick",
+                //"FungalTrailBrick",
                 "CryptTrail",
                 "BrickWalkway",
                 "MarbleWalkway",
