@@ -1,6 +1,6 @@
 # Subterranean Sites
 
-**Subterranean Sites** is a Caves of Qud mod that adds procedurally generated underground sites connected by long discoverable paths through the caves.
+**Subterranean Sites** is a Caves of Qud mod that adds procedurally generated underground sites connected by long discoverable paths through the underground layers.
 
 The goal is to make underground exploration feel more alive with challenges and rewards without replacing Qud’s existing world. Sites are generated dynamically during exploration and are designed to avoid important vanilla locations, historic sites, lairs, and major special areas.
 
