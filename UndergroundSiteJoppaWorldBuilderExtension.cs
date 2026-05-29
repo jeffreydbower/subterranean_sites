@@ -981,11 +981,11 @@ namespace SubterraneanSites
         private const int SurfaceZ = 10;
 
         // Release candidate density: each slot attempts a site; safety/protection checks may still reject it.
-        private const int MatrixSiteChancePercent = 100; // testing; tune later
+        private const int MatrixSiteChancePercent = 100; 
         private const int MinSurfaceMatrixOriginZ = 11;
         private const int MinPathSteps = 30;
         private const int MaxPathStepsExclusive = 41;
-        private const bool DebugShowMatrixGenerationPopup = true;
+        private const bool DebugShowMatrixGenerationPopup = false;
 
         private bool safetyReadyThisSession;
 

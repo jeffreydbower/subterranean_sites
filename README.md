@@ -1,150 +1,78 @@
 # Subterranean Sites
 
-Caves of Qud mod for deterministic underground site generation.
+**Subterranean Sites** is a Caves of Qud mod that adds procedurally generated underground sites connected by long discoverable paths through the caves.
 
-Subterranean Sites adds discoverable underground sites that are intended to feel compatible with Qud’s existing procedural world. Sites are generated as deterministic vertical structures, registered through Qud’s zone-building system, and protected by safety checks intended to avoid overwriting important vanilla content.
+The goal is to make underground exploration feel more alive with challenges and rewards without replacing Qud’s existing world. Sites are generated dynamically during exploration and are designed to avoid important vanilla locations, historic sites, lairs, and major special areas.
 
-## Current Focus
+## Features
 
-- Generate deterministic stacked underground sites
-- Use runtime pre-registration with `ZoneManager.AddZoneBuilder(...)`
-- Support both new worlds and existing saves
-- Protect vanilla generated content before registering mod content
-- Build path systems that lead players toward generated underground sites
-- Prepare for matrix-based site/path placement
+* Procedurally generated subterranean sites
+* Long paths that snake through nearby underground zones
+* Multi-level vertical site structures
+* Deterministic generation based on world/matrix location
+* Support for both new games and existing saves
+* Safety checks to avoid protected vanilla content
+* Site discovery popups when entering generated sites
 
-## Current Working Capabilities
+## Site Types
 
-Runtime registration:
-- Runtime `IGameSystem` registration works
-- New-world bootstrap works through `JoppaWorldBuilderExtension.OnAfterBuild(...)`
-- Existing-save bootstrap works through `[CallAfterGameLoaded]`
-- `BeforeZoneBuiltEvent` works as the main runtime generation trigger
-- `ZoneManager.AddZoneBuilder(...)` works for future zones
-- Generated/registered zones persist after re-entry
+Current site archetypes include:
 
-Safety:
-- Safety initialization runs before site/path generation
-- Vanilla lairs and legendary merchant lairs are recovered from `JoppaWorldInfo.lairs`
-- Historical sites are protected from persistent sultan-region game state
-- Named special lairs are protected through `JournalAPI` map-note secrets
-- Sites and paths are skipped when protected zones are detected
+* **Historic sites** — SultanDungeon-style ruins using Qud’s historical-site systems
+* **Proper lairs** — coherent creature lairs using vanilla lair-owner logic
+* **Chaos lairs** — denser mixed-combat sites with extra encounters
+* **Underworld bazaars** — rare merchant-focused underground sites
 
-Site infrastructure:
-- Vertical site stacks are generated from a shared origin zone
-- Site archetypes are selected deterministically
-- Shared helpers handle stairs, tier calculation, reward chests, music, and zone metadata
-- Site discovery popup works on entering a site origin zone
+## Paths and Discovery
 
-## Working Site Archetypes
+Sites are not simply placed in isolation. Each site generates a path intended to help players discover it while exploring underground.
 
-Current working archetypes:
+Paths may move horizontally, climb between strata, and pass around other subterranean features. They are meant to be found through exploration. A statue is placed near where paths exit zones in the direction of the site so players do not go backwards.
 
-- `SultanHistoric`
-- `ProperLair`
-- `BasicLairChaos`
-- `MerchantHive` / Underworld Bazaar
+In testing, most encounters occurred within a short search distance, but dry stretches can happen. Searching more than 10–15 zones without finding a path or site is possible, especially near world-map edges.
 
-### SultanHistoric
+## Safety and Compatibility
 
-Historical-site-style vertical dungeon using Qud’s `SultanDungeon` builder.
+Subterranean Sites registers generated content through Qud’s zone-building system and includes multiple safety checks before placing sites or paths.
 
-Working features:
-- Reuses generated sultan history and region data
-- Registers `SultanDungeon` across multiple vertical layers
-- Generates cult-themed mobs
-- Supports relic/vault behavior on lower layers
+The mod attempts to protect:
 
-### ProperLair
+* vanilla lairs
+* legendary merchant lairs
+* historical sites
+* important named special locations
+* several fixed story or settlement locations
 
-Coherent vertical lair using vanilla lair-owner and minion logic.
+If required safety data cannot be initialized, the mod fails closed and does not generate new content.
 
-Working features:
-- Tier-appropriate lair owner selection
-- Lair-style population coherence
-- Extra hero encounters
-- Upgraded reward chests
+Zero sites were observed to be overwritten in extensive testing once saftey system was fully implemented.
 
-### BasicLairChaos
+A rare known edge case remains: Shug’ruith’s mouth and cradle/lair are protected, but the intermediate path between them may not be fully protected. Testing found the route remained followable, but minor visual or path interference is possible in unusual cases.
 
-Mixed combat site using `BasicLair` plus additional population and faction encounters.
+## Existing Saves
 
-Working features:
-- Tiered singles/team population tables
-- Extra faction encounters
-- Reward chest support
+Existing saves are supported.
 
-### MerchantHive / Underworld Bazaar
+The mod begins generating content as new underground regions are explored. Already-built zones may not retroactively receive generated content, so very old or heavily explored saves may have local gaps.
 
-Merchant-heavy underground site.
+## Status
 
-Working features:
-- Multi-layer merchant site
-- Tier-appropriate merchant behavior
-- Guard/merchant-style structure rather than dungeon reward structure
+Release-candidate code is committed.
 
-## Planned Path System
+Current focus:
 
-The path system is partially implemented.
+* final documentation
+* Workshop setup
+* broader playtesting
+* small bug fixes if reports come in
 
-Current:
-- Deterministic path zone IDs
-- Entry/exit path instructions
-- Custom path builder for visible path material
-- Vertical holes/pits for path transitions
+## Development Notes
 
-Planned:
-- Tie paths to matrix/site generation
-- Clip paths at matrix boundaries
-- Avoid protected vanilla content
-- Make paths discoverable mid-route
+This repository also includes internal development documents:
 
-## Planned Matrix System
+* `brief.md` — short nontechnical concept summary
+* `decisions.md` — design decisions and rationale
+* `spike-log.md` — development discoveries and implementation notes
+* `test-plan.md` — testing checklist and release-readiness notes
 
-The next major system is deterministic matrix placement.
-
-Planned behavior:
-- Divide underground space into 3D matrices
-- Generate at most one site per matrix
-- Derive site definition from world seed + matrix ID
-- Process each matrix once
-- Register current and adjacent matrices before the player reaches generated content
-- Reject or skip protected site/path zones
-
-Current favored matrix size:
-- 8 × 5 parasangs
-- 20 Z-levels deep
-
-## Safety Philosophy
-
-Primary rule:
-
-- Never overwrite important vanilla content.
-
-Preferred behavior:
-- Skip mod content rather than damage vanilla content
-- Reject unsafe sites or paths
-- Allow partial paths only when safe
-- Disable generation if required safety data cannot initialize
-
-Safety testing remains required before release.
-
-## Current Status
-
-Working:
-- runtime pre-registration
-- genesis bootstrap
-- retrofit bootstrap
-- dynamic safety initialization
-- vanilla lair recovery from persistent runtime state
-- historical-site protection
-- named special-site protection
-- multiple vertical site archetypes
-- path coordinate/path builder prototype
-
-Next:
-- implement matrix detection and generation
-- connect matrix system to site/path registration
-- clip paths at matrix boundaries
-- run collision tests against vanilla lairs, historical sites, special lairs, and other important content
-- add a player-facing failure popup if safety initialization fails
+These are included partly as project documentation and partly as a record of the development process.

@@ -1,7 +1,5 @@
 # Subterranean Sites — Design Decisions
 
----
-
 ## Runtime Generation Approach
 
 Decision:
@@ -10,20 +8,25 @@ Use runtime pre-registration rather than direct mutation of the currently buildi
 
 Current model:
 
-- BeforeZoneBuiltEvent remains the primary runtime generation hook.
-- ZoneManager.AddZoneBuilder(...) is used to register builders for future zones.
-- Qud’s normal zone-building pipeline then builds those zones when entered.
+* `ZoneActivatedEvent` triggers matrix processing.
+* `ZoneManager.AddZoneBuilder(...)` registers builders for future zones.
+* Qud’s normal zone-building pipeline builds those zones when entered.
+* `BeforeZoneBuiltEvent` remains available for lightweight diagnostics only.
 
 Important constraint:
 
-    AddZoneBuilder(...) works for future zones.
-    AddZoneBuilder(...) does not affect the current zone already in the build pipeline.
+```text
+AddZoneBuilder(...) works for future zones.
+AddZoneBuilder(...) does not affect the current zone already in the build pipeline.
+```
 
 Status:
 
-    Direct runtime injection → deprecated as primary approach
-    Runtime pre-registration → primary architecture
-    Direct BuildZone/application → diagnostic/fallback only
+```text
+Direct runtime injection → deprecated as primary approach
+Runtime pre-registration → primary architecture
+Direct BuildZone/application → diagnostic/fallback only
+```
 
 ---
 
@@ -31,31 +34,37 @@ Status:
 
 Decision:
 
-Support both genesis and retrofit installs.
+Support both genesis and existing-save installs.
 
 Definitions:
 
-    Genesis  = mod installed before a new world is created
-    Retrofit = mod installed into an existing save
+```text
+Genesis       = mod installed before a new world is created
+Existing save = mod installed into an already-created save
+```
 
 Genesis bootstrap:
 
-    JoppaWorldBuilderExtension.OnAfterBuild(...)
-    → RequireSystem<RuntimeZoneBuilderInjectionSystem>()
-    → EnsureSafetyReady()
+```text
+JoppaWorldBuilderExtension.OnAfterBuild(...)
+→ RequireSystem<RuntimeZoneBuilderInjectionSystem>()
+→ EnsureSafetyReady()
+```
 
-Retrofit bootstrap:
+Existing-save bootstrap:
 
-    [HasCallAfterGameLoaded]
-    [CallAfterGameLoaded]
-    → RequireSystem<RuntimeZoneBuilderInjectionSystem>()
-    → EnsureSafetyReady()
+```text
+[HasCallAfterGameLoaded]
+[CallAfterGameLoaded]
+→ RequireSystem<RuntimeZoneBuilderInjectionSystem>()
+→ EnsureSafetyReady()
+```
 
 Rationale:
 
-- OnAfterBuild(...) is valid for world generation.
-- Existing saves do not re-run world generation.
-- CallAfterGameLoaded provides a load-time bootstrap for retrofit installs.
+* `OnAfterBuild(...)` is valid for world-generation flow.
+* Existing saves do not re-run world generation.
+* `CallAfterGameLoaded` provides a load-time bootstrap for existing-save installs.
 
 ---
 
@@ -67,20 +76,24 @@ No site or path generation may occur unless dynamic protected-location safety in
 
 Current rule:
 
-    If EnsureSafetyReady() fails:
-        register nothing
+```text
+If EnsureSafetyReady() fails:
+    register nothing
+```
 
 Rationale:
 
-- The mod can register builders into arbitrary generated world locations.
-- Missing protection data could cause collisions with vanilla generated content.
-- Failing closed is safer than generating unsafely.
+* The mod can register builders into arbitrary generated world locations.
+* Missing protection data could cause collisions with vanilla generated content.
+* Failing closed is safer than generating unsafely.
 
-Future release behavior:
+Release behavior:
 
-    If safety init fails:
-        show one player-facing warning popup
-        disable generation for that save/session
+```text
+If safety init fails:
+    show one player-facing warning popup
+    disable generation for that save/session
+```
 
 ---
 
@@ -88,24 +101,26 @@ Future release behavior:
 
 Decision:
 
-Use multiple authoritative source adapters feeding one safety system.
+Use multiple source adapters feeding one protection system.
 
-Unified output:
+Unified check:
 
-    SubterraneanSafety.IsProtected(...)
+```text
+SubterraneanSafety.IsProtected(...)
+```
 
 Current protected sources:
 
-- hardcoded static protected locations
-- historical sites from game-state vectors
-- vanilla lairs / legendary merchant lairs from JoppaWorldInfo.lairs
-- named special/Girsh-related sites from JournalAPI map-note secrets
+* hardcoded static protected locations
+* historical sites from persistent sultan-region game state
+* vanilla lairs / legendary merchant lairs from `JoppaWorldInfo.lairs`
+* named special/Girsh-related sites from `JournalAPI` map-note secrets
 
 Rationale:
 
-- Qud persists different generated systems in different ways.
-- Forcing all safety into one source would be less robust.
-- The unified layer is the protection check, not the data source.
+* Qud persists different generated systems in different ways.
+* Forcing all safety into one source would be less robust.
+* The unified layer is the protection check, not the data source.
 
 ---
 
@@ -117,24 +132,23 @@ Recover vanilla lair locations from persistent runtime world state.
 
 Implementation:
 
-    The.Game.GetObjectGameState("JoppaWorldInfo")
-    → reflected field: lairs
-    → GeneratedLocationInfo.zoneLocation
-
-Confirmed:
-
-    JoppaWorldInfo.lairs count = 125
-    Recovered coordinates spot-checked in game
+```text
+The.Game.GetObjectGameState("JoppaWorldInfo")
+→ reflected field: lairs
+→ GeneratedLocationInfo.zoneLocation
+```
 
 Protection:
 
-    Each vanilla lair is protected as a zone column from Z 10–14.
+```text
+Each vanilla lair = protected zone column, Z 10–14
+```
 
 Rationale:
 
-- Earlier builder.worldInfo.lairs capture worked only during genesis.
-- JoppaWorldInfo.lairs persists into existing saves.
-- This supports both genesis and retrofit installs.
+* Earlier `builder.worldInfo.lairs` capture worked only during genesis.
+* `JoppaWorldInfo.lairs` persists into existing saves.
+* This supports both new games and existing saves.
 
 ---
 
@@ -142,22 +156,26 @@ Rationale:
 
 Decision:
 
-Continue using persistent sultan-region game state for historical site protection.
+Use persistent sultan-region game state for historical site protection.
 
 Source:
 
-    SultanDungeonPlacementOrder_i
-    sultanRegionPosition_[regionName]
+```text
+SultanDungeonPlacementOrder_i
+sultanRegionPosition_[regionName]
+```
 
 Protection:
 
-    Historical sites are protected as center-zone columns across their expected Z range.
+```text
+Historical sites = protected center-zone columns across expected historical-site depth.
+```
 
 Rationale:
 
-- This source is specific to historical site placement.
-- It is available at runtime.
-- It does not require reconstructing historical sites from broad world-info tables.
+* This source is specific to historical site placement.
+* It is available at runtime.
+* It does not require reconstructing historical sites from broader world-info tables.
 
 ---
 
@@ -165,21 +183,44 @@ Rationale:
 
 Decision:
 
-Use JournalAPI map-note secrets for specific named special lairs.
+Use `JournalAPI` map-note secrets for specific named special lairs.
 
 Protected targets include:
 
-- Oboroqoru
-- Qas/Qon
-- Rermadon
-- Shug’ruith mouth
-- Shug’ruith lair
+* Oboroqoru
+* Qas/Qon
+* Rermadon
+* Shug’ruith mouth
+* Shug’ruith lair/cradle
 
 Rationale:
 
-- These are known named locations with persistent map-note identifiers.
-- Some need exact zone-column protection.
-- Others need broader parasang-column protection.
+* These are known named locations with persistent map-note identifiers.
+* Some need exact zone-column protection.
+* Others need broader parasang-column protection.
+
+---
+
+## Shug’ruith Intermediate Path
+
+Decision:
+
+Protect Shug’ruith’s mouth and lair/cradle, but do not currently attempt to reconstruct and protect the full intermediate route.
+
+Rationale:
+
+* The mouth and cradle/lair are recoverable and protected.
+* The intermediate route appears to be generated through builder/connection behavior rather than a simple persistent route list.
+* Overbuilding a speculative line or bounding shape could protect too much territory or create new bugs.
+* Testing found the route remained followable despite nearby mod paths.
+
+Release stance:
+
+```text
+Rare known edge case.
+Document honestly.
+Patch later only if real reports show the route can be meaningfully broken.
+```
 
 ---
 
@@ -191,15 +232,19 @@ Protect both sites and paths at multiple stages.
 
 Current enforcement:
 
-- Candidate site zones are filtered before registration.
-- RegisterLayeredSite(...) checks protection again.
-- Candidate path instructions are filtered before registration.
-- RegisterRoadPathZone(...) checks protection again.
+* Origin picker rejects protected site stacks.
+* Site stack is checked again before registration.
+* `RegisterLayeredSite(...)` checks protection again.
+* Path candidate generation rejects protected/owned zones before committing.
+* Final path filtering remains as a safety backstop.
+* `RegisterRoadPathZone(...)` checks protection again.
 
 Rationale:
 
-    Safety should fail closed.
-    Redundant checks are acceptable because collision damage would be worse than partial generation.
+```text
+Safety should fail closed.
+Redundant checks are acceptable because collision damage would be worse than skipped/partial generation.
+```
 
 ---
 
@@ -211,17 +256,17 @@ Prefer vanilla builders where possible.
 
 Working site-builder families:
 
-- SultanDungeon
-- BasicLair
-- vanilla lair-owner generation
-- merchant/lair population systems
-- small custom support builders for path material, holes, and targeted features
+* `SultanDungeon`
+* `BasicLair`
+* vanilla lair-owner generation
+* merchant/lair population systems
+* small custom support builders for path material, holes, and targeted features
 
 Rationale:
 
-- Vanilla builders produce Qud-native layouts and encounters.
-- Reusing vanilla systems reduces custom content burden.
-- Custom builders are still appropriate for small connective/path features.
+* Vanilla builders produce Qud-native layouts and encounters.
+* Reusing vanilla systems reduces custom content burden.
+* Custom builders are appropriate for connective/path features and targeted additions.
 
 ---
 
@@ -229,19 +274,21 @@ Rationale:
 
 Decision:
 
-Sites are vertical columns, not broad horizontal 3×3 parasang structures.
+Sites are vertical structures, not broad horizontal 3×3 parasang structures.
 
 Current structure:
 
-    same X/Y
-    varying Z
-    typically 3–7 layers
+```text
+same X/Y
+varying Z
+typically 3–6 layers
+```
 
 Rationale:
 
-- Qud already uses vertical dungeon structure naturally.
-- Vertical sites are easier to register deterministically.
-- Paths provide broader spatial discovery without requiring horizontal site sprawl.
+* Qud already uses vertical dungeon structure naturally.
+* Vertical sites are easier to register deterministically.
+* Paths provide broader spatial discovery without requiring horizontal site sprawl.
 
 ---
 
@@ -253,21 +300,23 @@ Support multiple deterministic site archetypes.
 
 Current working archetypes:
 
-- SultanHistoric
-- ProperLair
-- BasicLairChaos
-- MerchantHive / Underworld Bazaar
+* `SultanHistoric`
+* `ProperLair`
+* `BasicLairChaos`
+* `MerchantHive` / Underworld Bazaar
 
 Site selection:
 
-    world seed + site/matrix seed
-    → deterministic weighted site type
+```text
+world seed + matrix ID + slot ID
+→ deterministic weighted site type
+```
 
 Rationale:
 
-- Archetype variety makes repeated discoveries more interesting.
-- Each archetype can reuse different vanilla systems.
-- The selector can be tuned without changing matrix architecture.
+* Archetype variety makes repeated discoveries more interesting.
+* Each archetype can reuse different vanilla systems.
+* The selector can be tuned without changing matrix architecture.
 
 ---
 
@@ -275,26 +324,30 @@ Rationale:
 
 Decision:
 
-Site identity must be deterministic, but vanilla builder internals do not need to be perfectly controlled.
+Site identity should be deterministic, but vanilla builder internals do not need to be perfectly controlled.
 
 Required deterministic inputs:
 
-    world seed + matrix ID
+```text
+world seed + matrix ID + slot ID
+```
 
 Controls:
 
-- site existence
-- site origin
-- site type
-- layer count
-- path direction
-- path material
-- reward/site parameters
+* site existence
+* site origin
+* site type
+* layer count
+* path direction tendency
+* path material
+* reward/site parameters
 
 Important distinction:
 
-    Builder RNG may vary internally.
-    The mod’s site registration decisions must remain deterministic.
+```text
+Builder RNG may vary internally.
+The mod’s registration decisions should remain deterministic.
+```
 
 ---
 
@@ -302,52 +355,100 @@ Important distinction:
 
 Decision:
 
-Use a direct matrix system rather than zone-level approximation.
+Use a direct matrix system as the processing/status unit.
 
-Planned model:
+Current model:
 
-    World underground space is divided into 3D matrices.
-    Each matrix may contain at most one site.
+```text
+World underground space is divided into 3D matrices.
+Each matrix contains four deterministic site slots.
+Each slot may attempt one site.
+```
 
-Current preferred matrix dimensions:
+Current matrix dimensions:
 
-    8 × 5 parasangs
-    20 Z-levels deep
+```text
+4 × 5 parasangs
+5 Z-levels deep
+```
 
-Planned matrix behavior:
+Current matrix behavior:
 
-- detect current matrix from player zone
-- process each matrix once
-- generate site definition from matrix seed
-- avoid edge origins
-- avoid insufficient-depth origins
-- clip paths at matrix boundaries
-- record processed matrices in game state
-
----
-
-## Matrix Boundary Processing
-
-Decision:
-
-Process adjacent matrices only when needed.
-
-Planned behavior:
-
-    Normal interior:
-        process current matrix
-
-    Matrix edge:
-        process current matrix + adjacent side matrix
-
-    Matrix corner:
-        process current matrix + 2 side neighbors + 1 diagonal neighbor
+* detect current matrix from player zone
+* process each matrix once
+* store matrix status in game state
+* attempt four site slots per matrix
+* generate each slot from matrix seed + slot ID
+* use safety checks to reject blocked origins/site stacks
+* allow site/path content to extend outside the matrix if safe
 
 Rationale:
 
-- Diagonal crossing only matters at corners.
-- Most movement requires only one matrix.
-- Processed matrices are cached/marked to avoid repeat work.
+* A single site per large matrix felt too sparse.
+* Four slots per matrix provides better density while retaining structure.
+* Matrix remains the status/processing unit.
+* Slot remains the site-origin opportunity unit.
+
+---
+
+## Matrix Slot Layout
+
+Decision:
+
+Divide each processing matrix into four origin-selection slots.
+
+Slots:
+
+```text
+A = upper-left
+B = upper-right
+C = lower-left
+D = lower-right
+```
+
+Design:
+
+* Slot bounds constrain origin selection only.
+* Site stacks and paths may extend outside slot bounds if safe.
+* Top and bottom slot pairs share a middle Y band.
+* Ownership/protection checks resolve conflicts.
+
+Rationale:
+
+* The overlapping middle band avoids awkward unused rows.
+* Slot conflicts are acceptable because the safety/ownership system is authoritative.
+* This gives more discoverable content without making the matrix system too complex.
+
+---
+
+## Neighbor Matrix Activation
+
+Decision:
+
+On zone activation, process a surrounding `3 × 3 × 3` block of matrices.
+
+Current behavior:
+
+```text
+current matrix
++ adjacent horizontal matrices
++ diagonal horizontal matrices
++ one matrix band above
++ one matrix band below
+```
+
+Invalid matrices are skipped:
+
+* outside JoppaWorld
+* outside world-map bounds
+* above the surface matrix band
+
+Rationale:
+
+* A player may enter an already-processed matrix from a new side.
+* Nearby matrices should be seeded before the player reaches them.
+* Matrix status prevents duplicate processing.
+* Broader activation improves path/site encounter density without adding extra paths per site.
 
 ---
 
@@ -355,17 +456,19 @@ Rationale:
 
 Decision:
 
-Do not use compass, attunement, or explicit directional feedback.
+Do not use compass, attunement, map markers, or explicit directional feedback.
 
 Replacement:
 
-    Natural path discovery
+```text
+Natural path discovery
+```
 
 Rationale:
 
-- Paths are more Qud-like than UI guidance.
-- Players can discover paths mid-route.
-- Physical paths make deep sites feel integrated into the underground world.
+* Paths are more Qud-like than UI guidance.
+* Players can discover paths mid-route.
+* Physical paths make deep sites feel integrated into the underground world.
 
 ---
 
@@ -373,22 +476,67 @@ Rationale:
 
 Decision:
 
-Each generated site should have an outward/upward path independent of the site builder.
+Each generated site gets one outward/upward path independent of the site archetype.
 
 Path behavior:
 
-- deterministic from the site/matrix seed
-- separate from site archetype logic
-- may cross zones and Z-levels
-- should avoid protected vanilla content
-- should eventually be clipped at matrix boundaries
+* deterministic from the site/matrix/slot seed
+* separate from site archetype logic
+* may cross zones and Z-levels
+* rejects protected/owned candidate zones before committing
+* continues around blocked candidates when possible
+* stops only when it reaches termination conditions or has no safe candidate
 
 Current implementation:
 
-- path coordinate generation works
-- path instructions are generated
-- custom path builder places visible path material
-- vertical transitions can use holes/pits
+* path coordinate generation works
+* path instructions are generated from adjacent zone IDs
+* custom path builder places visible path material
+* vertical transitions can use holes/pits
+* final safety filtering remains
+
+Rationale:
+
+* One path per site is enough.
+* A second path would likely make the underground feel overbuilt and artificial.
+* Candidate-level rerouting is better than generating a path and deleting unsafe segments afterward.
+
+---
+
+## Path Ascent Tuning
+
+Decision:
+
+Use depth-sensitive upward weighting.
+
+Rationale:
+
+* Surface-adjacent paths terminated too quickly when upward bias was high.
+* Deeper paths benefit from upward drift because it connects strata.
+* The goal is drift, not an elevator to the surface.
+
+Current model:
+
+```text
+shallow origins → low upward bias
+deeper origins  → stronger upward bias
+```
+
+Release tuning may remain adjustable.
+
+---
+
+## Path Materials
+
+Decision:
+
+Use only path materials that are visibly readable in underground zones.
+
+Rationale:
+
+* Path readability matters more than variety.
+* `FungalTrailBrick` displayed as “coral path” but did not visibly render in testing.
+* Low-visibility materials should stay out unless manually verified.
 
 ---
 
@@ -400,9 +548,9 @@ Sites generally use stairs; paths may use holes.
 
 Rationale:
 
-- Builders already handle stairs well inside sites.
-- Holes are more visible and signal an unusual route.
-- Holes help distinguish path traversal from ordinary dungeon descent.
+* Builders already handle stairs well inside sites.
+* Holes are visible and signal an unusual route.
+* Holes distinguish path traversal from ordinary dungeon descent.
 
 ---
 
@@ -412,19 +560,23 @@ Decision:
 
 Use minimal game-state and zone metadata.
 
-Allowed metadata:
+Allowed metadata includes:
 
-    SubterraneanSites_Owner
-    SubterraneanSites_IsSiteOrigin
-    SubterraneanSites_SiteDisplayName
-    SubterraneanSites_DiscoveryKey
-    MatrixProcessed markers
+```text
+SubterraneanSites_Owner
+SubterraneanSites_IsSiteLayer
+SubterraneanSites_IsSiteOrigin
+SubterraneanSites_SiteDisplayName
+SubterraneanSites_DiscoveryKey
+SubterraneanSites_MatrixStatus_...
+```
 
 Rationale:
 
-- Generation should be reconstructible from seeds.
-- State is still needed to prevent duplicate processing and support discovery behavior.
-- Minimal metadata is acceptable when it preserves deterministic architecture.
+* Generation should mostly be reconstructible from seeds.
+* State is still needed to prevent duplicate matrix processing.
+* Zone metadata is needed for ownership checks and discovery behavior.
+* Minimal metadata is acceptable when it supports safety and determinism.
 
 ---
 
@@ -432,18 +584,21 @@ Rationale:
 
 Decision:
 
-Site discovery is tied to entering the site origin zone.
+Any generated site layer can trigger discovery.
 
 Implementation:
 
-- origin zone gets SubterraneanSites_IsSiteOrigin
-- site display name and discovery key are stored as zone properties
-- ZoneActivatedEvent shows discovery popup once
+* all site layers get `SubterraneanSites_IsSiteLayer`
+* all site layers get the same site display name
+* all site layers get the same discovery key
+* origin layer also gets `SubterraneanSites_IsSiteOrigin`
+* `ZoneActivatedEvent` shows discovery popup once per site
 
 Rationale:
 
-- Discovery should be simple and nonintrusive.
-- Full path discovery logic can evolve separately.
+* Players may dig into a non-origin layer first.
+* Discovery should still work.
+* Shared discovery key prevents repeated popups.
 
 ---
 
@@ -453,16 +608,74 @@ Decision:
 
 Surface zones are not site zones.
 
-Current/planned behavior:
+Current behavior:
 
-- surface zones may eventually trigger underground matrix registration
-- paths may approach or reach the surface
-- optional surface holes may be added later
+* Surface zones can trigger matrix activation.
+* Sites start underground.
+* Paths may approach or reach the surface.
+* Surface emergence is acceptable but not required.
 
 Rationale:
 
-- The core mod content is underground.
-- Surface interaction should support discovery, not replace underground exploration.
+* The core mod content is underground.
+* Surface interaction should support discovery, not replace underground exploration.
+
+---
+
+## Existing Saves
+
+Decision:
+
+Support existing saves, but do not attempt to retroactively rewrite already-built zones.
+
+Rationale:
+
+* Existing-save support is important.
+* Already-built zones may not receive generated content.
+* Rewriting built zones would add risk.
+* Local gaps are preferable to damaging existing world state.
+
+---
+
+## Encounter Density
+
+Decision:
+
+Accept the current density rather than adding more path systems.
+
+Current density model:
+
+* four site slots per matrix
+* `3 × 3 × 3` neighbor matrix activation
+* one path per generated site
+* path length around 30–40 zones
+
+Rationale:
+
+* Testing found acceptable median encounter distance.
+* Long dry searches can happen, especially at map edges.
+* Adding a second path per site would likely feel artificial.
+* Remaining density behavior can be explained to players.
+
+---
+
+## Manifest / Attribution
+
+Decision:
+
+Use `manifest.json` with release-facing metadata.
+
+Current approach:
+
+* `Author` uses Steam name.
+* Source repository can carry real-name attribution.
+* Preview image is stored in the mod root and referenced by `PreviewImage`.
+
+Rationale:
+
+* Qud expects root-level mod configuration.
+* Steam-facing identity can differ from source-code identity.
+* Preview image should be simple and symbolic at small size.
 
 ---
 
@@ -470,26 +683,36 @@ Rationale:
 
 Accepted / working:
 
-    ✔ runtime pre-registration
-    ✔ genesis bootstrap
-    ✔ retrofit bootstrap
-    ✔ deterministic site selection
-    ✔ vertical site structure
-    ✔ multiple working archetypes
-    ✔ path coordinate/path builder prototype
-    ✔ dynamic safety initialization
-    ✔ vanilla lair recovery from JoppaWorldInfo.lairs
-    ✔ historical-site protection
-    ✔ named special-site protection
+```text
+✔ runtime pre-registration
+✔ genesis bootstrap
+✔ existing-save bootstrap
+✔ deterministic matrix/slot site selection
+✔ vertical site structure
+✔ multiple working archetypes
+✔ quad-slot matrix generation
+✔ 3 × 3 × 3 neighbor matrix activation
+✔ path coordinate/path builder system
+✔ path candidate protection/rerouting
+✔ dynamic safety initialization
+✔ vanilla lair recovery from JoppaWorldInfo.lairs
+✔ historical-site protection
+✔ named special-site protection
+✔ any-layer discovery popup
+✔ manifest and preview image loading
+```
 
-Next major decision area:
+Known residual risks:
 
-    matrix implementation details
+```text
+- rare possible interference with intermediate Shug’ruith path segments
+- existing saves may have already-built zones that do not retroactively receive content
+- encounter density has a long tail; players may occasionally search more than 10–15 zones
+```
 
-Next major development work:
+Current release posture:
 
-- implement matrix detection
-- generate per-matrix site definitions
-- register current/adjacent matrices
-- clip paths at matrix boundaries
-- run collision tests
+```text
+Release-candidate code is committed.
+Remaining work is documentation, Workshop setup, and broader playtesting.
+```
