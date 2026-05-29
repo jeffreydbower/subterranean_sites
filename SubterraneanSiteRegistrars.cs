@@ -408,7 +408,6 @@ namespace SubterraneanSites
         private string cachedOwnerId;
         
         private int chestTier;
-        //private int chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
 
         public ProperLairSiteRegistrar(RuntimeZoneBuilderInjectionSystem parent)
         {
@@ -437,8 +436,6 @@ namespace SubterraneanSites
 
         private bool PrepareProperLair(List<string> siteZoneIds)
         {
-            int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
-            //int tier = parent.GetTierFromZ(originZ);
             int tier = parent.GetTierForZoneId(siteZoneIds[0]);
 
             string terrainBlueprint = PickProperLairTerrainForTier(tier);
@@ -475,8 +472,6 @@ namespace SubterraneanSites
 
             cachedOwnerId = The.ZoneManager.CacheObject(lairOwner);
 
-            //chestTier = BuildChestTierFromLairOwner(lairOwner);
-            //chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
             chestTier = BuildRewardChestTierFromLairOwner(lairOwner);
 
             return true;
@@ -814,7 +809,7 @@ namespace SubterraneanSites
                     Context: "LairName"
                 );
 
-            string possessive = Grammar.MakePossessive(ownerName);
+            //string possessive = Grammar.MakePossessive(ownerName);
 
             return
                 "The " +
@@ -1106,7 +1101,7 @@ namespace SubterraneanSites
 
         private bool PrepareSultanSite(List<string> siteZoneIds)
         {
-            int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
+            //int originZ = parent.GetZFromZoneId(siteZoneIds[0]);
             //int targetTier = parent.GetTierFromZ(originZ);
             int targetTier = parent.GetTierForZoneId(siteZoneIds[0]);
 
@@ -1288,5 +1283,4 @@ namespace SubterraneanSites
             return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
         }
     }
-
 }

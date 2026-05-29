@@ -165,12 +165,10 @@ namespace SubterraneanSites
     {
         public string Name;
         public string World;
-
         public int ParasangX;
         public int ParasangY;
         public int ZoneX;
         public int ZoneY;
-
         public int MinZ;
         public int MaxZ;
 
@@ -237,10 +235,8 @@ namespace SubterraneanSites
     {
         public string Name;
         public string World;
-
         public int ParasangX;
         public int ParasangY;
-
         public int MinZ;
         public int MaxZ;
 
@@ -973,29 +969,18 @@ namespace SubterraneanSites
     public class RuntimeZoneBuilderInjectionSystem : IGameSystem
     {
 
-        //Left in from static site development
-        //These are good references on the coordinates fro the starting location around Joppa
-        // May be handy later
-        //Joppa is "JoppaWorld.11.22.1.1.10"
-        //private const string TargetZoneId = "JoppaWorld.11.22.0.1.11"; // this is 1-down, 1-west from Joppa
-        //private const string TargetZoneId = "JoppaWorld.11.22.0.1.16"; // this is 6-down, 1-west from Joppa
-        //private const string TargetZoneId = "JoppaWorld.10.22.2.1.14"; // this is 4-down, 2-west from Joppa
-        //private const string TargetZoneId = "JoppaWorld.11.22.1.1.13"; // this is 3-down from Joppa
-        //private const string TargetZoneId = "JoppaWorld.11.22.0.1.13"; // this is 13-down, 1-west from Joppa
-        //private const string TargetZoneId = "JoppaWorld.10.22.2.1.13"; // this is 3-down, 2-west from Joppa
-
         private const string OwnerProperty = "SubterraneanSites_Owner";
-        private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
+        //##private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
         //This flat replaces zone names with zone coordinates
-        private const bool DebugNameVisitedZonesWithZoneId = true;
-
+        private const bool DebugNameVisitedZonesWithZoneId = false;
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
-
         private const int MatrixParasangWidth = 4; // 4 is normal
         private const int MatrixParasangHeight = 5; // 5 is normal
         private const int MatrixDepth = 5;
         private const int SurfaceZ = 10;
+
+        // Release candidate density: each slot attempts a site; safety/protection checks may still reject it.
         private const int MatrixSiteChancePercent = 100; // testing; tune later
         private const int MinSurfaceMatrixOriginZ = 11;
         private const int MinPathSteps = 30;
@@ -1211,7 +1196,6 @@ namespace SubterraneanSites
             HandleSiteDiscovery(zoneActivatedEvent.Zone.ZoneID);
 
             return true;
-
         }
 
         //checks if site is discovered and adds a popup if not
@@ -1327,23 +1311,6 @@ namespace SubterraneanSites
 
             return matrices;
         }
-        /*private List<SubterraneanMatrixCoord> GetCurrentAndNeighborMatrices(
-            SubterraneanMatrixCoord matrix
-        )
-        {
-            List<SubterraneanMatrixCoord> matrices =
-                new List<SubterraneanMatrixCoord>();
-
-            matrices.Add(matrix);
-            matrices.Add(GetOffsetMatrix(matrix, 1, 0, 0));   // east
-            matrices.Add(GetOffsetMatrix(matrix, -1, 0, 0));  // west
-            matrices.Add(GetOffsetMatrix(matrix, 0, 1, 0));   // south
-            matrices.Add(GetOffsetMatrix(matrix, 0, -1, 0));  // north
-            matrices.Add(GetOffsetMatrix(matrix, 0, 0, 1));   // deeper
-            matrices.Add(GetOffsetMatrix(matrix, 0, 0, -1));  // shallower
-
-            return matrices;
-        }*/
 
         private SubterraneanMatrixCoord GetOffsetMatrix(
             SubterraneanMatrixCoord matrix,
@@ -1361,6 +1328,8 @@ namespace SubterraneanSites
             return offset;
         }
 
+        // Assumes MatrixParasangWidth and MatrixParasangHeight evenly divide the 80x25 Joppa world map.
+        // If matrix dimensions change, update this to use ceiling division or explicit edge handling.
         private bool IsValidMatrix(SubterraneanMatrixCoord matrix)
         {
             if (matrix.World != "JoppaWorld")
@@ -1388,42 +1357,6 @@ namespace SubterraneanSites
 
             return true;
         }
-
-        /*private void ProcessMatrixForZone(string zoneId)
-        {
-            if (zoneId == null || zoneId == "")
-            {
-                return;
-            }
-
-            SubterraneanZoneCoord current;
-
-            try
-            {
-                current = SubterraneanZoneCoord.Parse(zoneId);
-            }
-            catch
-            {
-                return;
-            }
-
-            if (current.World != "JoppaWorld")
-            {
-                return;
-            }
-
-            SubterraneanMatrixCoord matrix = GetMatrixForZone(current);
-
-            //return if matrix has been discovered
-            //nothing more happens
-            if (IsMatrixProcessed(matrix))
-            {
-                return;
-            }
-
-            //Let's Go!!!!!
-            ProcessMatrix(matrix, current);
-        }*/
 
         private void ProcessMatrix(
             SubterraneanMatrixCoord matrix,
@@ -1624,9 +1557,6 @@ namespace SubterraneanSites
             SubterraneanPathCoordinateGenerator pathGenerator =
                 new SubterraneanPathCoordinateGenerator(pathUpWeight);
 
-            //SubterraneanPathCoordinateGenerator pathGenerator =
-            //    new SubterraneanPathCoordinateGenerator();
-
             int steps = rng.Next(MinPathSteps, MaxPathStepsExclusive);
 
             List<string> rejectedPathCandidates = new List<string>();
@@ -1657,7 +1587,6 @@ namespace SubterraneanSites
                     return true;
                 }
             );
-
 
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions =
                 pathGenerator.BuildPathInstructions(pathZoneIds);
@@ -1719,30 +1648,6 @@ namespace SubterraneanSites
         )
         {
 
-            /*int minPX = matrix.X * MatrixParasangWidth;
-            int maxPX = minPX + MatrixParasangWidth - 1;
-
-            int minPY = matrix.Y * MatrixParasangHeight;
-            int maxPY = minPY + MatrixParasangHeight - 1;
-
-            int minGlobalZoneX = minPX * 3;
-            int maxGlobalZoneX = maxPX * 3 + 2;
-
-            int minGlobalZoneY = minPY * 3;
-            int maxGlobalZoneY = maxPY * 3 + 2;
-
-            // Exclude only the outermost zone border of the matrix footprint,
-            // not whole edge parasangs.
-            minGlobalZoneX += 1;
-            maxGlobalZoneX -= 1;
-            minGlobalZoneY += 1;
-            maxGlobalZoneY -= 1;
-
-            if (maxGlobalZoneX < minGlobalZoneX || maxGlobalZoneY < minGlobalZoneY)
-            {
-                return "";
-            }*/
-
             int minZ = SurfaceZ + matrix.Z * MatrixDepth;
             int maxZ = minZ + MatrixDepth - 1;
 
@@ -1815,108 +1720,6 @@ namespace SubterraneanSites
             return "";
         }
 
-        /*private string PickSiteOriginZoneId(
-            SubterraneanMatrixCoord matrix,
-            SubterraneanZoneCoord current,
-            int layers,
-            System.Random rng
-        )
-        {
-            int minPX = matrix.X * MatrixParasangWidth;
-            int maxPX = minPX + MatrixParasangWidth - 1;
-
-            int minPY = matrix.Y * MatrixParasangHeight;
-            int maxPY = minPY + MatrixParasangHeight - 1;
-
-            int minGlobalZoneX = minPX * 3;
-            int maxGlobalZoneX = maxPX * 3 + 2;
-
-            int minGlobalZoneY = minPY * 3;
-            int maxGlobalZoneY = maxPY * 3 + 2;
-
-            // Exclude only the outermost zone border of the matrix footprint,
-            // not whole edge parasangs.
-            minGlobalZoneX += 1;
-            maxGlobalZoneX -= 1;
-            minGlobalZoneY += 1;
-            maxGlobalZoneY -= 1;
-
-            if (maxGlobalZoneX < minGlobalZoneX || maxGlobalZoneY < minGlobalZoneY)
-            {
-                return "";
-            }
-
-            int minZ = SurfaceZ + matrix.Z * MatrixDepth;
-            int maxZ = minZ + MatrixDepth - 1;
-
-            if (matrix.Z == 0 && minZ < MinSurfaceMatrixOriginZ)
-            {
-                minZ = MinSurfaceMatrixOriginZ;
-            }
-
-            if (maxZ < minZ)
-            {
-                return "";
-            }
-
-            //1. Pick a possible origin.
-            //2. Build the full proposed site stack from that origin.
-            //Example: origin Z 11, 4 layers → Z 11, 12, 13, 14.
-            //3. Check every layer in that proposed site stack.
-            //4. If any layer is blocked, reject this origin attempt.
-            //5. Try another random origin.
-            //6. If no layer is blocked, accept this origin and return it.
-            for (int attempt = 0; attempt < 30; attempt++)
-            {
-                int globalZoneX = rng.Next(minGlobalZoneX, maxGlobalZoneX + 1);
-                int globalZoneY = rng.Next(minGlobalZoneY, maxGlobalZoneY + 1);
-
-                int px = globalZoneX / 3;
-                int zoneX = globalZoneX % 3;
-
-                int py = globalZoneY / 3;
-                int zoneY = globalZoneY % 3;
-
-                int z = rng.Next(minZ, maxZ + 1);
-
-                SubterraneanZoneCoord origin = new SubterraneanZoneCoord(
-                    matrix.World,
-                    px,
-                    py,
-                    zoneX,
-                    zoneY,
-                    z
-                );
-
-                if (IsSameZone(origin, current))
-                {
-                    continue;
-                }
-
-                List<string> siteZoneIds = BuildSiteZoneIds(origin.ToZoneId(), layers);
-
-                string reason;
-                bool protectedHit = false;
-
-                foreach (string siteZoneId in siteZoneIds)
-                {
-                    if (IsBlockedForSubterraneanGeneration(siteZoneId, out reason))
-                    {
-                        protectedHit = true;
-                        break;
-                    }
-                }
-
-                if (protectedHit)
-                {
-                    continue;
-                }
-
-                return origin.ToZoneId();
-            }
-
-            return "";
-        }*/
 
         private bool IsOwnedBySubterraneanSites(string zoneId)
         {
@@ -1973,9 +1776,6 @@ namespace SubterraneanSites
 
             return false;
         }
-
-
-
 
         private bool IsSameZone(SubterraneanZoneCoord a, SubterraneanZoneCoord b)
         {
@@ -2059,9 +1859,7 @@ namespace SubterraneanSites
             //   30 = ProperLair
             //   25 = BasicLairChaos
             //   10 = MerchantHive
-            //
-            // These sum to 90. We roll over the total weight rather than 100
-            // so no archetype is accidentally assigned the unused 10%.
+
             int roll = rng.Next(100);
 
             if (roll < 35)
@@ -2193,12 +1991,7 @@ namespace SubterraneanSites
             }
         }
 
-
-        // Filters unsafe path instructions after path generation.
-        // Unlike sites, paths are allowed to be partial for now. Blocked path
-        // zones are removed and reported, while safe path zones continue.
-        // allowedOwnedZoneId permits the current site origin to be shared by
-        // the site and path builders.
+        //Paths now try to redirect
         private List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> RemoveProtectedPathInstructionsWithReport(
             List<SubterraneanPathCoordinateGenerator.PathZoneInstruction> pathInstructions,
             List<string> rejected,
@@ -2405,7 +2198,6 @@ namespace SubterraneanSites
                 string stairs = GetStairsForLayer(i, siteZoneIds.Count);
                 int z = GetZFromZoneId(zoneId);
                 int tier = GetTierForZoneId(zoneId);
-                //int tier = GetTierFromZ(z);
 
                 if (i != 0)
                 {
@@ -2481,11 +2273,6 @@ namespace SubterraneanSites
 
                 return;
             }
-
-            //int entryHoleX = GetEntryHoleXForInstruction(instruction);
-            //int entryHoleY = GetEntryHoleYForInstruction(instruction);
-            //int exitHoleX = GetExitHoleXForInstruction(instruction);
-            //int exitHoleY = GetExitHoleYForInstruction(instruction);
 
             int entryHoleX = GetEntryHoleXForInstruction(instruction, pathSeedBase);
             int entryHoleY = GetEntryHoleYForInstruction(instruction, pathSeedBase);
@@ -2606,7 +2393,6 @@ namespace SubterraneanSites
     }
 
     internal delegate bool PathCandidateValidator(string zoneId);
-
     internal class SubterraneanPathCoordinateGenerator
     {
         private enum PathDirection
@@ -2686,7 +2472,6 @@ namespace SubterraneanSites
         private const int MainWeight = 33;
         private const int SideWeight = 17;
         private const int DiagonalComponentWeight = 33;
-        //private const int UpWeight = 2; //was 33
         private int upWeight = 2;
 
         public SubterraneanPathCoordinateGenerator()
@@ -2820,51 +2605,6 @@ namespace SubterraneanSites
             }
         }
 
-
-
-
-        /*public List<string> BuildPathZoneIds(
-            string originZoneId,
-            int steps,
-            System.Random rng
-        )
-        {
-            List<string> pathZoneIds = new List<string>();
-
-            if (steps <= 0)
-            {
-                return pathZoneIds;
-            }
-
-            SubterraneanZoneCoord current = SubterraneanZoneCoord.Parse(originZoneId);
-
-            PathHeading heading = PickPathHeading(rng);
-            PathDirection? previousDirection = null;
-
-            pathZoneIds.Add(current.ToZoneId());
-
-            for (int i = 0; i < steps; i++)
-            {
-
-                // Normal behavior:
-                PathDirection direction = PickNextDirection(rng, previousDirection, heading);
-
-                current = Step(current, direction);
-
-                pathZoneIds.Add(current.ToZoneId());
-
-                //stops genertion id on surface
-                if (current.Z <= 10)
-                {
-                    break;
-                }
-
-                previousDirection = direction;
-            }
-
-            return pathZoneIds;
-        }*/
-
         public List<PathZoneInstruction> BuildPathInstructions(
             List<string> pathZoneIds
         )
@@ -2907,7 +2647,6 @@ namespace SubterraneanSites
                     );
                 }
 
-                //int z = ParseZoneId(currentZoneId).Z;
                 int z = SubterraneanZoneCoord.Parse(currentZoneId).Z;
 
                 bool isSurface = z <= 10;
@@ -3079,7 +2818,6 @@ namespace SubterraneanSites
         )
         {
 
-
             List<WeightedDirection> candidates = GetWeightedDirectionsForHeading(heading);
 
             // Simple anti-backtracking rule.
@@ -3111,7 +2849,6 @@ namespace SubterraneanSites
             {
                 case PathHeading.North:
                     directions.Add(new WeightedDirection(PathDirection.North, MainWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
@@ -3119,7 +2856,6 @@ namespace SubterraneanSites
 
                 case PathHeading.South:
                     directions.Add(new WeightedDirection(PathDirection.South, MainWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, SideWeight));
@@ -3127,7 +2863,6 @@ namespace SubterraneanSites
 
                 case PathHeading.East:
                     directions.Add(new WeightedDirection(PathDirection.East, MainWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
@@ -3135,7 +2870,6 @@ namespace SubterraneanSites
 
                 case PathHeading.West:
                     directions.Add(new WeightedDirection(PathDirection.West, MainWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     directions.Add(new WeightedDirection(PathDirection.North, SideWeight));
                     directions.Add(new WeightedDirection(PathDirection.South, SideWeight));
@@ -3144,27 +2878,23 @@ namespace SubterraneanSites
                 case PathHeading.NorthEast:
                     directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
 
                 case PathHeading.NorthWest:
                     directions.Add(new WeightedDirection(PathDirection.North, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
 
                 case PathHeading.SouthEast:
                     directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.East, DiagonalComponentWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
                 case PathHeading.SouthWest:
                     directions.Add(new WeightedDirection(PathDirection.South, DiagonalComponentWeight));
                     directions.Add(new WeightedDirection(PathDirection.West, DiagonalComponentWeight));
-                    //directions.Add(new WeightedDirection(PathDirection.Up, UpWeight));
                     directions.Add(new WeightedDirection(PathDirection.Up, upWeight));
                     break;
             }
@@ -3210,7 +2940,6 @@ namespace SubterraneanSites
             Array values = Enum.GetValues(typeof(PathHeading));
             return (PathHeading)values.GetValue(rng.Next(values.Length));
         }
-
 
         private PathDirection? GetReverseDirection(PathDirection direction)
         {
@@ -3275,10 +3004,8 @@ namespace XRL.World.ZoneBuilders
         public string ExitHole = "40,12";
         public string PathMaterial = "DirtRoad";
         public string HoleObject = "Pit";
-
         public bool ClearAdjacent = true;
         public bool ClearSolids = true;
-
         public string MarkerObject = "RandomPathStatue";
         public int MarkerChance = 100;
 
@@ -3663,8 +3390,4 @@ namespace XRL.World.ZoneBuilders
             return true;
         }
     }
-
-
-
-
 }
