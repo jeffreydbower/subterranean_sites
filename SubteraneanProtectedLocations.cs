@@ -209,10 +209,10 @@ namespace SubterraneanSites
                 new ProtectedParasangColumn(
                     "Asphalt Mines",
                     "JoppaWorld",
-                    53,
-                    3,
+                    11,
+                    0,
                     10,
-                    15
+                    60
                 )
             };
     }
