@@ -38,3 +38,7 @@ However, while Shug'ruith's mouth and cradle are 100% protected, there is a very
 ```
 [h2]Development[/h2]
 [url=https://github.com/jeffreydbower/subterranean_sites]View the source code on GitHub[/url]
+
+v1.0.1
+- Fix Asphalt Mines protection coordinates/range.
+- Prevent Subterranean Sites from generating sites or paths inside the Asphalt Mines.
