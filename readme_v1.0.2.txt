@@ -1,4 +1,4 @@
-[h1]Subterranean Sites — v1.0.1[/h1]
+[h1]Subterranean Sites — v1.0.2[/h1]
 
 This mod adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.
 
@@ -42,3 +42,6 @@ However, while Shug'ruith's mouth and cradle are 100% protected, there is a very
 v1.0.1
 - Fix Asphalt Mines protection coordinates/range.
 - Prevent Subterranean Sites from generating sites or paths inside the Asphalt Mines.
+
+v1.0.2
+-Protected the gates and passage to the Tomb of the Eaters.

@@ -1,3 +1,4 @@
+//v1.0.2
 using System.Collections.Generic;
 
 namespace SubterraneanSites
@@ -83,6 +84,17 @@ namespace SubterraneanSites
                     4,
                     1,
                     1,
+                    10,
+                    11
+                ),
+
+                new ProtectedZoneColumn(
+                    "Gates To Tomb of Eaters",
+                    "JoppaWorld",
+                    53,
+                    4,
+                    1,
+                    0,
                     10,
                     11
                 ),

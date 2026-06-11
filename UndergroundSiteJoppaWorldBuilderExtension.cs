@@ -1,3 +1,4 @@
+//v1.0.1
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -973,7 +974,7 @@ namespace SubterraneanSites
         //##private const string InitFlag = "SubterraneanSites_TestSultanSiteRegistered";
 
         //This flat replaces zone names with zone coordinates
-        private const bool DebugNameVisitedZonesWithZoneId = true;
+        private const bool DebugNameVisitedZonesWithZoneId = false;
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
         private const int MatrixParasangWidth = 4; // 4 is normal
         private const int MatrixParasangHeight = 5; // 5 is normal
