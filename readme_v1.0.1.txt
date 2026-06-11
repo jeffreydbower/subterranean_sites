@@ -1,4 +1,4 @@
-[h1]Subterranean Sites — v1.0[/h1]
+[h1]Subterranean Sites — v1.0.1[/h1]
 
 This mod adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.
 
@@ -6,7 +6,7 @@ This mod adds procedurally generated subterranean sites connected by long discov
 
 ~ Procedurally generated subterranean sites
 
-```Four types of sites, including subterranean historic sites.
+~Four types of sites, including subterranean historic sites.
 ~~~~ Creatures and loot scaled to surface area and depth.
 ~~~~ Three to six layers in each site.
 ~~~~ Loot!!!
