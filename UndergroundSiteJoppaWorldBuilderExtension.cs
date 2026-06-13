@@ -1,4 +1,4 @@
-//v1.0.1
+//v1.0.3
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -332,13 +332,100 @@ namespace SubterraneanSites
 
     internal static class SubterraneanDynamicProtectedLocations
     {
+        //debug tool for v1.0.3
+        //compares old historic site protection coords to new coords
+        //in an in-game pop-up
+        internal static string DescribeHistoricalProtectionSources()
+        {
+            StringBuilder text = new StringBuilder();
 
+            text.AppendLine("Subterranean Sites historical protection");
+            text.AppendLine("");
+
+            text.AppendLine(
+                "Journal Historic Sites count=" +
+                HistoricalSiteJournalColumns.Count.ToString()
+            );
+
+            for (int i = 0; i < HistoricalSiteJournalColumns.Count; i++)
+            {
+                ProtectedZoneColumn column = HistoricalSiteJournalColumns[i];
+
+                text.AppendLine(
+                    "J" + i.ToString() +
+                    ": " +
+                    column.Name +
+                    " @ " +
+                    column.World + "." +
+                    column.ParasangX.ToString() + "." +
+                    column.ParasangY.ToString() + "." +
+                    column.ZoneX.ToString() + "." +
+                    column.ZoneY.ToString() +
+                    "." +
+                    column.MinZ.ToString() + "-" +
+                    column.MaxZ.ToString()
+                );
+            }
+
+            text.AppendLine("");
+            text.AppendLine("Region-state historical sites:");
+
+            for (int i = 0; i < 8; i++)
+            {
+                string regionName =
+                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
+
+                if (regionName == null || regionName == "")
+                {
+                    text.AppendLine("R" + i.ToString() + ": missing region");
+                    continue;
+                }
+
+                object position = null;
+
+                try
+                {
+                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
+                }
+                catch
+                {
+                    text.AppendLine("R" + i.ToString() + ": " + regionName + " position error");
+                    continue;
+                }
+
+                int x;
+                int y;
+
+                if (!TryGetXY(position, out x, out y))
+                {
+                    text.AppendLine("R" + i.ToString() + ": " + regionName + " no xy");
+                    continue;
+                }
+
+                text.AppendLine(
+                    "R" + i.ToString() +
+                    ": " +
+                    regionName +
+                    " @ JoppaWorld." +
+                    x.ToString() +
+                    "." +
+                    y.ToString() +
+                    ".1.1.10-19"
+                );
+            }
+
+            return text.ToString();
+        }
         internal static bool InitializeRuntimeProtection()
         {
             ClearRuntimeProtection();
 
             bool lairsOk = CaptureVanillaLairsFromRuntimeWorldInfo();
-            bool historicalOk = CanReadHistoricalSiteProtection();
+
+            bool historicalRegionOk = CanReadHistoricalSiteProtection();
+            bool historicalJournalOk = CaptureHistoricalSitesFromJournalMapNotes();
+            bool historicalOk = historicalRegionOk || historicalJournalOk;
+
             bool specialsOk = CanReadSpecialProtectionSources();
 
             return lairsOk && historicalOk && specialsOk;
@@ -357,6 +444,55 @@ namespace SubterraneanSites
             }
 
             VanillaLairColumns.Clear();
+
+            if (HistoricalSiteJournalColumns == null)
+            {
+                HistoricalSiteJournalColumns = new List<ProtectedZoneColumn>();
+            }
+
+            HistoricalSiteJournalColumns.Clear();   
+        }
+
+        private static bool CaptureHistoricalSitesFromJournalMapNotes()
+        {
+            if (HistoricalSiteJournalColumns == null)
+            {
+                HistoricalSiteJournalColumns = new List<ProtectedZoneColumn>();
+            }
+
+            HistoricalSiteJournalColumns.Clear();
+
+            List<JournalMapNote> notes = null;
+
+            try
+            {
+                notes = JournalAPI.GetMapNotes(
+                    delegate(JournalMapNote note)
+                    {
+                        return
+                            note != null &&
+                            note.Category == "Historic Sites" &&
+                            note.ZoneID != null &&
+                            note.ZoneID != "";
+                    }
+                );
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (notes == null)
+            {
+                return false;
+            }
+
+            foreach (JournalMapNote note in notes)
+            {
+                TryAddHistoricalSiteJournalColumn(note);
+            }
+
+            return HistoricalSiteJournalColumns.Count > 0;
         }
 
         internal static bool CaptureVanillaLairsFromRuntimeWorldInfo()
@@ -423,6 +559,58 @@ namespace SubterraneanSites
             }
 
             return VanillaLairColumns.Count > 0;
+        }
+
+        private static bool TryAddHistoricalSiteJournalColumn(JournalMapNote note)
+        {
+            if (note == null)
+            {
+                return false;
+            }
+
+            string zoneId = note.ZoneID;
+
+            if (zoneId == null || zoneId == "")
+            {
+                return false;
+            }
+
+            SubterraneanZoneCoord coord;
+
+            try
+            {
+                coord = SubterraneanZoneCoord.Parse(zoneId);
+            }
+            catch
+            {
+                return false;
+            }
+
+            string name = note.Text;
+
+            if (name == null || name == "")
+            {
+                name = "historical site journal note";
+            }
+            else
+            {
+                name = "historical site journal note: " + name;
+            }
+
+            HistoricalSiteJournalColumns.Add(
+                new ProtectedZoneColumn(
+                    name,
+                    coord.World,
+                    coord.ParasangX,
+                    coord.ParasangY,
+                    coord.ZoneX,
+                    coord.ZoneY,
+                    10,
+                    19
+                )
+            );
+
+            return true;
         }
 
         private static bool TryAddVanillaLairColumnFromGeneratedLocationInfo(object lair)
@@ -687,6 +875,8 @@ namespace SubterraneanSites
 
         private static List<ProtectedZoneColumn> VanillaLairColumns =  new List<ProtectedZoneColumn>();
 
+        private static List<ProtectedZoneColumn> HistoricalSiteJournalColumns = new List<ProtectedZoneColumn>();
+
         public static bool IsProtected(SubterraneanZoneCoord coord, out string reason)
         {
             if (IsProtectedHistoricalSite(coord, out reason))
@@ -748,6 +938,16 @@ namespace SubterraneanSites
 
         private static bool IsProtectedHistoricalSite(SubterraneanZoneCoord coord, out string reason)
         {
+
+            foreach (ProtectedZoneColumn column in HistoricalSiteJournalColumns)
+            {
+                if (column.Contains(coord))
+                {
+                    reason = column.Name;
+                    return true;
+                }
+            }
+            
             for (int i = 0; i < 8; i++)
             {
                 string regionName =
@@ -988,6 +1188,10 @@ namespace SubterraneanSites
         private const int MaxPathStepsExclusive = 41;
         private const bool DebugShowMatrixGenerationPopup = false;
 
+        private const bool DebugShowHistoricalProtectionPopup = true;
+        private const string HistoricalProtectionDebugPopupShownFlag =
+            "SubterraneanSites_HistoricalProtectionDebugPopupShown_v1";
+
         private bool safetyReadyThisSession;
 
         private struct SubterraneanMatrixCoord
@@ -1189,6 +1393,18 @@ namespace SubterraneanSites
             {
                 return true;
             }
+
+            if (DebugShowHistoricalProtectionPopup &&
+                The.Game.GetStringGameState(HistoricalProtectionDebugPopupShownFlag) != "Yes")
+            {
+                The.Game.SetStringGameState(HistoricalProtectionDebugPopupShownFlag, "Yes");
+
+                Popup.Show(
+                    SubterraneanDynamicProtectedLocations.DescribeHistoricalProtectionSources()
+                );
+            }
+
+
 
             //Entry for matrix system
             ProcessMatrixForZone(zoneActivatedEvent.Zone.ZoneID);
