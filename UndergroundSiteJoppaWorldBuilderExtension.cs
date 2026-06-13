@@ -330,92 +330,188 @@ namespace SubterraneanSites
         }
     }
 
+    public static class SubterraneanSitesCompat
+    {
+        public static void RegisterProtectedZoneColumn(
+            string name,
+            string world,
+            int parasangX,
+            int parasangY,
+            int zoneX,
+            int zoneY,
+            int minZ,
+            int maxZ
+        )
+        {
+            SubterraneanDynamicProtectedLocations.AddExternalZoneColumn(
+                name,
+                world,
+                parasangX,
+                parasangY,
+                zoneX,
+                zoneY,
+                minZ,
+                maxZ
+            );
+        }
+
+        public static void RegisterProtectedParasangColumn(
+            string name,
+            string world,
+            int parasangX,
+            int parasangY,
+            int minZ,
+            int maxZ
+        )
+        {
+            SubterraneanDynamicProtectedLocations.AddExternalParasangColumn(
+                name,
+                world,
+                parasangX,
+                parasangY,
+                minZ,
+                maxZ
+            );
+        }
+    }
+
     internal static class SubterraneanDynamicProtectedLocations
     {
-        //debug tool for v1.0.3
-        //compares old historic site protection coords to new coords
-        //in an in-game pop-up
-        internal static string DescribeHistoricalProtectionSources()
+        private static bool IsProtectedExternal(
+            SubterraneanZoneCoord coord,
+            out string reason
+        )
         {
-            StringBuilder text = new StringBuilder();
-
-            text.AppendLine("Subterranean Sites historical protection");
-            text.AppendLine("");
-
-            text.AppendLine(
-                "Journal Historic Sites count=" +
-                HistoricalSiteJournalColumns.Count.ToString()
-            );
-
-            for (int i = 0; i < HistoricalSiteJournalColumns.Count; i++)
+            if (ExternalZoneColumns != null)
             {
-                ProtectedZoneColumn column = HistoricalSiteJournalColumns[i];
-
-                text.AppendLine(
-                    "J" + i.ToString() +
-                    ": " +
-                    column.Name +
-                    " @ " +
-                    column.World + "." +
-                    column.ParasangX.ToString() + "." +
-                    column.ParasangY.ToString() + "." +
-                    column.ZoneX.ToString() + "." +
-                    column.ZoneY.ToString() +
-                    "." +
-                    column.MinZ.ToString() + "-" +
-                    column.MaxZ.ToString()
-                );
+                foreach (ProtectedZoneColumn column in ExternalZoneColumns)
+                {
+                    if (column.Contains(coord))
+                    {
+                        reason = column.Name;
+                        return true;
+                    }
+                }
             }
 
-            text.AppendLine("");
-            text.AppendLine("Region-state historical sites:");
-
-            for (int i = 0; i < 8; i++)
+            if (ExternalParasangColumns != null)
             {
-                string regionName =
-                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
-
-                if (regionName == null || regionName == "")
+                foreach (ProtectedParasangColumn column in ExternalParasangColumns)
                 {
-                    text.AppendLine("R" + i.ToString() + ": missing region");
-                    continue;
+                    if (column.Contains(coord))
+                    {
+                        reason = column.Name;
+                        return true;
+                    }
                 }
-
-                object position = null;
-
-                try
-                {
-                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
-                }
-                catch
-                {
-                    text.AppendLine("R" + i.ToString() + ": " + regionName + " position error");
-                    continue;
-                }
-
-                int x;
-                int y;
-
-                if (!TryGetXY(position, out x, out y))
-                {
-                    text.AppendLine("R" + i.ToString() + ": " + regionName + " no xy");
-                    continue;
-                }
-
-                text.AppendLine(
-                    "R" + i.ToString() +
-                    ": " +
-                    regionName +
-                    " @ JoppaWorld." +
-                    x.ToString() +
-                    "." +
-                    y.ToString() +
-                    ".1.1.10-19"
-                );
             }
 
-            return text.ToString();
+            reason = "";
+            return false;
         }
+
+        internal static void AddExternalZoneColumn(
+            string name,
+            string world,
+            int parasangX,
+            int parasangY,
+            int zoneX,
+            int zoneY,
+            int minZ,
+            int maxZ
+        )
+        {
+            if (ExternalZoneColumns == null)
+            {
+                ExternalZoneColumns = new List<ProtectedZoneColumn>();
+            }
+
+            if (name == null || name == "")
+            {
+                name = "external protected zone column";
+            }
+
+            if (world == null || world == "")
+            {
+                world = "JoppaWorld";
+            }
+
+            foreach (ProtectedZoneColumn column in ExternalZoneColumns)
+            {
+                if (column.World == world &&
+                    column.ParasangX == parasangX &&
+                    column.ParasangY == parasangY &&
+                    column.ZoneX == zoneX &&
+                    column.ZoneY == zoneY &&
+                    column.MinZ == minZ &&
+                    column.MaxZ == maxZ)
+                {
+                    return;
+                }
+            }
+
+            ExternalZoneColumns.Add(
+                new ProtectedZoneColumn(
+                    name,
+                    world,
+                    parasangX,
+                    parasangY,
+                    zoneX,
+                    zoneY,
+                    minZ,
+                    maxZ
+                )
+            );
+        }
+
+        internal static void AddExternalParasangColumn(
+            string name,
+            string world,
+            int parasangX,
+            int parasangY,
+            int minZ,
+            int maxZ
+        )
+        {
+            if (ExternalParasangColumns == null)
+            {
+                ExternalParasangColumns = new List<ProtectedParasangColumn>();
+            }
+
+            if (name == null || name == "")
+            {
+                name = "external protected parasang column";
+            }
+
+            if (world == null || world == "")
+            {
+                world = "JoppaWorld";
+            }
+
+            foreach (ProtectedParasangColumn column in ExternalParasangColumns)
+            {
+                if (column.World == world &&
+                    column.ParasangX == parasangX &&
+                    column.ParasangY == parasangY &&
+                    column.MinZ == minZ &&
+                    column.MaxZ == maxZ)
+                {
+                    return;
+                }
+            }
+
+            ExternalParasangColumns.Add(
+                new ProtectedParasangColumn(
+                    name,
+                    world,
+                    parasangX,
+                    parasangY,
+                    minZ,
+                    maxZ
+                )
+            );
+        }
+
         internal static bool InitializeRuntimeProtection()
         {
             ClearRuntimeProtection();
@@ -877,8 +973,19 @@ namespace SubterraneanSites
 
         private static List<ProtectedZoneColumn> HistoricalSiteJournalColumns = new List<ProtectedZoneColumn>();
 
+        private static List<ProtectedZoneColumn> ExternalZoneColumns =
+            new List<ProtectedZoneColumn>();
+
+        private static List<ProtectedParasangColumn> ExternalParasangColumns =
+            new List<ProtectedParasangColumn>();
+
         public static bool IsProtected(SubterraneanZoneCoord coord, out string reason)
         {
+            if (IsProtectedExternal(coord, out reason))
+            {
+                return true;
+            }
+
             if (IsProtectedHistoricalSite(coord, out reason))
             {
                 return true;
@@ -1188,10 +1295,6 @@ namespace SubterraneanSites
         private const int MaxPathStepsExclusive = 41;
         private const bool DebugShowMatrixGenerationPopup = false;
 
-        private const bool DebugShowHistoricalProtectionPopup = true;
-        private const string HistoricalProtectionDebugPopupShownFlag =
-            "SubterraneanSites_HistoricalProtectionDebugPopupShown_v1";
-
         private bool safetyReadyThisSession;
 
         private struct SubterraneanMatrixCoord
@@ -1388,23 +1491,11 @@ namespace SubterraneanSites
 
             //Saftey first!
             //Skip if not safe... no site for you!
-            //uninstall mad and play Animal Croissing if this happens
+            //uninstall mod and play Animal Croissing if this happens
             if (!EnsureSafetyReady())
             {
                 return true;
             }
-
-            if (DebugShowHistoricalProtectionPopup &&
-                The.Game.GetStringGameState(HistoricalProtectionDebugPopupShownFlag) != "Yes")
-            {
-                The.Game.SetStringGameState(HistoricalProtectionDebugPopupShownFlag, "Yes");
-
-                Popup.Show(
-                    SubterraneanDynamicProtectedLocations.DescribeHistoricalProtectionSources()
-                );
-            }
-
-
 
             //Entry for matrix system
             ProcessMatrixForZone(zoneActivatedEvent.Zone.ZoneID);
