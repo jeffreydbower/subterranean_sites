@@ -1,4 +1,4 @@
-[h1]Subterranean Sites — v1.0.3[/h1]
+[h1]Subterranean Sites — v1.0.4[/h1]
 
 This mod adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.
 
@@ -57,3 +57,6 @@ v1.0.2
 v1.0.3
 -Added a superior redundant system to protect Historic Sites when there are more than 8.
 -Added support for external zone and parasang exclusion to be use by other mods for compatability. 
+
+v1.0.4
+-Fixed incorrect coordinates for the Rusted Archway which will be properly protected now.

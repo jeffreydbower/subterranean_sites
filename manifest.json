@@ -3,7 +3,7 @@
   "Title": "Subterranean Sites",
   "Description": "Adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.",
   "Tags": "Locations,Worldgen,Scripting",
-  "Version": "1.0.3",
+  "Version": "1.0.4",
   "Author": "2DruNk2FraG",
   "PreviewImage": "SubterraneanSitesPreview.png"
 }

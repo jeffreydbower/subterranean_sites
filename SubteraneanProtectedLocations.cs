@@ -1,4 +1,4 @@
-//v1.0.2
+//v1.0.4
 using System.Collections.Generic;
 
 namespace SubterraneanSites
@@ -146,12 +146,12 @@ namespace SubterraneanSites
                 new ProtectedZoneColumn(
                     "Rusted Archway",
                     "JoppaWorld",
-                    16,
-                    24,
+                    17,
+                    17,
                     1,
                     1,
                     10,
-                    14
+                    15
                 ),
 
                 new ProtectedZoneColumn(
