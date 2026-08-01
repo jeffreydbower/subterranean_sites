@@ -702,7 +702,7 @@ namespace SubterraneanSites
                     coord.ZoneX,
                     coord.ZoneY,
                     10,
-                    19
+                    26
                 )
             );
 
