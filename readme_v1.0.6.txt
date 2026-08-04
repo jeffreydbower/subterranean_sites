@@ -1,4 +1,4 @@
-[h1]Subterranean Sites — v1.0.5[/h1]
+[h1]Subterranean Sites — v1.0.6[/h1]
 
 This mod adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.
 
@@ -42,7 +42,6 @@ Subterranean Sites tries to avoid vanilla special locations, historic sites, lai
 
 Version 1.0.3 includes an optional external-exclusion template for other modders (SubterraneanSitesExternalExclusions.cs). A mod author can copy the provided .cs file into their own mod, enter the coordinates they want protected, and Subterranean Sites will avoid generating paths or sites through those areas when both mods are installed. The file safely does nothing if Subterranean Sites is not installed.
 
-
 [h2]Development[/h2]
 [url=https://github.com/jeffreydbower/subterranean_sites]View the source code on GitHub[/url]
 
@@ -63,3 +62,10 @@ v1.0.4
 
 v1.0.5
 -Added protection for edge case of Historic Sites being deeper than 8 layers.
+
+v1.0.6
+-Added protection for special dynamicly generated locations The Great Artifact Pieces, Kindrish, Stopsvalinn, The Ruin of House Isner, The Hydropon, The Recoming Nook at Gyl, Mamon's Village, The Glowpad Merchant, and The Hollow Tree.
+
+[h2]Subterranean Sites work amazing with my other mod, Atlas of Qud[/h2]
+
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3767493819]Atlas of Qud[/url]

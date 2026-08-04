@@ -1,4 +1,4 @@
-//v1.0.3
+//v1.0.6
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -15,6 +15,7 @@ using System.Text;
 using Qud.API;
 using XRL.Language;
 using System.Collections;
+using System.IO;
 
 
 namespace SubterraneanSites
@@ -39,7 +40,7 @@ namespace SubterraneanSites
             RuntimeZoneBuilderInjectionSystem system =
                 The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
 
-            system.EnsureSafetyReady();
+            system.RefreshSafetyProtection();
         }
     }
 
@@ -516,20 +517,25 @@ namespace SubterraneanSites
         {
             ClearRuntimeProtection();
 
-            bool lairsOk = CaptureVanillaLairsFromRuntimeWorldInfo();
+            LastLairsOk = CaptureVanillaLairsFromRuntimeWorldInfo();
+            LastHistoricalSitesOk = CaptureHistoricalSitesFromJournalMapNotes();
+            LastSpecialsOk = CanReadSpecialProtectionSources();
 
-            bool historicalRegionOk = CanReadHistoricalSiteProtection();
-            bool historicalJournalOk = CaptureHistoricalSitesFromJournalMapNotes();
-            bool historicalOk = historicalRegionOk || historicalJournalOk;
+            LastInitializationOk =
+                LastLairsOk &&
+                LastHistoricalSitesOk &&
+                LastSpecialsOk;
 
-            bool specialsOk = CanReadSpecialProtectionSources();
-
-            return lairsOk && historicalOk && specialsOk;
+            return LastInitializationOk;
         }
 
         internal static bool HasRuntimeProtectionData()
         {
-            return VanillaLairColumns != null && VanillaLairColumns.Count > 0;
+            return
+                VanillaLairColumns != null &&
+                VanillaLairColumns.Count > 0 &&
+                HistoricalSiteJournalColumns != null &&
+                HistoricalSiteJournalColumns.Count >= 8;
         }
 
         private static void ClearRuntimeProtection()
@@ -588,7 +594,7 @@ namespace SubterraneanSites
                 TryAddHistoricalSiteJournalColumn(note);
             }
 
-            return HistoricalSiteJournalColumns.Count > 0;
+            return HistoricalSiteJournalColumns.Count >= 8;
         }
 
         internal static bool CaptureVanillaLairsFromRuntimeWorldInfo()
@@ -911,48 +917,6 @@ namespace SubterraneanSites
             return false;
         }
 
-        private static bool CanReadHistoricalSiteProtection()
-        {
-            if (The.Game == null)
-            {
-                return false;
-            }
-
-            int found = 0;
-
-            for (int i = 0; i < 8; i++)
-            {
-                string regionName =
-                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
-
-                if (regionName == null || regionName == "")
-                {
-                    continue;
-                }
-
-                object position = null;
-
-                try
-                {
-                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
-                }
-                catch
-                {
-                    continue;
-                }
-
-                int x;
-                int y;
-
-                if (TryGetXY(position, out x, out y))
-                {
-                    found++;
-                }
-            }
-
-            return found == 8;
-        }
-
         private static bool CanReadSpecialProtectionSources()
         {
             return
@@ -960,7 +924,17 @@ namespace SubterraneanSites
                 HasSecretZoneId("$qasqonlair") &&
                 HasSecretZoneId("$rermadonlair") &&
                 HasSecretZoneId("$shugruithmouth") &&
-                HasSecretZoneId("$shugruithlair");
+                HasSecretZoneId("$shugruithlair") &&
+                HasSecretZoneId("$greatmachineartifact") &&
+                HasSecretZoneId("$ruinofhouseisner") &&
+                HasSecretZoneId("~kindrish") &&
+                HasSecretZoneId("$hydropon") &&
+                HasSecretZoneId("$stopsvalinn") &&
+                HasSecretZoneId("$beylah") &&
+                HasSecretZoneId("$recomingnook") &&
+                HasSecretZoneId("$mamonvillage") &&
+                HasSecretZoneId("$glowpadmerchant") &&
+                HasStringGameState("HollowTreeZoneId");
         }
 
         private static bool HasSecretZoneId(string secretId)
@@ -968,6 +942,35 @@ namespace SubterraneanSites
             string zoneId = GetSecretZoneId(secretId);
             return zoneId != null && zoneId != "";
         }
+
+        private static string GetStringGameStateValue(string key)
+        {
+            if (The.Game == null || key == null || key == "")
+            {
+                return "";
+            }
+
+            try
+            {
+                string value = The.Game.GetStringGameState(key);
+                return value == null ? "" : value;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static bool HasStringGameState(string key)
+        {
+            string value = GetStringGameStateValue(key);
+            return value != null && value != "";
+        }
+
+        private static bool LastLairsOk;
+        private static bool LastHistoricalSitesOk;
+        private static bool LastSpecialsOk;
+        private static bool LastInitializationOk;
 
         private static List<ProtectedZoneColumn> VanillaLairColumns =  new List<ProtectedZoneColumn>();
 
@@ -1021,6 +1024,61 @@ namespace SubterraneanSites
                 return true;
             }
 
+            if (IsProtectedSecretColumn(coord, "$greatmachineartifact", "Great Machine artifact", 40, 50, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$ruinofhouseisner", "Ruin of the House of Isner", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "~kindrish", "Kindrish", 10, 19, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$hydropon", "Hydropon", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$stopsvalinn", "Stopsvalinn encounter", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$beylah", "Bey Lah", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$recomingnook", "Gyl / Recoming nook", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$mamonvillage", "Mamon's razed village", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedSecretColumn(coord, "$glowpadmerchant", "Oddly-hued glowpad merchant", 10, 10, out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedGameStateZoneColumn(coord,"HollowTreeZoneId","Kith and Kin hollow tree",10,10,out reason))
+            {
+                return true;
+            }
+
+            if (IsProtectedChavvahTrunk(coord, out reason))
+            {
+                return true;
+            }
+
             reason = "";
             return false;
         }
@@ -1043,9 +1101,11 @@ namespace SubterraneanSites
             return false;
         }
 
-        private static bool IsProtectedHistoricalSite(SubterraneanZoneCoord coord, out string reason)
+        private static bool IsProtectedHistoricalSite(
+            SubterraneanZoneCoord coord,
+            out string reason
+        )
         {
-
             foreach (ProtectedZoneColumn column in HistoricalSiteJournalColumns)
             {
                 if (column.Contains(coord))
@@ -1054,50 +1114,63 @@ namespace SubterraneanSites
                     return true;
                 }
             }
-            
-            for (int i = 0; i < 8; i++)
-            {
-                string regionName =
-                    The.Game.GetStringGameState("SultanDungeonPlacementOrder_" + i.ToString());
-
-                if (regionName == null || regionName == "")
-                {
-                    continue;
-                }
-
-                object position = null;
-
-                try
-                {
-                    position = The.Game.GetObjectGameState("sultanRegionPosition_" + regionName);
-                }
-                catch
-                {
-                    continue;
-                }
-
-                int x;
-                int y;
-
-                if (!TryGetXY(position, out x, out y))
-                {
-                    continue;
-                }
-
-                if (coord.World == "JoppaWorld" &&
-                    coord.ParasangX == x &&
-                    coord.ParasangY == y &&
-                    coord.ZoneX == 1 &&
-                    coord.ZoneY == 1 &&
-                    coord.Z >= 10 &&
-                    coord.Z <= 19)
-                {
-                    reason = "historical site " + i.ToString();
-                    return true;
-                }
-            }
 
             reason = "";
+            return false;
+        }
+
+        private static bool IsProtectedChavvahTrunk(
+            SubterraneanZoneCoord coord,
+            out string reason
+        )
+        {
+            reason = "";
+
+            if (The.Game == null)
+            {
+                return false;
+            }
+
+            ChavvahSystem chavvah = null;
+
+            try
+            {
+                chavvah = The.Game.GetSystem<ChavvahSystem>();
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (chavvah == null ||
+                chavvah.TrunkID == null ||
+                chavvah.TrunkID == "")
+            {
+                return false;
+            }
+
+            SubterraneanZoneCoord trunkCoord;
+
+            try
+            {
+                trunkCoord = SubterraneanZoneCoord.Parse(chavvah.TrunkID);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (coord.World == trunkCoord.World &&
+                coord.ParasangX == trunkCoord.ParasangX &&
+                coord.ParasangY == trunkCoord.ParasangY &&
+                coord.ZoneX == trunkCoord.ZoneX &&
+                coord.ZoneY == trunkCoord.ZoneY &&
+                coord.Z == trunkCoord.Z)
+            {
+                reason = "Chavvah trunk";
+                return true;
+            }
+
             return false;
         }
 
@@ -1135,6 +1208,51 @@ namespace SubterraneanSites
                 coord.ParasangY == secretCoord.ParasangY &&
                 coord.ZoneX == secretCoord.ZoneX &&
                 coord.ZoneY == secretCoord.ZoneY &&
+                coord.Z >= minZ &&
+                coord.Z <= maxZ)
+            {
+                reason = name;
+                return true;
+            }
+
+            reason = "";
+            return false;
+        }
+
+        private static bool IsProtectedGameStateZoneColumn(
+            SubterraneanZoneCoord coord,
+            string gameStateKey,
+            string name,
+            int minZ,
+            int maxZ,
+            out string reason
+        )
+        {
+            string zoneId = GetStringGameStateValue(gameStateKey);
+
+            if (zoneId == null || zoneId == "")
+            {
+                reason = "";
+                return false;
+            }
+
+            SubterraneanZoneCoord targetCoord;
+
+            try
+            {
+                targetCoord = SubterraneanZoneCoord.Parse(zoneId);
+            }
+            catch
+            {
+                reason = "";
+                return false;
+            }
+
+            if (coord.World == targetCoord.World &&
+                coord.ParasangX == targetCoord.ParasangX &&
+                coord.ParasangY == targetCoord.ParasangY &&
+                coord.ZoneX == targetCoord.ZoneX &&
+                coord.ZoneY == targetCoord.ZoneY &&
                 coord.Z >= minZ &&
                 coord.Z <= maxZ)
             {
@@ -1189,6 +1307,262 @@ namespace SubterraneanSites
             return false;
         }
 
+        internal static string BuildRuntimeProtectionDebugDump()
+        {
+            StringBuilder text = new StringBuilder();
+
+            text.AppendLine("============================================================");
+            text.AppendLine("Subterranean Sites protection initialization");
+            text.AppendLine("Time: " + DateTime.Now.ToString("u"));
+            text.AppendLine("Result: " + (LastInitializationOk ? "SUCCESS" : "FAILURE"));
+            text.AppendLine();
+            text.AppendLine("Source checks:");
+            text.AppendLine("  Vanilla lairs: " + (LastLairsOk ? "OK" : "FAILED"));
+            text.AppendLine("  Historical-site journal capture: " + (LastHistoricalSitesOk ? "OK" : "FAILED"));
+            text.AppendLine("  Required special-location sources: " + (LastSpecialsOk ? "OK" : "FAILED"));
+            text.AppendLine();
+            text.AppendLine(
+                "Vanilla lairs captured: " +
+                (VanillaLairColumns == null ? 0 : VanillaLairColumns.Count).ToString() +
+                " (individual coordinates omitted)"
+            );
+            text.AppendLine();
+            text.AppendLine(
+                "Historical sites captured: " +
+                (HistoricalSiteJournalColumns == null ? 0 : HistoricalSiteJournalColumns.Count).ToString()
+            );
+
+            if (HistoricalSiteJournalColumns != null)
+            {
+                foreach (ProtectedZoneColumn column in HistoricalSiteJournalColumns)
+                {
+                    AppendZoneColumnDebugLine(text, column);
+                }
+            }
+
+            text.AppendLine();
+            text.AppendLine("Required journal-secret special locations:");
+            AppendSecretDebugLine(text, "$oboroqorulair", "Oboroqoru");
+            AppendSecretDebugLine(text, "$qasqonlair", "Qas/Qon");
+            AppendSecretDebugLine(text, "$rermadonlair", "Rermadon");
+            AppendSecretDebugLine(text, "$shugruithmouth", "Shug'ruith mouth");
+            AppendSecretDebugLine(text, "$shugruithlair", "Shug'ruith lair");
+            AppendSecretDebugLine(text, "$greatmachineartifact", "Great Machine artifact");
+            AppendSecretDebugLine(text, "$ruinofhouseisner", "Ruin of the House of Isner");
+            AppendSecretDebugLine(text, "~kindrish", "Kindrish");
+            AppendSecretDebugLine(text, "$hydropon", "Hydropon");
+            AppendSecretDebugLine(text, "$stopsvalinn", "Stopsvalinn encounter");
+            AppendSecretDebugLine(text, "$beylah", "Bey Lah");
+            AppendSecretDebugLine(text, "$recomingnook", "Gyl / Recoming nook");
+            AppendSecretDebugLine(text, "$mamonvillage", "Mamon's razed village");
+            AppendSecretDebugLine(text, "$glowpadmerchant", "Oddly-hued glowpad merchant");
+
+            text.AppendLine();
+            text.AppendLine("Required game-state locations:");
+            AppendGameStateZoneDebugLine(
+                text,
+                "HollowTreeZoneId",
+                "Kith and Kin hollow tree"
+            );
+
+            text.AppendLine();
+            text.AppendLine("Dynamic Chavvah state:");
+            AppendSecretDebugLine(text, "$chavvahcrown", "Chavvah journal note");
+            AppendChavvahDebugLine(text);
+
+            text.AppendLine();
+            text.AppendLine(
+                "External exact-zone columns: " +
+                (ExternalZoneColumns == null ? 0 : ExternalZoneColumns.Count).ToString()
+            );
+
+            if (ExternalZoneColumns != null)
+            {
+                foreach (ProtectedZoneColumn column in ExternalZoneColumns)
+                {
+                    AppendZoneColumnDebugLine(text, column);
+                }
+            }
+
+            text.AppendLine();
+            text.AppendLine(
+                "External parasang columns: " +
+                (ExternalParasangColumns == null ? 0 : ExternalParasangColumns.Count).ToString()
+            );
+
+            if (ExternalParasangColumns != null)
+            {
+                foreach (ProtectedParasangColumn column in ExternalParasangColumns)
+                {
+                    text.AppendLine(
+                        "  " + column.Name +
+                        " = " + column.World + "." +
+                        column.ParasangX.ToString() + "." +
+                        column.ParasangY.ToString() +
+                        ".*.* Z" + column.MinZ.ToString() +
+                        "-" + column.MaxZ.ToString()
+                    );
+                }
+            }
+
+            text.AppendLine("============================================================");
+            return text.ToString();
+        }
+
+        private static void AppendZoneColumnDebugLine(
+            StringBuilder text,
+            ProtectedZoneColumn column
+        )
+        {
+            if (text == null || column == null)
+            {
+                return;
+            }
+
+            text.AppendLine(
+                "  " + column.Name +
+                " = " + column.World + "." +
+                column.ParasangX.ToString() + "." +
+                column.ParasangY.ToString() + "." +
+                column.ZoneX.ToString() + "." +
+                column.ZoneY.ToString() +
+                " Z" + column.MinZ.ToString() +
+                "-" + column.MaxZ.ToString()
+            );
+        }
+
+        private static void AppendSecretDebugLine(
+            StringBuilder text,
+            string secretId,
+            string name
+        )
+        {
+            string zoneId = GetSecretZoneId(secretId);
+
+            if (zoneId == null || zoneId == "")
+            {
+                text.AppendLine(
+                    "  " + name + " [" + secretId + "] = MISSING"
+                );
+                return;
+            }
+
+            string protectionReason;
+            bool protectedNow = false;
+
+            try
+            {
+                protectedNow =
+                    SubterraneanSafety.IsProtected(
+                        zoneId,
+                        out protectionReason
+                    );
+            }
+            catch
+            {
+                protectionReason = "protection check threw an exception";
+            }
+
+            text.AppendLine(
+                "  " + name + " [" + secretId + "] = " +
+                zoneId +
+                " | protected=" + protectedNow.ToString() +
+                " | reason=" + protectionReason
+            );
+        }
+
+        private static void AppendGameStateZoneDebugLine(
+            StringBuilder text,
+            string gameStateKey,
+            string name
+        )
+        {
+            string zoneId = GetStringGameStateValue(gameStateKey);
+
+            if (zoneId == null || zoneId == "")
+            {
+                text.AppendLine(
+                    "  " + name + " [game state: " + gameStateKey + "] = MISSING"
+                );
+                return;
+            }
+
+            string protectionReason;
+            bool protectedNow = false;
+
+            try
+            {
+                protectedNow =
+                    SubterraneanSafety.IsProtected(
+                        zoneId,
+                        out protectionReason
+                    );
+            }
+            catch
+            {
+                protectionReason = "protection check threw an exception";
+            }
+
+            text.AppendLine(
+                "  " + name + " [game state: " + gameStateKey + "] = " +
+                zoneId +
+                " | protected=" + protectedNow.ToString() +
+                " | reason=" + protectionReason
+            );
+        }
+
+        private static void AppendChavvahDebugLine(StringBuilder text)
+        {
+            string trunkId = "";
+
+            try
+            {
+                ChavvahSystem chavvah =
+                    The.Game == null
+                        ? null
+                        : The.Game.GetSystem<ChavvahSystem>();
+
+                if (chavvah != null)
+                {
+                    trunkId = chavvah.TrunkID;
+                }
+            }
+            catch
+            {
+                trunkId = "";
+            }
+
+            if (trunkId == null || trunkId == "")
+            {
+                text.AppendLine(
+                    "  ChavvahSystem.TrunkID = UNINITIALIZED"
+                );
+                return;
+            }
+
+            string protectionReason;
+            bool protectedNow = false;
+
+            try
+            {
+                protectedNow =
+                    SubterraneanSafety.IsProtected(
+                        trunkId,
+                        out protectionReason
+                    );
+            }
+            catch
+            {
+                protectionReason = "protection check threw an exception";
+            }
+
+            text.AppendLine(
+                "  ChavvahSystem.TrunkID = " + trunkId +
+                " | protected=" + protectedNow.ToString() +
+                " | reason=" + protectionReason
+            );
+        }
+
         private static string GetSecretZoneId(string secretId)
         {
             JournalMapNote note = null;
@@ -1209,50 +1583,6 @@ namespace SubterraneanSites
 
             return note.ZoneID;
         }
-
-        // Vanilla AddSultanHistoryLocations stores location2D.Vector2i in
-        // sultanRegionPosition_[regionName]. Runtime inspection showed this object is
-        // Vector2i from Assembly-CSharp with int fields x and y.
-        private static bool TryGetXY(object position, out int x, out int y)
-        {
-            x = 0;
-            y = 0;
-
-            if (position == null)
-            {
-                return false;
-            }
-
-            Type type = position.GetType();
-
-            //reflection ---- reflection 
-            FieldInfo xField = type.GetField(
-                "x",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-            );
-
-            FieldInfo yField = type.GetField(
-                "y",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-            );
-
-            if (xField == null || yField == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                x = Convert.ToInt32(xField.GetValue(position));
-                y = Convert.ToInt32(yField.GetValue(position));
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        
     }
 
     // Marks this class as a Joppa world-builder extension.
@@ -1282,6 +1612,8 @@ namespace SubterraneanSites
 
         //This flat replaces zone names with zone coordinates
         private const bool DebugNameVisitedZonesWithZoneId = false;
+        private const bool DebugWriteProtectionLog = false; //Only true for Dev, false for release
+        private const string ProtectionLogFileName = "SubterraneanSites_ProtectionLog.txt";
         private const string SafetyFailureReportedFlag = "SubterraneanSites_SafetyFailureReported_v1";
         private const int MatrixParasangWidth = 4; // 4 is normal
         private const int MatrixParasangHeight = 5; // 5 is normal
@@ -2188,6 +2520,12 @@ namespace SubterraneanSites
             return SiteKind.MerchantHive;
         }
 
+        internal bool RefreshSafetyProtection()
+        {
+            safetyReadyThisSession = false;
+            return EnsureSafetyReady();
+        }
+
         internal bool EnsureSafetyReady()
         {
             if (safetyReadyThisSession &&
@@ -2203,15 +2541,65 @@ namespace SubterraneanSites
             if (!ok)
             {
                 safetyReadyThisSession = false;
-                MaybeReportSafetyFailure();
+
+                string logPath;
+                bool logWritten = TryWriteProtectionLog(out logPath);
+
+                MaybeReportSafetyFailure(logWritten, logPath);
                 return false;
             }
 
             safetyReadyThisSession = true;
+
+            if (DebugWriteProtectionLog)
+            {
+                string ignoredLogPath;
+                TryWriteProtectionLog(out ignoredLogPath);
+            }
+
             return true;
         }
 
-        private void MaybeReportSafetyFailure()
+        private bool TryWriteProtectionLog(out string logPath)
+        {
+            logPath = "";
+
+            try
+            {
+                string desktopPath = Environment.GetFolderPath(
+                    Environment.SpecialFolder.DesktopDirectory
+                );
+
+                if (desktopPath == null || desktopPath == "")
+                {
+                    return false;
+                }
+
+                logPath = Path.Combine(
+                    desktopPath,
+                    ProtectionLogFileName
+                );
+
+                File.AppendAllText(
+                    logPath,
+                    SubterraneanDynamicProtectedLocations
+                        .BuildRuntimeProtectionDebugDump() +
+                    Environment.NewLine
+                );
+
+                return true;
+            }
+            catch
+            {
+                logPath = "";
+                return false;
+            }
+        }
+
+        private void MaybeReportSafetyFailure(
+            bool logWritten,
+            string logPath
+        )
         {
             if (The.Game == null)
             {
@@ -2225,9 +2613,28 @@ namespace SubterraneanSites
 
             The.Game.SetStringGameState(SafetyFailureReportedFlag, "Yes");
 
+            string logMessage;
+
+            if (logWritten)
+            {
+                logMessage =
+                    "A diagnostic protection log was written to your desktop:\n" +
+                    logPath + "\n\n" +
+                    "Please include that file with your report.";
+            }
+            else
+            {
+                logMessage =
+                    "The diagnostic protection log could not be written. " +
+                    "Please still report this failure on the Workshop page.";
+            }
+
             Popup.Show(
                 "Subterranean Sites failed to initialize its protected-location safety system.\n\n" +
-                "To avoid overwriting or damaging vanilla generated locations, the mod has disabled subterranean site generation for this save.\n\n" +
+                "To prevent damage to important vanilla locations, the mod has disabled all new " +
+                "Subterranean Sites generation for this save.\n\n" +
+                "Please report this problem immediately on the Subterranean Sites Steam Workshop page.\n\n" +
+                logMessage + "\n\n" +
                 "Existing game content is unchanged."
             );
         }
