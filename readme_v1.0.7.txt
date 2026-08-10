@@ -66,6 +66,9 @@ v1.0.5
 v1.0.6
 -Added protection for special dynamicly generated locations The Great Artifact Pieces, Kindrish, Stopsvalinn, The Ruin of House Isner, The Hydropon, The Recoming Nook at Gyl, Mamon's Village, The Glowpad Merchant, and The Hollow Tree.
 
+v1.0.7
+-Improved creature spawns in the Contested Lair site type. Working as intended now.
+
 [h2]Subterranean Sites work amazing with my other mod, Atlas of Qud[/h2]
 
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3767493819]Atlas of Qud[/url]

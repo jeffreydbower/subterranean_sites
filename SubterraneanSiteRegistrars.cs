@@ -1,3 +1,4 @@
+//v1.0.7
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -973,7 +974,6 @@ namespace SubterraneanSites
                 RegisterLayer
             );
         }
-
         private void RegisterLayer(SiteLayerContext context)
         {
             The.ZoneManager.AddZonePostBuilder(
@@ -989,42 +989,54 @@ namespace SubterraneanSites
                 context.Tier.ToString() +
                 "_Mobs";
 
-            string teamsTable =
+            string regularTeamsTable =
                 "SubterraneanSites_Tier" +
                 context.Tier.ToString() +
-                "_FightableTeams";
+                "_RegularFactions";
 
+            // One guaranteed regular faction team.
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteMobs",
-                "Rolls", "2",
-                "Tier", context.Tier.ToString(),
-                "Table", teamsTable
+                "SubterraneanSiteFactionTeam",
+                "Rolls", "1",
+                "Chance", "100",
+                "Population", regularTeamsTable
             );
 
+            // Six independent singles-table rolls.
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
                 "SubterraneanSiteMobs",
-                "Rolls", "4",
+                "Rolls", "6",
                 "Tier", context.Tier.ToString(),
                 "Table", singlesTable
             );
 
+            // 25% chance of an additional hero faction encounter
+            // on every non-bottom layer.
             MaybeAddFactionEncounterWithChest(context);
 
             if (context.IsBottom)
             {
-                AddFactionEncounter(context.ZoneId);
+                // Bottom always receives one hero faction encounter.
+                AddFactionEncounter(context);
 
                 The.ZoneManager.AddZonePostBuilder(
                     context.ZoneId,
                     "AddBlueprintBuilder",
-                    "Object", SiteContentHelpers.GetRewardChestBlueprint(SiteContentHelpers.GetRewardChestTier(context.Tier))
+                    "Object",
+                    SiteContentHelpers.GetRewardChestBlueprint(
+                        SiteContentHelpers.GetRewardChestTier(
+                            context.Tier
+                        )
+                    )
                 );
             }
         }
-
-        private void MaybeAddFactionEncounterWithChest(SiteLayerContext context)
+        
+        private void MaybeAddFactionEncounterWithChest(
+            SiteLayerContext context
+        )
         {
             if (context == null)
             {
@@ -1041,24 +1053,36 @@ namespace SubterraneanSites
                 return;
             }
 
-            AddFactionEncounter(context.ZoneId);
+            AddFactionEncounter(context);
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
                 "AddBlueprintBuilder",
-                "Object", SiteContentHelpers.GetRewardChestBlueprint(SiteContentHelpers.GetRewardChestTier(context.Tier))
+                "Object",
+                SiteContentHelpers.GetRewardChestBlueprint(
+                    SiteContentHelpers.GetRewardChestTier(
+                        context.Tier
+                    )
+                )
             );
         }
 
-        private void AddFactionEncounter(string zoneId)
+        private void AddFactionEncounter(
+            SiteLayerContext context
+        )
         {
+            string heroTable =
+                "SubterraneanSites_Tier" +
+                context.Tier.ToString() +
+                "_HeroFactions";
+
             The.ZoneManager.AddZoneBuilder(
-                zoneId,
+                context.ZoneId,
                 6000,
                 "FactionEncounters",
                 "Chance", "100",
                 "Rolls", "1",
-                "Population", "GenericFactionPopulation"
+                "Population", heroTable
             );
         }
 

@@ -1,564 +1,575 @@
 <populations>
-<!-- 
-  PRUNED VERSION NOTES:
-  - Commented out broad/null-heavy population packet calls that often resolve to Nothing.
-  - Kept direct creature, robot, faction-party, boss, and combat-lair packet tables active.
-  - T2 and T5 CaveTeams still have direct CaveCreatures tables active.
-  - T1/T3/T4/T6/T7/T8 CaveTeams were disabled at the top level because their child tables only contained broad cave population wrappers.
- -->
-<!--   Subterranean Sites: tiered fightable encounter/team source tables.   -->
-<!--   These preserve vanilla-style group/team tables by referencing vanilla population tables instead of flattening every mob.   -->
-<!--   All weights are set to 1 intentionally; tune/delete/split later. Vendors, furniture, loot, and inventory-object tables are excluded.   -->
-<!--   ==================== TIER 1 ====================   -->
-<population Name="SubterraneanSites_Tier1_FightableTeams">
-<group Name="Tier1FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier1CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier1_CaveTeams" Weight="2"/>  -->
-<!--   T1; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier1_RuinsTeams" Weight="6"/>
-<!--   T1; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier1_BossTeams" Weight="1"/>
-<!--   T1; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier1_CombatLairTeams" Weight="6"/>
-<!--   T1; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier1_FactionTeams" Weight="3"/>
-<!--   T1; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier1_CaveTeams">
-<group Name="Tier1CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; Tier1 forwards to Tier2CavePopulation, which can roll Nothing/odd encounters. Too null-heavy for visible team rolls.  -->
-<!--  <table Name="Tier1CavePopulation" Weight="1"/>  -->
-<!--   T1; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier1_RuinsTeams">
-<group Name="Tier1RuinsTeams" Style="pickone">
-<table Name="Tier1RuinsCreatures" Weight="2"/>
-<!--   T1; ruins creature packets   -->
-<table Name="Tier1RuinsRobots" Weight="1"/>
-<!--   T1; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; includes high Nothing weight. Use RuinsCreatures/RuinsRobots for visible packets.  -->
-<!--  <table Name="Tier1RuinsPopulation" Weight="1"/>  -->
-<!--   T1; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier1_BossTeams">
-<group Name="Tier1BossTeams" Style="pickone">
-<table Name="Tier1BossEncounter" Weight="1"/>
-<!--   T1; vanilla boss encounter table   -->
-<table Name="LairBosses1" Weight="1"/>
-<!--   T1; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier1_CombatLairTeams">
-<group Name="Tier1CombatLairTeams" Style="pickone">
-<table Name="CaveSpiderLair" Weight="1"/>
-<!--   T1; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="1"/>
-<!--   T1; combat lair/team source   -->
-<table Name="AmoebaLair" Weight="1"/>
-<!--   T1; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T1; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier1_FactionTeams">
-<group Name="Tier1FactionTeams" Style="pickone">
-<table Name="SnapjawParty0" Weight="1"/>
-<!--   T1; faction party/team source   -->
-<table Name="BaboonParty" Weight="1"/>
-<!--   T1; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 2 ====================   -->
-<population Name="SubterraneanSites_Tier2_FightableTeams">
-<group Name="Tier2FightableTeams" Style="pickone">
-<table Name="SubterraneanSites_Tier2_CaveTeams" Weight="1"/>
-<!--   T2; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier2_RuinsTeams" Weight="5"/>
-<!--   T2; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier2_BossTeams" Weight="1"/>
-<!--   T2; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier2_CombatLairTeams" Weight="5"/>
-<!--   T2; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier2_FactionTeams" Weight="3"/>
-<!--   T2; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier2_CaveTeams">
-<group Name="Tier2CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Use Tier2CaveCreatures for visible creature packets.  -->
-<!--  <table Name="Tier2CavePopulation" Weight="1"/>  -->
-<!--   T2; broad vanilla cave population, may roll nothing/lair/creature group   -->
-<table Name="Tier2CaveCreatures" Weight="1"/>
-<!--   T2; creature-focused vanilla table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier2_RuinsTeams">
-<group Name="Tier2RuinsTeams" Style="pickone">
-<table Name="Tier2RuinsCreatures" Weight="2"/>
-<!--   T2; ruins creature packets   -->
-<table Name="Tier2RuinsRobots" Weight="1"/>
-<!--   T2; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier2RuinsPopulation" Weight="1"/>  -->
-<!--   T2; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier2_BossTeams">
-<group Name="Tier2BossTeams" Style="pickone">
-<table Name="Tier2BossEncounter" Weight="1"/>
-<!--   T2; vanilla boss encounter table   -->
-<table Name="LairBosses2" Weight="1"/>
-<!--   T2; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier2_CombatLairTeams">
-<group Name="Tier2CombatLairTeams" Style="pickone">
-<table Name="CaveSpiderLair" Weight="5"/>
-<!--   T2; combat lair/team source   -->
-<table Name="VoiderSpiderLair" Weight="3"/>
-<!--   T2; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="2"/>
-<!--   T2; combat lair/team source   -->
-<table Name="AmoebaLair" Weight="3"/>
-<!--   T2; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T2; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T2; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier2_FactionTeams">
-<group Name="Tier2FactionTeams" Style="pickone">
-<table Name="SnapjawParty0" Weight="1"/>
-<!--   T2; faction party/team source   -->
-<table Name="SnapjawParty1" Weight="1"/>
-<!--   T2; faction party/team source   -->
-<table Name="BaboonParty" Weight="1"/>
-<!--   T2; faction party/team source   -->
-<table Name="BigBaboonParty" Weight="1"/>
-<!--   T2; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 3 ====================   -->
-<population Name="SubterraneanSites_Tier3_FightableTeams">
-<group Name="Tier3FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier3CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier3_CaveTeams" Weight="2"/>  -->
-<!--   T3; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier3_RuinsTeams" Weight="5"/>
-<!--   T3; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier3_BossTeams" Weight="1"/>
-<!--   T3; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier3_CombatLairTeams" Weight="5"/>
-<!--   T3; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier3_FactionTeams" Weight="3"/>
-<!--   T3; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier3_CaveTeams">
-<group Name="Tier3CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Singles table already covers many concrete T3 cave mobs.  -->
-<!--  <table Name="Tier3CavePopulation" Weight="1"/>  -->
-<!--   T3; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier3_RuinsTeams">
-<group Name="Tier3RuinsTeams" Style="pickone">
-<table Name="Tier3RuinsCreatures" Weight="2"/>
-<!--   T3; ruins creature packets   -->
-<table Name="Tier3RuinsRobots" Weight="1"/>
-<!--   T3; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier3RuinsPopulation" Weight="1"/>  -->
-<!--   T3; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier3_BossTeams">
-<group Name="Tier3BossTeams" Style="pickone">
-<table Name="Tier3BossEncounter" Weight="1"/>
-<!--   T3; vanilla boss encounter table   -->
-<table Name="LairBosses3" Weight="1"/>
-<!--   T3; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier3_CombatLairTeams">
-<group Name="Tier3CombatLairTeams" Style="pickone">
-<table Name="CaveSpiderLair" Weight="5"/>
-<!--   T3; combat lair/team source   -->
-<table Name="VoiderSpiderLair" Weight="3"/>
-<!--   T3; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="5"/>
-<!--   T3; combat lair/team source   -->
-<table Name="AmoebaLair" Weight="5"/>
-<!--   T3; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T3; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T3; combat lair/team source   -->
-<table Name="ApeGodLair1" Weight="1"/>
-<!--   T3; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier3_FactionTeams">
-<group Name="Tier3FactionTeams" Style="pickone">
-<table Name="SnapjawParty1" Weight="1"/>
-<!--   T3; faction party/team source   -->
-<table Name="SnapjawParty1-with-Warlord" Weight="1"/>
-<!--   T3; faction party/team source   -->
-<table Name="SnapjawParty2" Weight="1"/>
-<!--   T3; faction party/team source   -->
-<table Name="BigBaboonParty" Weight="1"/>
-<!--   T3; faction party/team source   -->
-<table Name="IssachariParty" Weight="1"/>
-<!--   T3; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 4 ====================   -->
-<population Name="SubterraneanSites_Tier4_FightableTeams">
-<group Name="Tier4FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier4CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier4_CaveTeams" Weight="2"/>  -->
-<!--   T4; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier4_RuinsTeams" Weight="5"/>
-<!--   T4; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier4_BossTeams" Weight="1"/>
-<!--   T4; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier4_CombatLairTeams" Weight="5"/>
-<!--   T4; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier4_FactionTeams" Weight="3"/>
-<!--   T4; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier4_CaveTeams">
-<group Name="Tier4CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Singles table already covers many concrete T4 cave mobs.  -->
-<!--  <table Name="Tier4CavePopulation" Weight="1"/>  -->
-<!--   T4; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier4_RuinsTeams">
-<group Name="Tier4RuinsTeams" Style="pickone">
-<table Name="Tier4RuinsCreatures" Weight="2"/>
-<!--   T4; ruins creature packets   -->
-<table Name="Tier4RuinsRobots" Weight="1"/>
-<!--   T4; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier4RuinsPopulation" Weight="1"/>  -->
-<!--   T4; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier4_BossTeams">
-<group Name="Tier4BossTeams" Style="pickone">
-<table Name="Tier4BossEncounter" Weight="1"/>
-<!--   T4; vanilla boss encounter table   -->
-<table Name="LairBosses4" Weight="1"/>
-<!--   T4; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier4_CombatLairTeams">
-<group Name="Tier4CombatLairTeams" Style="pickone">
-<table Name="VoiderSpiderLair" Weight="5"/>
-<!--   T4; combat lair/team source   -->
-<table Name="PhaseSpiderLair" Weight="3"/>
-<!--   T4; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="5"/>
-<!--   T4; combat lair/team source   -->
-<table Name="AmoebaLair" Weight="5"/>
-<!--   T4; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T4; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T4; combat lair/team source   -->
-<table Name="ApeGodLair1" Weight="1"/>
-<!--   T4; combat lair/team source   -->
-<table Name="ApeGodLair2" Weight="1"/>
-<!--   T4; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier4_FactionTeams">
-<group Name="Tier4FactionTeams" Style="pickone">
-<table Name="SnapjawParty2" Weight="1"/>
-<!--   T4; faction party/team source   -->
-<table Name="IssachariParty" Weight="1"/>
-<!--   T4; faction party/team source   -->
-<table Name="GoatfolkParty" Weight="1"/>
-<!--   T4; faction party/team source   -->
-<table Name="Templar War Party Minor" Weight="1"/>
-<!--   T4; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 5 ====================   -->
-<population Name="SubterraneanSites_Tier5_FightableTeams">
-<group Name="Tier5FightableTeams" Style="pickone">
-<table Name="SubterraneanSites_Tier5_CaveTeams" Weight="1"/>
-<!--   T5; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier5_RuinsTeams" Weight="5"/>
-<!--   T5; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier5_BossTeams" Weight="1"/>
-<!--   T5; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier5_CombatLairTeams" Weight="5"/>
-<!--   T5; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier5_FactionTeams" Weight="3"/>
-<!--   T5; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier5_CaveTeams">
-<group Name="Tier5CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Use Tier5CaveCreatures for visible creature packets.  -->
-<!--  <table Name="Tier5CavePopulation" Weight="1"/>  -->
-<!--   T5; broad vanilla cave population, may roll nothing/lair/creature group   -->
-<table Name="Tier5CaveCreatures" Weight="1"/>
-<!--   T5; creature-focused vanilla table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier5_RuinsTeams">
-<group Name="Tier5RuinsTeams" Style="pickone">
-<table Name="Tier5RuinsCreatures" Weight="2"/>
-<!--   T5; ruins creature packets   -->
-<table Name="Tier5RuinsRobots" Weight="1"/>
-<!--   T5; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier5RuinsPopulation" Weight="1"/>  -->
-<!--   T5; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier5_BossTeams">
-<group Name="Tier5BossTeams" Style="pickone">
-<table Name="Tier5BossEncounter" Weight="1"/>
-<!--   T5; vanilla boss encounter table   -->
-<table Name="LairBosses5" Weight="1"/>
-<!--   T5; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier5_CombatLairTeams">
-<group Name="Tier5CombatLairTeams" Style="pickone">
-<table Name="PhaseSpiderLair" Weight="5"/>
-<!--   T5; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="5"/>
-<!--   T5; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T5; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T5; combat lair/team source   -->
-<table Name="ApeGodLair2" Weight="1"/>
-<!--   T5; combat lair/team source   -->
-<table Name="ApeGodLair3" Weight="1"/>
-<!--   T5; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier5_FactionTeams">
-<group Name="Tier5FactionTeams" Style="pickone">
-<table Name="GoatfolkParty" Weight="1"/>
-<!--   T5; faction party/team source   -->
-<table Name="GoatfolkQlippothParty" Weight="1"/>
-<!--   T5; faction party/team source   -->
-<table Name="Templar War Party Minor" Weight="1"/>
-<!--   T5; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 6 ====================   -->
-<population Name="SubterraneanSites_Tier6_FightableTeams">
-<group Name="Tier6FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier6CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier6_CaveTeams" Weight="2"/>  -->
-<!--   T6; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier6_RuinsTeams" Weight="5"/>
-<!--   T6; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier6_BossTeams" Weight="1"/>
-<!--   T6; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier6_CombatLairTeams" Weight="5"/>
-<!--   T6; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier6_FactionTeams" Weight="3"/>
-<!--   T6; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier6_CaveTeams">
-<group Name="Tier6CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Singles table already covers many concrete T6 cave mobs.  -->
-<!--  <table Name="Tier6CavePopulation" Weight="1"/>  -->
-<!--   T6; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier6_RuinsTeams">
-<group Name="Tier6RuinsTeams" Style="pickone">
-<table Name="Tier6RuinsCreatures" Weight="2"/>
-<!--   T6; ruins creature packets   -->
-<table Name="Tier6RuinsRobots" Weight="1"/>
-<!--   T6; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier6RuinsPopulation" Weight="1"/>  -->
-<!--   T6; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier6_BossTeams">
-<group Name="Tier6BossTeams" Style="pickone">
-<table Name="Tier6BossEncounter" Weight="1"/>
-<!--   T6; vanilla boss encounter table   -->
-<table Name="LairBosses6" Weight="1"/>
-<!--   T6; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier6_CombatLairTeams">
-<group Name="Tier6CombatLairTeams" Style="pickone">
-<table Name="PhaseSpiderLair" Weight="5"/>
-<!--   T6; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="5"/>
-<!--   T6; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T6; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T6; combat lair/team source   -->
-<table Name="ApeGodLair3" Weight="1"/>
-<!--   T6; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier6_FactionTeams">
-<group Name="Tier6FactionTeams" Style="pickone">
-<table Name="GoatfolkParty" Weight="1"/>
-<!--   T6; faction party/team source   -->
-<table Name="GoatfolkQlippothParty" Weight="1"/>
-<!--   T6; faction party/team source   -->
-<table Name="Templar War Party Minor" Weight="1"/>
-<!--   T6; faction party/team source   -->
-<table Name="Templar War Party Major" Weight="1"/>
-<!--   T6; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 7 ====================   -->
-<population Name="SubterraneanSites_Tier7_FightableTeams">
-<group Name="Tier7FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier7CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier7_CaveTeams" Weight="2"/>  -->
-<!--   T7; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier7_RuinsTeams" Weight="5"/>
-<!--   T7; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier7_BossTeams" Weight="1"/>
-<!--   T7; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier7_CombatLairTeams" Weight="5"/>
-<!--   T7; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier7_FactionTeams" Weight="3"/>
-<!--   T7; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier7_CaveTeams">
-<group Name="Tier7CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Singles table already covers many concrete T7 cave mobs.  -->
-<!--  <table Name="Tier7CavePopulation" Weight="1"/>  -->
-<!--   T7; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier7_RuinsTeams">
-<group Name="Tier7RuinsTeams" Style="pickone">
-<table Name="Tier7RuinsCreatures" Weight="2"/>
-<!--   T7; ruins creature packets   -->
-<table Name="Tier7RuinsRobots" Weight="1"/>
-<!--   T7; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier7RuinsPopulation" Weight="1"/>  -->
-<!--   T7; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier7_BossTeams">
-<group Name="Tier7BossTeams" Style="pickone">
-<table Name="Tier7BossEncounter" Weight="1"/>
-<!--   T7; vanilla boss encounter table   -->
-<table Name="LairBosses7" Weight="1"/>
-<!--   T7; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier7_CombatLairTeams">
-<group Name="Tier7CombatLairTeams" Style="pickone">
-<table Name="PhaseSpiderLair" Weight="5"/>
-<!--   T7; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="5"/>
-<!--   T7; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T7; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T7; combat lair/team source   -->
-<table Name="ApeGodLair3" Weight="1"/>
-<!--   T7; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier7_FactionTeams">
-<group Name="Tier7FactionTeams" Style="pickone">
-<table Name="GoatfolkQlippothParty" Weight="1"/>
-<!--   T7; faction party/team source   -->
-<table Name="Templar War Party Major" Weight="1"/>
-<!--   T7; faction party/team source   -->
-</group>
-</population>
-<!--   ==================== TIER 8 ====================   -->
-<population Name="SubterraneanSites_Tier8_FightableTeams">
-<group Name="Tier8FightableTeams" Style="pickone">
-<!--  DISABLED: child CaveTeams only contained null-heavy Tier8CavePopulation.  -->
-<!--  <table Name="SubterraneanSites_Tier8_CaveTeams" Weight="2"/>  -->
-<!--   T8; cave encounter packets   -->
-<table Name="SubterraneanSites_Tier8_RuinsTeams" Weight="5"/>
-<!--   T8; ruins creature/robot packets   -->
-<table Name="SubterraneanSites_Tier8_BossTeams" Weight="1"/>
-<!--   T8; boss/furthest-region packets   -->
-<table Name="SubterraneanSites_Tier8_CombatLairTeams" Weight="5"/>
-<!--   T8; non-vendor combat lair packets   -->
-<table Name="SubterraneanSites_Tier8_FactionTeams" Weight="3"/>
-<!--   T8; faction/party packets   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier8_CaveTeams">
-<group Name="Tier8CaveTeams" Style="pickone">
-<!--  DISABLED: broad cave population; can roll Nothing/odd encounters. Singles table already covers many concrete T8 cave mobs.  -->
-<!--  <table Name="Tier8CavePopulation" Weight="1"/>  -->
-<!--   T8; broad vanilla cave population, may roll nothing/lair/creature group   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier8_RuinsTeams">
-<group Name="Tier8RuinsTeams" Style="pickone">
-<table Name="Tier8RuinsCreatures" Weight="2"/>
-<!--   T8; ruins creature packets   -->
-<table Name="Tier8RuinsRobots" Weight="1"/>
-<!--   T8; ruins robot/turret packets   -->
-<!--  DISABLED: broad ruins population; forwards to Tier1RuinsPopulation, which is null-heavy.  -->
-<!--  <table Name="Tier8RuinsPopulation" Weight="1"/>  -->
-<!--   T8; broad ruins population packet   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier8_BossTeams">
-<group Name="Tier8BossTeams" Style="pickone">
-<table Name="Tier8BossEncounter" Weight="1"/>
-<!--   T8; vanilla boss encounter table   -->
-<table Name="LairBosses8" Weight="1"/>
-<!--   T8; vanilla lair boss table   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier8_CombatLairTeams">
-<group Name="Tier8CombatLairTeams" Style="pickone">
-<table Name="PhaseSpiderLair" Weight="1"/>
-<!--   T8; combat lair/team source   -->
-<table Name="SpiderLairs1" Weight="1"/>
-<!--   T8; combat lair/team source   -->
-<table Name="JelLair" Weight="1"/>
-<!--   T8; combat lair/team source   -->
-<table Name="OozeLairs1" Weight="1"/>
-<!--   T8; combat lair/team source   -->
-<table Name="ApeGodLair3" Weight="1"/>
-<!--   T8; combat lair/team source   -->
-</group>
-</population>
-<population Name="SubterraneanSites_Tier8_FactionTeams">
-<group Name="Tier8FactionTeams" Style="pickone">
-<table Name="GoatfolkQlippothParty" Weight="1"/>
-<!--   T8; faction party/team source   -->
-<table Name="Templar War Party Major" Weight="1"/>
-<!--   T8; faction party/team source   -->
-</group>
-</population>
-<!--   Suggested direct use examples:
-       SubterraneanSites_Tier3_FightableTeams = mixed tier-3 cave/ruin/boss/lair/faction packet source
-       SubterraneanSites_Tier3_CaveTeams = cave-only packet source
-       SubterraneanSites_Tier3_FactionTeams = coherent faction party source
-       SubterraneanSites_All_NonTieredBiomeCreatureTeams = non-tiered biome/global creature source for manual borrowing
-    -->
+
+  <!-- v2 tested exclusions:
+    Removed factions that returned NO ELIGIBLE MEMBERS during wish testing.
+    Exclusions were applied to both RegularFactions and HeroFactions because
+    both team generators use the same +/-10-level faction-member eligibility logic.
+--><!--
+    Subterranean Sites DEV - tiered faction selectors.
+
+    RegularFactions:
+      Used by the planned non-hero faction-team builder.
+
+    HeroFactions:
+      Used by vanilla FactionEncounters, which promotes the first
+      selected faction member into a hero/legendary leader.
+
+    Weights are the design weights selected during the Tier 1-8 review.
+    Hero eligibility always implies regular eligibility.
+
+    IMPORTANT:
+      These tables choose a faction only. They do not guarantee that a
+      faction has enough level-appropriate members to produce a useful
+      team at every tier. Wish testing is intended to identify those cases.
+  -->
+
+  <!-- ==================== TIER 1 ==================== -->
+
+  <population Name="SubterraneanSites_Tier1_RegularFactions">
+    <group Name="Tier1RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="3"/>
+      <object Blueprint="Baboons" Weight="4"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="2"/>
+      <object Blueprint="Crabs" Weight="3"/>
+      <!-- <object Blueprint="Resheph" Weight="1"/> Cult of the Coiled Lamb -->
+      <object Blueprint="Dogs" Weight="2"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Farmers" Weight="2"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="3"/>
+      <object Blueprint="Flowers" Weight="3"/>
+      <object Blueprint="Frogs" Weight="3"/>
+      <object Blueprint="Girsh" Weight="3"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="3"/>
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Naphtaali" Weight="2"/> <!-- Naphtaali tribe -->
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="5"/>
+      <object Blueprint="Succulents" Weight="3"/>
+      <object Blueprint="Swine" Weight="1"/>
+      <object Blueprint="Tortoises" Weight="1"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier1_HeroFactions">
+    <group Name="Tier1HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Baboons" Weight="4"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="2"/>
+      <!-- <object Blueprint="Resheph" Weight="1"/> Cult of the Coiled Lamb -->
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Snapjaws" Weight="5"/>
+      <object Blueprint="Swine" Weight="1"/>
+      <object Blueprint="Tortoises" Weight="1"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+    </group>
+  </population>
+
+  <!-- ==================== TIER 2 ==================== -->
+
+  <population Name="SubterraneanSites_Tier2_RegularFactions">
+    <group Name="Tier2RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="3"/>
+      <object Blueprint="Arachnids" Weight="3"/>
+      <object Blueprint="Baboons" Weight="3"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="2"/>
+      <object Blueprint="Crabs" Weight="3"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Dogs" Weight="2"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Farmers" Weight="2"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="3"/>
+      <object Blueprint="Flowers" Weight="3"/>
+      <object Blueprint="Frogs" Weight="3"/>
+      <object Blueprint="Girsh" Weight="3"/>
+      <object Blueprint="Insects" Weight="3"/>
+      <object Blueprint="Issachari" Weight="4"/> <!-- Issachari tribe -->
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Naphtaali" Weight="5"/> <!-- Naphtaali tribe -->
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="4"/>
+      <object Blueprint="Succulents" Weight="3"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="3"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier2_HeroFactions">
+    <group Name="Tier2HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="3"/>
+      <object Blueprint="Baboons" Weight="3"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="2"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Issachari" Weight="4"/> <!-- Issachari tribe -->
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Naphtaali" Weight="5"/> <!-- Naphtaali tribe -->
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="4"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+    </group>
+  </population>
+
+  <!-- ==================== TIER 3 ==================== -->
+
+  <population Name="SubterraneanSites_Tier3_RegularFactions">
+    <group Name="Tier3RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Cats" Weight="2"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="1"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dogs" Weight="2"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Farmers" Weight="1"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="5"/>
+      <object Blueprint="Gyre Wights" Weight="1"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Issachari" Weight="2"/> <!-- Issachari tribe -->
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Naphtaali" Weight="3"/> <!-- Naphtaali tribe -->
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="2"/>
+      <object Blueprint="Succulents" Weight="3"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier3_HeroFactions">
+    <group Name="Tier3HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="1"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dogs" Weight="2"/>
+      <object Blueprint="Farmers" Weight="1"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="5"/>
+      <object Blueprint="Gyre Wights" Weight="1"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Issachari" Weight="2"/> <!-- Issachari tribe -->
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Naphtaali" Weight="3"/> <!-- Naphtaali tribe -->
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="2"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="2"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 4 ==================== -->
+
+  <population Name="SubterraneanSites_Tier4_RegularFactions">
+    <group Name="Tier4RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Cats" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="4"/>
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dogs" Weight="1"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Farmers" Weight="1"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="3"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Fungi" Weight="2"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="3"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="2"/>
+      <object Blueprint="Succulents" Weight="3"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="4"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier4_HeroFactions">
+    <group Name="Tier4HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Cats" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="4"/>
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dogs" Weight="1"/>
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Farmers" Weight="1"/> <!-- Farmers' Guild -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="3"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="2"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="2"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="2"/>
+      <object Blueprint="Swine" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="4"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 5 ==================== -->
+
+  <population Name="SubterraneanSites_Tier5_RegularFactions">
+    <group Name="Tier5RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <!-- <object Blueprint="Equines" Weight="1"/> -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Fungi" Weight="4"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="4"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Mopango" Weight="1"/>
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="4"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="1"/>
+      <object Blueprint="Succulents" Weight="3"/>
+      <object Blueprint="Svardym" Weight="1"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier5_HeroFactions">
+    <group Name="Tier5HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <!-- <object Blueprint="Equines" Weight="1"/> -->
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Fungi" Weight="4"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Goatfolk" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="4"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Mopango" Weight="1"/>
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="4"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Snapjaws" Weight="1"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 6 ==================== -->
+
+  <population Name="SubterraneanSites_Tier6_RegularFactions">
+    <group Name="Tier6RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Cats" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="1"/>
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Grazing Hedonists" Weight="1"/> <!-- Grazing hedonists -->
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="3"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Mopango" Weight="3"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="3"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Succulents" Weight="2"/>
+      <object Blueprint="Svardym" Weight="4"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier6_HeroFactions">
+    <group Name="Tier6HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Baboons" Weight="2"/>
+      <object Blueprint="Barathrumites" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cannibals" Weight="1"/>
+      <object Blueprint="Cats" Weight="1"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Resheph" Weight="1"/> <!-- Cult of the Coiled Lamb -->
+      <object Blueprint="Daughters" Weight="1"/> <!-- Daughters of Exile -->
+      <object Blueprint="Equines" Weight="1"/>
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="2"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Girsh" Weight="2"/>
+      <object Blueprint="Grazing Hedonists" Weight="1"/> <!-- Grazing hedonists -->
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="3"/>
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Mopango" Weight="3"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="3"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Succulents" Weight="2"/>
+      <object Blueprint="Svardym" Weight="4"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 7 ==================== -->
+
+  <population Name="SubterraneanSites_Tier7_RegularFactions">
+    <group Name="Tier7RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="4"/>
+      <object Blueprint="Cats" Weight="2"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Fish" Weight="4"/>
+      <object Blueprint="Flowers" Weight="4"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="3"/>
+      <object Blueprint="Mollusks" Weight="3"/>
+      <object Blueprint="Mopango" Weight="2"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="3"/> <!-- Putus Templar -->
+      <object Blueprint="Robots" Weight="2"/>
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Svardym" Weight="3"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier7_HeroFactions">
+    <group Name="Tier7HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="2"/>
+      <object Blueprint="Arachnids" Weight="2"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="4"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="3"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Fish" Weight="4"/>
+      <object Blueprint="Flowers" Weight="4"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Insects" Weight="2"/>
+      <object Blueprint="Mechanimists" Weight="3"/>
+      <object Blueprint="Mollusks" Weight="3"/>
+      <object Blueprint="Oozes" Weight="2"/>
+      <object Blueprint="Templar" Weight="3"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="2"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Svardym" Weight="3"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      <object Blueprint="Worms" Weight="2"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 8 ==================== -->
+
+  <population Name="SubterraneanSites_Tier8_RegularFactions">
+    <group Name="Tier8RegularFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="4"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Cats" Weight="2"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="2"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="1"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="4"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="3"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Svardym" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      </group>
+  </population>
+
+  <population Name="SubterraneanSites_Tier8_HeroFactions">
+    <group Name="Tier8HeroFactions" Style="pickone">
+      <object Blueprint="Apes" Weight="4"/>
+      <object Blueprint="Bears" Weight="2"/>
+      <object Blueprint="Birds" Weight="2"/>
+      <object Blueprint="Crabs" Weight="2"/>
+      <object Blueprint="Cragmensch" Weight="2"/>
+      <object Blueprint="Dromad" Weight="2"/> <!-- Dromad merchants -->
+      <object Blueprint="Equines" Weight="2"/>
+      <object Blueprint="Fish" Weight="2"/>
+      <object Blueprint="Flowers" Weight="2"/>
+      <object Blueprint="Frogs" Weight="1"/>
+      <object Blueprint="Fungi" Weight="1"/>
+      <object Blueprint="Gyre Wights" Weight="2"/> <!-- Gyre wights -->
+      <object Blueprint="Mollusks" Weight="2"/>
+      <object Blueprint="Oozes" Weight="3"/>
+      <object Blueprint="Templar" Weight="4"/> <!-- Putus Templar -->
+      <object Blueprint="Seekers" Weight="3"/> <!-- Seekers of the Sightless Way -->
+      <object Blueprint="Svardym" Weight="2"/>
+      <object Blueprint="Tortoises" Weight="2"/>
+      <object Blueprint="Unshelled Reptiles" Weight="3"/> <!-- Unshelled reptiles -->
+      <object Blueprint="Winged Mammals" Weight="2"/> <!-- Winged mammals -->
+      </group>
+  </population>
+
 </populations>

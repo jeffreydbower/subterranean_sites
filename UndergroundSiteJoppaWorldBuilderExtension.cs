@@ -1,4 +1,4 @@
-//v1.0.6
+//v1.0.7
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -16,6 +16,7 @@ using Qud.API;
 using XRL.Language;
 using System.Collections;
 using System.IO;
+using XRL.World.AI;
 
 
 namespace SubterraneanSites
@@ -4025,6 +4026,259 @@ namespace XRL.World.ZoneBuilders
             };
 
             return markers[Stat.Random(0, markers.Length - 1)];
+        }
+    }
+
+    public class SubterraneanSiteFactionTeam : ZoneBuilderSandbox
+{
+    public string Population = "";
+    public int Chance = 100;
+    public int Rolls = 1;
+
+    public bool BuildZone(Zone Z)
+    {
+        if (Z == null || Population.IsNullOrEmpty())
+        {
+            return true;
+        }
+
+        for (int roll = 0; roll < Rolls; roll++)
+        {
+            if (!Chance.in100())
+            {
+                continue;
+            }
+
+            PopulationResult factionResult =
+                PopulationManager.RollOneFrom(Population);
+
+            if (factionResult == null ||
+                factionResult.Blueprint.IsNullOrEmpty())
+            {
+                continue;
+            }
+
+            BuildRegularFactionTeam(
+                factionResult.Blueprint,
+                Z,
+                Z.Level,
+                Z.NewTier
+            );
+        }
+
+        return true;
+    }
+
+    public static bool BuildRegularFactionTeam(
+            string faction,
+            Zone Z,
+            int zoneLevel,
+            int zoneTier
+        )
+        {
+            if (Z == null || faction.IsNullOrEmpty())
+            {
+                return false;
+            }
+
+            BallBag<string> candidates = new BallBag<string>();
+
+            foreach (
+                GameObjectBlueprint member
+                in GameObjectFactory.Factory.GetFactionMembers(faction)
+            )
+            {
+                if (member == null)
+                {
+                    continue;
+                }
+
+                int memberLevel =
+                    ZoneBuilderSandbox.GetLevelOfObject(member.Name);
+
+                int difference =
+                    Math.Abs(zoneLevel - memberLevel);
+
+                if (difference <= 10)
+                {
+                    candidates.Add(
+                        member.Name,
+                        Math.Max(5, 25 - difference)
+                    );
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            string numberText;
+
+            int partySize =
+                !XRL.Data.TryGetText(
+                    "FactionEncounterNumber_" + faction,
+                    out numberText
+                )
+                ? XRL.Data.GetText(
+                    "FactionEncounterNumber_*Default"
+                ).RollCached()
+                : numberText.RollCached();
+
+            if (partySize < 1)
+            {
+                partySize = 1;
+            }
+
+            List<GameObject> party =
+                Event.NewGameObjectList();
+
+            GameObject leader = null;
+
+            for (int i = 0; i < partySize; i++)
+            {
+                string blueprint =
+                    candidates.PeekOne();
+
+                if (blueprint.IsNullOrEmpty())
+                {
+                    continue;
+                }
+
+                GameObject member =
+                    GameObject.Create(blueprint);
+
+                if (member == null)
+                {
+                    continue;
+                }
+
+                party.Add(member);
+
+                if (leader == null)
+                {
+                    leader = member;
+                }
+            }
+
+            if (leader == null || party.Count == 0)
+            {
+                return false;
+            }
+
+            string memberInventory =
+                ZoneBuilderSandbox.PopulationOr(
+                    "FactionEncounterMemberInventory_" + faction,
+                    "FactionEncounterMemberInventory_*Default"
+                );
+
+            string partyObjects =
+                ZoneBuilderSandbox.PopulationOr(
+                    "FactionEncounterPartyObjects_" + faction,
+                    "FactionEncounterPartyObjects_*Default"
+                );
+
+            string zoneObjects =
+                ZoneBuilderSandbox.PopulationOr(
+                    "FactionEncounterZoneObjects_" + faction,
+                    "FactionEncounterZoneObjects_*Default"
+                );
+
+            foreach (GameObject member in party)
+            {
+                if (member == null)
+                {
+                    continue;
+                }
+
+                if (member != leader)
+                {
+                    member.SetAlliedLeader<AllyRetinue>(
+                        leader
+                    );
+                }
+
+                member.EquipFromPopulationTable(
+                    memberInventory,
+                    zoneTier
+                );
+            }
+
+            foreach (
+                PopulationResult result
+                in PopulationManager.Generate(
+                    partyObjects,
+                    "zonetier",
+                    zoneTier.ToString()
+                )
+            )
+            {
+                if (result == null)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < result.Number; i++)
+                {
+                    GameObject obj =
+                        GameObject.Create(result.Blueprint);
+
+                    if (obj == null)
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(result.Hint))
+                    {
+                        obj.SetStringProperty(
+                            "PlacementHint",
+                            result.Hint
+                        );
+                    }
+
+                    party.Add(obj);
+                }
+            }
+
+            ZoneBuilderSandbox.PlaceParty(
+                party,
+                Z
+            );
+
+            foreach (
+                PopulationResult result
+                in PopulationManager.Generate(
+                    zoneObjects,
+                    "zonetier",
+                    zoneTier.ToString()
+                )
+            )
+            {
+                if (result == null)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < result.Number; i++)
+                {
+                    GameObject obj =
+                        GameObject.Create(result.Blueprint);
+
+                    if (obj == null)
+                    {
+                        continue;
+                    }
+
+                    ZoneBuilderSandbox.PlaceObjectInArea(
+                        Z,
+                        (ILocationArea) Z.area,
+                        obj,
+                        Hints: result.Hint
+                    );
+                }
+            }
+
+            return true;
         }
     }
 
