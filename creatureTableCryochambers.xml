@@ -1,0 +1,138 @@
+<populations>
+  <!-- Cryochamber occupant tables for the Cold extradimensional-pocket theme.
+       Each roll produces exactly one occupant. -->
+
+  <!-- ==================== TIER 1 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier1_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="FungusPuffer1" Weight="2" Number="1"/>
+      <object Blueprint="FungusPuffer2" Weight="2" Number="1"/>
+      <object Blueprint="FungusPuffer3" Weight="2" Number="1"/>
+      <object Blueprint="FungusPuffer4" Weight="2" Number="1"/>
+      <object Blueprint="Dawnglider" Weight="3" Number="1"/>
+      <object Blueprint="Fire Ant Queen" Weight="3" Number="1"/>
+      <object Blueprint="FireBreather" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Agolgot" Weight="3" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 2 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier2_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="FungusPuffer1" Weight="1" Number="1"/>
+      <object Blueprint="FungusPuffer2" Weight="1" Number="1"/>
+      <object Blueprint="FungusPuffer3" Weight="1" Number="1"/>
+      <object Blueprint="FungusPuffer4" Weight="1" Number="1"/>
+      <object Blueprint="Dawnglider" Weight="3" Number="1"/>
+      <object Blueprint="Fire Ant Queen" Weight="2" Number="1"/>
+      <object Blueprint="FireBreather" Weight="2" Number="1"/>
+      <object Blueprint="Gyre Wight of Agolgot" Weight="3" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="Slumberling" Weight="2" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 3 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier3_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="Dawnglider" Weight="2" Number="1"/>
+      <object Blueprint="Fire Ant Queen" Weight="2" Number="1"/>
+      <object Blueprint="FireBreather" Weight="2" Number="1"/>
+      <object Blueprint="Gyre Wight of Agolgot" Weight="2" Number="1"/>
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="Slumberling" Weight="3" Number="1"/>
+      <object Blueprint="Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Bethsaida" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Shug'ruith" Weight="3" Number="1"/>
+      <object Blueprint="Molting Basilisk" Weight="3" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 4 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier4_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="SparkingBaetyl" Weight="1" Number="1"/>
+      <object Blueprint="Slumberling" Weight="1" Number="1"/>
+      <object Blueprint="Molting Basilisk" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Rermadon" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Qas" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Qon" Weight="3" Number="1"/>
+      <object Blueprint="High Dervish of the Sightless Way" Weight="2" Number="1"/>
+      <object Blueprint="SoupSludgeSpawnerTier6" Weight="2" Number="1"/>
+      <object Blueprint="ElderFireBreather" Weight="2" Number="1"/>
+      <object Blueprint="Rhinox" Weight="2" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 5 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier5_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="Molting Basilisk" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Rermadon" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Qas" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight of Qon" Weight="3" Number="1"/>
+      <object Blueprint="High Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="SoupSludgeSpawnerTier6" Weight="3" Number="1"/>
+      <object Blueprint="ElderFireBreather" Weight="3" Number="1"/>
+      <object Blueprint="Rhinox" Weight="3" Number="1"/>
+      <object Blueprint="n-Dimensional Starshell" Weight="2" Number="1"/>
+      <object Blueprint="Quartziferous Mirror" Weight="2" Number="1"/>
+      <object Blueprint="Unimax" Weight="3" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="2" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 6 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier6_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="SoupSludgeSpawnerTier7" Weight="3" Number="1"/>
+      <object Blueprint="ElderFireBreather" Weight="3" Number="1"/>
+      <object Blueprint="Rhinox" Weight="3" Number="1"/>
+      <object Blueprint="n-Dimensional Starshell" Weight="3" Number="1"/>
+      <object Blueprint="Unimax" Weight="3" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="3" Number="1"/>
+      <object Blueprint="Arch Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Great Magma Crab" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight Apotheote" Weight="3" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 7 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier7_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="ElderFireBreather" Weight="3" Number="1"/>
+      <object Blueprint="Rhinox" Weight="3" Number="1"/>
+      <object Blueprint="n-Dimensional Starshell" Weight="3" Number="1"/>
+      <object Blueprint="Quartziferous Mirror" Weight="3" Number="1"/>
+      <object Blueprint="Unimax" Weight="3" Number="1"/>
+      <object Blueprint="Deep Slumberling" Weight="3" Number="1"/>
+      <object Blueprint="Arch Dervish of the Sightless Way" Weight="1" Number="1"/>
+      <object Blueprint="Great Magma Crab" Weight="3" Number="1"/>
+      <object Blueprint="Trining Lamprey" Weight="3" Number="1"/>
+      <object Blueprint="SoupSludgeSpawnerTier8" Weight="3" Number="1"/>
+      <object Blueprint="Star Kraken" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight Apotheote" Weight="3" Number="1"/>
+    </group>
+  </population>
+
+  <!-- ==================== TIER 8 ==================== -->
+  <population Name="SubterraneanSites_CryochamberTier8_Mobs">
+    <group Name="Creatures" Style="pickone">
+      <object Blueprint="SparkingBaetyl" Weight="3" Number="1"/>
+      <object Blueprint="ElderFireBreather" Weight="2" Number="1"/>
+      <object Blueprint="Rhinox" Weight="2" Number="1"/>
+      <object Blueprint="n-Dimensional Starshell" Weight="3" Number="1"/>
+      <object Blueprint="Quartziferous Mirror" Weight="3" Number="1"/>
+      <object Blueprint="Arch Dervish of the Sightless Way" Weight="3" Number="1"/>
+      <object Blueprint="Great Magma Crab" Weight="3" Number="1"/>
+      <object Blueprint="Trining Lamprey" Weight="3" Number="1"/>
+      <object Blueprint="SoupSludgeSpawnerTier8" Weight="2" Number="1"/>
+      <object Blueprint="Star Kraken" Weight="3" Number="1"/>
+      <object Blueprint="Gyre Wight Apotheote" Weight="3" Number="1"/>
+    </group>
+  </population>
+</populations>

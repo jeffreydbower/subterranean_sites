@@ -1,0 +1,39 @@
+<factions>
+
+    <!--
+        Runtime allegiance used by Village inhabitants while the player
+        is Village-attuned.
+
+        Neutral toward the player by default.
+        Mutually friendly with Playerhater so ordinary EP denizens
+        and Village inhabitants do not fight each other.
+    -->
+    <faction
+        Name="SubterraneanSiteDevVillageInhabitants"
+        DisplayName="extradimensional villagers"
+        Visible="false"
+        HatesPlayer="false"
+        InitialPlayerReputation="0">
+
+        <feeling
+            About="Playerhater"
+            Value="100"
+        />
+
+    </faction>
+
+
+    <!--
+        Reciprocal relationship: ordinary EP denizens also regard
+        attuned Village inhabitants favorably.
+    -->
+    <faction Name="Playerhater">
+
+        <feeling
+            About="SubterraneanSiteDevVillageInhabitants"
+            Value="100"
+        />
+
+    </faction>
+
+</factions>

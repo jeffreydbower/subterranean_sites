@@ -1,4 +1,4 @@
-//v1.0.7
+//v1.0.8
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -37,6 +37,13 @@ namespace SubterraneanSites
             {
                 return;
             }
+
+            // EP dimensional assignments are persistent world/save infrastructure.
+            // This also initializes them when Subterranean Sites is first installed
+            // into an already-existing save.
+            SubterraneanSiteDev
+                .SubterraneanSiteDevDimensionEngine
+                .EnsureAssignments();
 
             RuntimeZoneBuilderInjectionSystem system =
                 The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
@@ -1598,6 +1605,13 @@ namespace SubterraneanSites
         //Also to kick off the saftey system
         public override void OnAfterBuild(JoppaWorldBuilder builder)
         {
+            // Qud's DimensionManager has been established by this point in worldgen.
+            // Build and persist the EP dimension/theme/faction assignments now so they
+            // belong to the world independently of whether an EP is ever encountered.
+            SubterraneanSiteDev
+                .SubterraneanSiteDevDimensionEngine
+                .EnsureAssignments();
+
             RuntimeZoneBuilderInjectionSystem system =
                 The.Game.RequireSystem<RuntimeZoneBuilderInjectionSystem>();
 
@@ -1624,9 +1638,14 @@ namespace SubterraneanSites
         // Release candidate density: each slot attempts a site; safety/protection checks may still reject it.
         private const int MatrixSiteChancePercent = 100; 
         private const int MinSurfaceMatrixOriginZ = 11;
-        private const int MinPathSteps = 30;
-        private const int MaxPathStepsExclusive = 41;
+        private const int MinPathSteps = 12;
+        private const int MaxPathStepsExclusive = 21;
         private const bool DebugShowMatrixGenerationPopup = false;
+
+        private const bool DebugForceExtradimensionalPockets = true;
+
+        internal const string SitePathAnchorProperty =
+            "SubterraneanSites_PathSiteAnchor";
 
         private bool safetyReadyThisSession;
 
@@ -1690,7 +1709,11 @@ namespace SubterraneanSites
             A,
             B,
             C,
-            D
+            D,
+            E,
+            F,
+            G,
+            H
         }
 
         private bool GetOriginBoundsForSlot(
@@ -1702,72 +1725,127 @@ namespace SubterraneanSites
             out int maxGlobalZoneY
         )
         {
-            int minPX = matrix.X * MatrixParasangWidth;
-            int maxPX = minPX + MatrixParasangWidth - 1;
+            int minPX =
+                matrix.X * MatrixParasangWidth;
 
-            int minPY = matrix.Y * MatrixParasangHeight;
-            int maxPY = minPY + MatrixParasangHeight - 1;
+            int maxPX =
+                minPX + MatrixParasangWidth - 1;
 
-            int slotMinPX = minPX;
-            int slotMaxPX = maxPX;
-            int slotMinPY = minPY;
-            int slotMaxPY = maxPY;
+            int minPY =
+                matrix.Y * MatrixParasangHeight;
 
-            switch (slot)
+            int maxPY =
+                minPY + MatrixParasangHeight - 1;
+
+
+            //
+            // Preserve the existing one-zone outer border around the matrix.
+            //
+            int matrixMinGlobalZoneX =
+                minPX * 3 + 1;
+
+            int matrixMaxGlobalZoneX =
+                maxPX * 3 + 1;
+
+            int matrixMinGlobalZoneY =
+                minPY * 3 + 1;
+
+            int matrixMaxGlobalZoneY =
+                maxPY * 3 + 1;
+
+
+            //
+            // Eight slots:
+            //
+            //     A B C D
+            //     E F G H
+            //
+            // Each column corresponds to one parasang-wide X band.
+            // Top and bottom do not overlap.
+            //
+            int slotIndex =
+                (int)slot;
+
+            int column =
+                slotIndex % 4;
+
+            int row =
+                slotIndex / 4;
+
+            if (
+                column < 0 ||
+                column >= 4 ||
+                row < 0 ||
+                row >= 2
+            )
             {
-                case MatrixSiteSlot.A:
-                    slotMinPX = minPX;
-                    slotMaxPX = minPX + 1;
-                    slotMinPY = minPY;
-                    slotMaxPY = minPY + 2;
-                    break;
+                minGlobalZoneX = 0;
+                maxGlobalZoneX = -1;
+                minGlobalZoneY = 0;
+                maxGlobalZoneY = -1;
 
-                case MatrixSiteSlot.B:
-                    slotMinPX = minPX + 2;
-                    slotMaxPX = maxPX;
-                    slotMinPY = minPY;
-                    slotMaxPY = minPY + 2;
-                    break;
-
-                case MatrixSiteSlot.C:
-                    slotMinPX = minPX;
-                    slotMaxPX = minPX + 1;
-                    slotMinPY = minPY + 2;
-                    slotMaxPY = maxPY;
-                    break;
-
-                case MatrixSiteSlot.D:
-                    slotMinPX = minPX + 2;
-                    slotMaxPX = maxPX;
-                    slotMinPY = minPY + 2;
-                    slotMaxPY = maxPY;
-                    break;
+                return false;
             }
 
-            // Convert slot parasang bounds to global zone bounds.
-            minGlobalZoneX = slotMinPX * 3;
-            maxGlobalZoneX = slotMaxPX * 3 + 2;
 
-            minGlobalZoneY = slotMinPY * 3;
-            maxGlobalZoneY = slotMaxPY * 3 + 2;
+            int slotPX =
+                minPX + column;
 
-            // Exclude only the outermost zone border of the whole top matrix.
-            int matrixMinGlobalZoneX = minPX * 3 + 1;
-            int matrixMaxGlobalZoneX = maxPX * 3 + 1;
 
-            int matrixMinGlobalZoneY = minPY * 3 + 1;
-            int matrixMaxGlobalZoneY = maxPY * 3 + 1;
+            //
+            // Each slot owns one parasang-width in X.
+            // The matrix's existing outer border still clips the outside columns.
+            //
+            minGlobalZoneX =
+                Math.Max(
+                    slotPX * 3,
+                    matrixMinGlobalZoneX
+                );
 
-            minGlobalZoneX = Math.Max(minGlobalZoneX, matrixMinGlobalZoneX);
-            maxGlobalZoneX = Math.Min(maxGlobalZoneX, matrixMaxGlobalZoneX);
+            maxGlobalZoneX =
+                Math.Min(
+                    slotPX * 3 + 2,
+                    matrixMaxGlobalZoneX
+                );
 
-            minGlobalZoneY = Math.Max(minGlobalZoneY, matrixMinGlobalZoneY);
-            maxGlobalZoneY = Math.Min(maxGlobalZoneY, matrixMaxGlobalZoneY);
+
+            //
+            // The interior Y range contains 13 zone rows.
+            //
+            // Leave the exact middle row unused so the two bands are symmetric
+            // and never compete for the same site-origin space.
+            //
+            int middleGlobalZoneY =
+                (
+                    matrixMinGlobalZoneY +
+                    matrixMaxGlobalZoneY
+                ) / 2;
+
+
+            if (row == 0)
+            {
+                minGlobalZoneY =
+                    matrixMinGlobalZoneY;
+
+                maxGlobalZoneY =
+                    middleGlobalZoneY - 1;
+            }
+            else
+            {
+                minGlobalZoneY =
+                    middleGlobalZoneY + 1;
+
+                maxGlobalZoneY =
+                    matrixMaxGlobalZoneY;
+            }
+
 
             return
                 maxGlobalZoneX >= minGlobalZoneX &&
                 maxGlobalZoneY >= minGlobalZoneY;
         }
+
+
 
         private string GetSlotName(MatrixSiteSlot slot)
         {
@@ -1780,6 +1858,7 @@ namespace SubterraneanSites
             BasicLairChaos,
             ProperLair,
             MerchantHive,
+            ExtradimensionalPocket,
         }
 
         // Called by Qud's IGameSystem infrastructure when this system is added
@@ -2023,7 +2102,11 @@ namespace SubterraneanSites
                 MatrixSiteSlot.A,
                 MatrixSiteSlot.B,
                 MatrixSiteSlot.C,
-                MatrixSiteSlot.D
+                MatrixSiteSlot.D,
+                MatrixSiteSlot.E,
+                MatrixSiteSlot.F,
+                MatrixSiteSlot.G,
+                MatrixSiteSlot.H
             };
 
             foreach (MatrixSiteSlot slot in slots)
@@ -2061,7 +2144,7 @@ namespace SubterraneanSites
             {
                 StringBuilder text = new StringBuilder();
 
-                text.AppendLine("SubterraneanSites matrix quads");
+                text.AppendLine("SubterraneanSites matrix slots");
                 text.AppendLine("matrix=" + matrix.ToId());
                 text.AppendLine("status=" + GetMatrixStatus(matrix));
 
@@ -2481,6 +2564,10 @@ namespace SubterraneanSites
             case SiteKind.MerchantHive:
                 return new MerchantHiveSiteRegistrar(this).Register(siteZoneIds);
 
+            case SiteKind.ExtradimensionalPocket:
+                return new ExtradimensionalPocketSiteRegistrar(this)
+                    .Register(siteZoneIds);
+
             default:
                 return new SultanHistoricSiteRegistrar(this).Register(siteZoneIds);
             }
@@ -2491,6 +2578,11 @@ namespace SubterraneanSites
             if (rng == null)
             {
                 return SiteKind.SultanHistoric;
+            }
+
+            if (DebugForceExtradimensionalPockets)
+            {
+                return SiteKind.ExtradimensionalPocket;
             }
 
             // Weighted deterministic site archetype selection.
@@ -2787,10 +2879,10 @@ namespace SubterraneanSites
         {
             if (originZ <= 15)
             {
-                return 2;
+                return 5;
             }
 
-            return 9;
+            return 24;
         }
 
       internal int GetTierForZoneId(string zoneId)
@@ -2998,6 +3090,22 @@ namespace SubterraneanSites
             string entryHole = entryHoleX.ToString() + "," + entryHoleY.ToString();
             string exitHole = exitHoleX.ToString() + "," + exitHoleY.ToString();
 
+            string siteAnchor =
+                The.ZoneManager.GetZoneProperty(
+                    instruction.ZoneId,
+                    SitePathAnchorProperty
+                ) as string;
+
+            if (siteAnchor == null)
+            {
+                siteAnchor = "";
+            }
+
+            string clearAdjacent =
+                string.IsNullOrEmpty(siteAnchor)
+                    ? "true"
+                    : "false";
+
             The.ZoneManager.SetZoneProperty(instruction.ZoneId, OwnerProperty, "Yes");
             The.ZoneManager.SetZoneProperty(instruction.ZoneId, "SubterraneanSites_IsPath", "Yes");
 
@@ -3009,6 +3117,7 @@ namespace SubterraneanSites
                 "Exit", instruction.Exit,
                 "EntryHole", entryHole,
                 "ExitHole", exitHole,
+                "SiteAnchor", siteAnchor,
                 "PathMaterial", pathMaterial
             );
         }
@@ -3718,6 +3827,7 @@ namespace XRL.World.ZoneBuilders
         public string Exit = "None";
         public string EntryHole = "40,12";
         public string ExitHole = "40,12";
+        public string SiteAnchor = "";
         public string PathMaterial = "DirtRoad";
         public string HoleObject = "Pit";
         public bool ClearAdjacent = true;
@@ -3777,7 +3887,7 @@ namespace XRL.World.ZoneBuilders
                     return Location2D.Get(0, 12);
 
                 case "Site":
-                    return GetCenterPoint(Z);
+                    return GetSitePoint(Z);
 
                 case "Up":
                     return Location2D.Get(GetExitHoleX(), GetExitHoleY());
@@ -3794,12 +3904,58 @@ namespace XRL.World.ZoneBuilders
             }
         }
 
+        private Location2D GetSitePoint(Zone Z)
+        {
+            if (
+                Z == null ||
+                string.IsNullOrEmpty(SiteAnchor)
+            )
+            {
+                return GetCenterPoint(Z);
+            }
+
+            string[] parts =
+                SiteAnchor.Split(',');
+
+            if (parts.Length != 2)
+            {
+                return GetCenterPoint(Z);
+            }
+
+            int x;
+            int y;
+
+            if (
+                !int.TryParse(parts[0], out x) ||
+                !int.TryParse(parts[1], out y)
+            )
+            {
+                return GetCenterPoint(Z);
+            }
+
+            if (
+                x < 0 ||
+                y < 0 ||
+                x >= Z.Width ||
+                y >= Z.Height
+            )
+            {
+                return GetCenterPoint(Z);
+            }
+
+            return Location2D.Get(x, y);
+        }
+
         private Location2D GetCenterPoint(Zone Z)
         {
             return Location2D.Get(Z.Width / 2, Z.Height / 2);
         }
 
-        private void DrawPath(Zone Z, Location2D start, Location2D end)
+        private void DrawPath(
+            Zone Z,
+            Location2D start,
+            Location2D end
+        )
         {
             Cell startCell = Z.GetCell(start);
             Cell endCell = Z.GetCell(end);
@@ -3831,17 +3987,117 @@ namespace XRL.World.ZoneBuilders
                 return;
             }
 
+            bool narrowSiteApproach =
+                !SiteAnchor.IsNullOrEmpty();
+
+            List<Cell> pathSteps =
+                new List<Cell>();
+
             foreach (Cell step in findPath.Steps)
             {
-                PaintPathCell(Z, step);
+                pathSteps.Add(step);
+            }
+
+            int stepsToPaint =
+                pathSteps.Count;
+
+            //
+            // A site with a special anchor currently means an EP entrance.
+            //
+            // The EP entrance hole is centered on that anchor and has a radius
+            // of about 5 cells. Stop the broad Sub Sites path shortly before the
+            // center so it visually terminates at the edge of the hole instead
+            // of painting around/across it.
+            //
+            if (
+                !SiteAnchor.IsNullOrEmpty()
+            )
+            {
+                stepsToPaint =
+                    Math.Max(
+                        0,
+                        stepsToPaint - 5
+                    );
+            }
+
+            Location2D sitePoint =
+                !SiteAnchor.IsNullOrEmpty()
+                    ? GetSitePoint(Z)
+                    : null;
+
+            foreach (Cell step in findPath.Steps)
+            {
+                bool nearSite =
+                    sitePoint != null &&
+                    Math.Abs(step.X - sitePoint.X) +
+                    Math.Abs(step.Y - sitePoint.Y)
+                        <= 5;
+
+                if (nearSite)
+                {
+                    ClearPathCell(
+                        Z,
+                        step
+                    );
+                }
+                else
+                {
+                    PaintPathCell(
+                        Z,
+                        step
+                    );
+                }
 
                 if (ClearAdjacent)
                 {
-                    foreach (Cell adjacent in step.GetLocalAdjacentCells())
+                    foreach (
+                        Cell adjacent
+                        in step.GetLocalAdjacentCells()
+                    )
                     {
-                        PaintPathCell(Z, adjacent);
+                        bool adjacentNearSite =
+                            sitePoint != null &&
+                            Math.Abs(adjacent.X - sitePoint.X) +
+                            Math.Abs(adjacent.Y - sitePoint.Y)
+                                <= 5;
+
+                        if (adjacentNearSite)
+                        {
+                            ClearPathCell(
+                                Z,
+                                adjacent
+                            );
+                        }
+                        else
+                        {
+                            PaintPathCell(
+                                Z,
+                                adjacent
+                            );
+                        }
                     }
                 }
+            }
+        }
+
+        private void ClearPathCell(
+            Zone Z,
+            Cell cell
+        )
+        {
+            if (cell == null)
+            {
+                return;
+            }
+
+            Z.ReachableMap[
+                cell.X,
+                cell.Y
+            ] = true;
+
+            if (ClearSolids)
+            {
+                cell.ClearTerrain();
             }
         }
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<conversations>
+  <conversation ID="SubterraneanSiteDevEPAttunement">
+    <start ID="Welcome">
+      <text>{{emote|*The paired stones hum in sympathetic resonance.*}}</text>
+
+      <choice GotoID="Attuned">
+        <text>[Touch the stones and attune to the dominant extradimensional influence.]</text>
+        <part Name="SubterraneanSiteDevEPAttune" FailTarget="Unavailable"/>
+      </choice>
+
+      <choice GotoID="End">Withdraw your hand.</choice>
+    </start>
+
+    <node ID="Attuned">
+      <text>{{emote|*The resonance passes through you and settles into your body.*}}</text>
+      <choice GotoID="End">Live and drink.</choice>
+    </node>
+
+    <node ID="Unavailable">
+      <text>{{emote|*The stones resonate, but the pattern finds no purchase in you.*}}</text>
+      <choice GotoID="End">Withdraw your hand.</choice>
+    </node>
+  </conversation>
+</conversations>

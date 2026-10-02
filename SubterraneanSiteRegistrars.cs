@@ -1,4 +1,4 @@
-//v1.0.7
+//v1.0.8
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -1305,6 +1305,240 @@ namespace SubterraneanSites
             }
 
             return regions.entities[Stat.Random(0, regions.entities.Count - 1)];
+        }
+    }
+
+
+    internal class ExtradimensionalPocketSiteRegistrar :
+        SubterraneanSiteDev.ISubterraneanSiteDevEPHost
+    {
+        private readonly RuntimeZoneBuilderInjectionSystem parent;
+
+
+        public ExtradimensionalPocketSiteRegistrar(
+            RuntimeZoneBuilderInjectionSystem parent
+        )
+        {
+            this.parent = parent;
+        }
+
+
+        public bool Register(
+            List<string> siteZoneIds
+        )
+        {
+            if (
+                siteZoneIds == null ||
+                siteZoneIds.Count == 0
+            )
+            {
+                return false;
+            }
+
+            if (
+                !SubterraneanSiteDev
+                    .SubterraneanSiteDevDimensionEngine
+                    .EnsureAssignments()
+            )
+            {
+                return false;
+            }
+
+
+            //
+            // DEVELOPMENT THEME POOL
+            //
+            // This is the same theme-pool model used by the EP test site.
+            // During the staged production port, unported themes remain null
+            // placeholders in their permanent slots.
+            //
+            List<
+                SubterraneanSiteDev
+                    .ISubterraneanSiteDevEPCategoryProvider
+            > themePool =
+                SubterraneanSiteDev
+                    .SubterraneanSiteDevDimensionEngine
+                    .CreateThemeProviderPool();
+
+
+            int primaryIndex =
+                Stat.Random(
+                    0,
+                    themePool.Count - 1
+                );
+
+            int secondaryIndex =
+                Stat.Random(
+                    0,
+                    themePool.Count - 2
+                );
+
+
+            //
+            // Skip over the already-selected primary index.
+            // This guarantees that the two themes are different
+            // when normal theme selection is enabled.
+            //
+            if (secondaryIndex >= primaryIndex)
+            {
+                secondaryIndex++;
+            }
+
+
+            // Normal theme selection will be restored later when the
+            // remaining providers are ported and dimension-pair selection
+            // is connected.
+            //
+            // SubterraneanSiteDev
+            //     .ISubterraneanSiteDevEPCategoryProvider
+            //     primaryTheme =
+            //         themePool[primaryIndex];
+            //
+            // SubterraneanSiteDev
+            //     .ISubterraneanSiteDevEPCategoryProvider
+            //     secondaryTheme =
+            //         themePool[secondaryIndex];
+
+
+            //
+            // CURRENT INTEGRATION TEST:
+            // force a pure Fire pocket exactly the same way the old
+            // TestSite forced a pure theme.
+            //
+            SubterraneanSiteDev
+                .ISubterraneanSiteDevEPCategoryProvider
+                primaryTheme =
+                    themePool[0];
+
+            SubterraneanSiteDev
+                .ISubterraneanSiteDevEPCategoryProvider
+                secondaryTheme =
+                    themePool[0];
+
+
+            SubterraneanSiteDev
+                .SubterraneanSiteDevEPShuffledTheme
+                shuffledTheme =
+                    new SubterraneanSiteDev
+                        .SubterraneanSiteDevEPShuffledTheme(
+                            siteZoneIds[0],
+                            primaryTheme,
+                            secondaryTheme
+                        );
+
+
+            SubterraneanSiteDev
+                .ExtradimensionalPocketSiteRegistrar
+                registrar =
+                    new SubterraneanSiteDev
+                        .ExtradimensionalPocketSiteRegistrar(
+                            this,
+                            shuffledTheme
+                        );
+
+
+            if (!registrar.Register(siteZoneIds))
+            {
+                return false;
+            }
+
+
+            //
+            // The EP system already selected and persisted the origin's
+            // outgoing-hole coordinate. Give that coordinate to the
+            // ordinary Sub Sites path system so its Site connection leads
+            // directly to the EP scar/hole rather than the zone center.
+            //
+            string pathAnchor =
+                The.ZoneManager.GetZoneProperty(
+                    siteZoneIds[0],
+                    SubterraneanSiteDev
+                        .SubterraneanSiteDevEPVerticalTransitions
+                        .OutgoingHoleProperty
+                ) as string;
+
+
+            if (!string.IsNullOrEmpty(pathAnchor))
+            {
+                The.ZoneManager.SetZoneProperty(
+                    siteZoneIds[0],
+                    RuntimeZoneBuilderInjectionSystem
+                        .SitePathAnchorProperty,
+                    pathAnchor
+                );
+            }
+
+
+            return true;
+        }
+
+
+        //
+        // This is the one actual production adapter.
+        //
+        // Shared EP code expects its EP layer context.
+        // Production Sub Sites owns the real layered-site registration,
+        // tier calculation, ownership, safety, discovery metadata, etc.
+        //
+        public bool RegisterLayeredSite(
+            List<string> siteZoneIds,
+            string siteDisplayName,
+            string discoveryKey,
+            Action<
+                SubterraneanSiteDev
+                    .SubterraneanSiteDevEPLayerContext
+            > registerLayer
+        )
+        {
+            if (
+                parent == null ||
+                siteZoneIds == null ||
+                siteZoneIds.Count == 0 ||
+                registerLayer == null
+            )
+            {
+                return false;
+            }
+
+
+            return parent.RegisterLayeredSite(
+                siteZoneIds,
+                siteDisplayName,
+                discoveryKey,
+                delegate(SiteLayerContext context)
+                {
+                    SubterraneanSiteDev
+                        .SubterraneanSiteDevEPLayerContext
+                        epContext =
+                            new SubterraneanSiteDev
+                                .SubterraneanSiteDevEPLayerContext
+                                {
+                                    ZoneId =
+                                        context.ZoneId,
+
+                                    LayerIndex =
+                                        context.LayerIndex,
+
+                                    LayerCount =
+                                        context.LayerCount,
+
+                                    Z =
+                                        context.Z,
+
+                                    Tier =
+                                        context.Tier,
+
+                                    IsOrigin =
+                                        context.IsOrigin,
+
+                                    IsBottom =
+                                        context.IsBottom
+                                };
+
+
+                    registerLayer(epContext);
+                }
+            );
         }
     }
 }

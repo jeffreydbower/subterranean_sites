@@ -1,0 +1,1064 @@
+<objects>
+
+    <object
+        Name="SubterraneanSiteDevElectricalMainframeMonitor"
+        Inherits="BaseWallMainframe"
+    >
+        <part Name="Render"
+            DisplayName="mainframe monitor"
+            ColorString="&amp;Y^W"
+            TileColor="&amp;Y"
+            DetailColor="W"
+        />
+
+        <part Name="Description"
+            Short="Scanlines ripple across an embedded bank of mainframe displays."
+        />
+
+        <part Name="ElectricalPowerTransmission"
+            ChargeRate="10000"
+            IsConsumer="true"
+        />
+
+        <part Name="ChargeSink"
+            ChargeUse="10"
+            NameForStatus="Display"
+        />
+
+        <part Name="AnimatedMaterialGeneric"
+            AnimationLength="200"
+            LowFrameOffset="1"
+            HighFrameOffset="1"
+            ColorStringAnimationFrames="0=&amp;Y^K,100=&amp;Y^W"
+            TileColorAnimationFrames="disable"
+            DetailColorAnimationFrames="0=K,100=W"
+            RequiresOperationalActivePart="ChargeSink"
+        />
+
+        <tag Name="PaintedWall"
+            Value="mainframe_monitor_1"
+        />
+
+        <part Name="ModWired"/>
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevElectricalMainframeStatus"
+        Inherits="BaseWallMainframe"
+    >
+        <part Name="Render"
+            DisplayName="mainframe status panel"
+            ColorString="&amp;Y^W"
+            TileColor="&amp;Y"
+            DetailColor="W"
+        />
+
+        <part Name="Description"
+            Short="Diodes and status indicators stud an embedded mainframe panel."
+        />
+
+        <part Name="ElectricalPowerTransmission"
+            ChargeRate="10000"
+            IsConsumer="true"
+        />
+
+        <part Name="ChargeSink"
+            ChargeUse="10"
+            NameForStatus="Display"
+        />
+
+        <part Name="AnimatedMaterialGeneric"
+            AnimationLength="160"
+            LowFrameOffset="1"
+            HighFrameOffset="1"
+            ColorStringAnimationFrames="0=&amp;Y^K,120=&amp;Y^W"
+            TileColorAnimationFrames="disable"
+            DetailColorAnimationFrames="0=K,120=W"
+            RequiresOperationalActivePart="ChargeSink"
+        />
+
+        <tag Name="PaintedWall"
+            Value="mainframe_status_panel"
+        />
+
+        <part Name="ModWired"/>
+    </object>
+
+    <object Name="SubterraneanSiteDevElectricalSquareWave_CW"
+            Inherits="FulcreteWithSquareWave">
+        <part Name="Render"
+            DisplayName="wired fulcrete with square wave"
+            ColorString="&amp;C^W"
+            TileColor="&amp;C"
+            DetailColor="W"
+            Occluding="true" />
+        <part Name="ModWired"/>
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevFireAsphaltPuddle"
+        Inherits="AsphaltPuddle"
+    >
+        <part
+            Name="LiquidVolume"
+            InitialLiquid="SubterraneanSiteDevFireAsphalt-1000"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevFireOilPuddle"
+        Inherits="OilPool"
+    >
+        <part
+            Name="LiquidVolume"
+            InitialLiquid="SubterraneanSiteDevFireOil-1000"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevFireVent"
+        Inherits="WalltrapFireCrematory"
+    >
+        <part Name="SubterraneanSiteDevFireVentLiquidHeat" />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevFungusSleepVent"
+        Inherits="Walltrap"
+    >
+        <part
+            Name="Render"
+            DisplayName="{{C|drowsing vent}}"
+            RenderString="*"
+            ColorString="&amp;C"
+            DetailColor="W"
+            Occluding="false"
+        />
+
+        <part
+            Name="Physics"
+            Solid="false"
+            Takeable="false"
+            Weight="1000"
+        />
+
+        <part
+            Name="Description"
+            Short="A vent in the ground breathes a steady cloud of soporific spores."
+        />
+
+        <part
+            Name="SubterraneanSiteDevFungusSleepVent"
+            GasBlueprint="SleepGas80"
+            GasDensity="80"
+        />
+    </object>
+
+
+
+    <object
+        Name="SubterraneanSiteDevColdConvalessencePuddle"
+        Inherits="ConvalessenceDeepPool"
+    >
+        <part
+            Name="LiquidVolume"
+            InitialLiquid="SubterraneanSiteDevColdConvalessence-1000"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdVent"
+        Inherits="CryochamberWallBroken"
+    >
+        <part
+            Name="Render"
+            DisplayName="frost-rimed vents"
+        />
+
+        <part
+            Name="Description"
+            Short="Freezing mist billows from frost-rimed vents sunk into the wall."
+        />
+
+        <part Name="SubterraneanSiteDevColdVent"
+            GasDensity="100"
+            ForwardLength="4"
+            DensityFalloff="15"
+            SideSprayChance="60"
+            SideGasDensity="60"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdVentN"
+        Inherits="SubterraneanSiteDevColdVent"
+    >
+        <part
+            Name="SubterraneanSiteDevColdVent"
+            Direction="N"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdVentS"
+        Inherits="SubterraneanSiteDevColdVent"
+    >
+        <part
+            Name="SubterraneanSiteDevColdVent"
+            Direction="S"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdVentE"
+        Inherits="SubterraneanSiteDevColdVent"
+    >
+        <part
+            Name="SubterraneanSiteDevColdVent"
+            Direction="E"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdVentW"
+        Inherits="SubterraneanSiteDevColdVent"
+    >
+        <part
+            Name="SubterraneanSiteDevColdVent"
+            Direction="W"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevColdRubble"
+        Inherits="Rubble Grey"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;W"
+            DetailColor="c"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevEPSolidPlaceholder" Inherits="Marble">
+    </object>
+
+    <object Name="SubterraneanSiteDevEPBoundaryPlaceholder" Inherits="Marble">
+    </object>
+
+    <object Name="SubterraneanSiteDevEPAttunementStoneLeft" Inherits="Crystal">
+        <part Name="Physics"
+                IsReal="true"
+                Solid="false"
+                Weight="1000"
+                Category="Crystal"
+                Conductivity="80"
+                FlameTemperature="99999"
+                VaporTemperature="1500"
+                Takeable="false" />
+
+        <part Name="Render"
+                DisplayName="attunement stone"
+                RenderString="14"
+                RenderLayer="3"
+                RenderIfDark="true"
+                Tile="Terrain/sw_chavvah_chime_double_1.bmp"
+                ColorString="&amp;y"
+                Occluding="false"
+                TileColor="&amp;Y"
+                DetailColor="m" />
+
+        <part Name="Description"
+                Short="An unfamiliar crystalline instrument hums with extradimensional resonance." />
+
+        <part Name="ConversationScript"
+                ConversationID="SubterraneanSiteDevEPAttunement" />
+
+        <part Name="Interesting"
+                Radius="1"
+                Key="Extradimensional Attunement Stone" />
+
+        <part Name="MentalShield" />
+        <part Name="NoBleed" />
+        <part Name="PrefabImposter" Prefab="Prefabs/Particles/TreeGlow" />
+        <part Name="RefractLight" Chance="25" />
+
+        <stat Name="AV" Max="100" Value="4" />
+        <stat Name="DV" Max="100" />
+        <stat Name="Hitpoints" Max="64000" Value="2000" />
+
+        <tag Name="Category" Value="object" />
+        <tag Name="Crystal" />
+        <tag Name="ExcludeFromDynamicEncounters" />
+    </object>
+
+    <object Name="SubterraneanSiteDevEPAttunementStoneRight" Inherits="Crystal">
+        <part Name="Physics"
+                IsReal="true"
+                Solid="false"
+                Weight="1000"
+                Category="Crystal"
+                Conductivity="80"
+                FlameTemperature="99999"
+                VaporTemperature="1500"
+                Takeable="false" />
+
+        <part Name="Render"
+                DisplayName="attunement stone"
+                RenderString="14"
+                RenderLayer="3"
+                RenderIfDark="true"
+                Tile="Terrain/sw_chavvah_chime_double_2.bmp"
+                ColorString="&amp;y"
+                Occluding="false"
+                TileColor="&amp;Y"
+                DetailColor="m" />
+
+        <part Name="Description"
+                Short="An unfamiliar crystalline instrument hums with extradimensional resonance." />
+
+        <part Name="ConversationScript"
+                ConversationID="SubterraneanSiteDevEPAttunement" />
+
+        <part Name="Interesting"
+                Radius="1"
+                Key="Extradimensional Attunement Stone" />
+
+        <part Name="MentalShield" />
+        <part Name="NoBleed" />
+        <part Name="PrefabImposter" Prefab="Prefabs/Particles/TreeGlow" />
+        <part Name="RefractLight" Chance="25" />
+
+        <stat Name="AV" Max="100" Value="4" />
+        <stat Name="DV" Max="100" />
+        <stat Name="Hitpoints" Max="64000" Value="2000" />
+
+        <tag Name="Category" Value="object" />
+        <tag Name="Crystal" />
+        <tag Name="ExcludeFromDynamicEncounters" />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevLightEmitter"
+        Inherits="Psychal Rhythm Rock"
+    >
+        <part
+            Name="Physics"
+            Solid="true"
+            Takeable="false"
+        />
+
+        <part
+            Name="Description"
+            Short="Stalactitic prisms stutter-hum with an unusually focused rhythm."
+        />
+
+        <part
+            Name="SubterraneanSiteDevLightEmitter"
+            MinCooldown="6"
+            MaxCooldown="12"
+        />
+
+        <stat Name="Hitpoints" Value="60" />
+        <stat Name="AV" Value="7" />
+
+        <tag Name="ExcludeFromDynamicEncounters" />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevDarknessOilVase"
+        Inherits="Vase">
+
+        <part
+            Name="Render"
+            DisplayName="oil vase" />
+
+        <part
+            Name="LiquidVolume"
+            StartVolume="1d6"
+            MaxVolume="64"
+            InitialLiquid="oil-1000" />
+
+        <removepart
+            Name="PopulationLiquidFiller" />
+
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevDarknessWhiteMarbleWalkway"
+        Inherits="GreyMarbleWalkway"
+    >
+        <part
+            Name="Render"
+            DisplayName="white marble walkway"
+            ColorString="&amp;Y"
+            TileColor="&amp;Y"
+            DetailColor="K"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevDarknessWhiteFracti"
+        Inherits="Fracti"
+    >
+        <part
+            Name="Render"
+            DisplayName="pale fractus"
+            ColorString="&amp;Y"
+            TileColor="&amp;Y"
+            DetailColor="K"
+        />
+
+        <part
+            Name="Harvestable"
+            OnSuccess="Spine Fruit"
+            OnSuccessAmount="1"
+            StartRipeChance="1:50"
+            RipeColor="&amp;Y"
+            RipeTileColor="&amp;Y"
+            RipeDetailColor="M"
+            UnripeColor="&amp;Y"
+            UnripeTileColor="&amp;Y"
+            UnripeDetailColor="K"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindGas"
+        Inherits="Gas"
+    >
+        <part
+            Name="Render"
+            DisplayName="blinding murk"
+        />
+
+        <part
+            Name="Gas"
+            GasType="SubterraneanSiteDevDarknessBlindGas"
+            ColorString="&amp;K^m"
+        />
+
+        <part
+            Name="SubterraneanSiteDevDarknessBlindGasBehavior"
+        />
+
+        <part
+            Name="Description"
+            Short="Grey-black vapor twists through the air, edged by an unnatural violet shimmer."
+        />
+
+        <tag
+            Name="GasGenerationName"
+            Value="Blindness Gas Generation"
+        />
+
+        <tag
+            Name="ActivationColorString"
+            Value="&amp;m^B"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindVent"
+        Inherits="CryochamberWallBroken"
+    >
+        <part
+            Name="Render"
+            DisplayName="shadowed vent"
+        />
+
+        <part
+            Name="Description"
+            Short="A vent is sunk into the wall. Grey-black vapor coils behind its grille."
+        />
+
+        <part
+            Name="SubterraneanSiteDevDarknessBlindVent"
+            GasBlueprint="SubterraneanSiteDevDarknessBlindGas"
+            GasDensity="100"
+            ForwardLength="4"
+            DensityFalloff="15"
+            NearDiagonalDensity="85"
+            FarDiagonalDensity="65"
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindVentN"
+        Inherits="SubterraneanSiteDevDarknessBlindVent"
+    >
+        <part
+            Name="SubterraneanSiteDevDarknessBlindVent"
+            Direction="N"
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindVentS"
+        Inherits="SubterraneanSiteDevDarknessBlindVent"
+    >
+        <part
+            Name="SubterraneanSiteDevDarknessBlindVent"
+            Direction="S"
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindVentE"
+        Inherits="SubterraneanSiteDevDarknessBlindVent"
+    >
+        <part
+            Name="SubterraneanSiteDevDarknessBlindVent"
+            Direction="E"
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevDarknessBlindVentW"
+        Inherits="SubterraneanSiteDevDarknessBlindVent"
+    >
+        <part
+            Name="SubterraneanSiteDevDarknessBlindVent"
+            Direction="W"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevBloodDismembermentStatue"
+        Inherits="EaterStatue">
+        <part
+            Name="SubterraneanSiteDevBloodDismemberer"
+            ChancePerCreature="25"/>
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevBloodDismembermentStatueFlipped"
+        Inherits="EaterStatueFlipped">
+        <part
+            Name="SubterraneanSiteDevBloodDismemberer"
+            ChancePerCreature="25"/>
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevBloodDismembermentStatueImplanted"
+        Inherits="ImplantedEaterStatue">
+        <part
+            Name="SubterraneanSiteDevBloodDismemberer"
+            ChancePerCreature="25"/>
+    </object>
+
+    <object Name="SubterraneanSiteDevBloodConveyorPad"
+            Inherits="ConveyorPad">
+        <part Name="SubterraneanSiteDevConveyorLiquidDrain" />
+    </object>
+
+        <object
+        Name="SubterraneanSiteDevBloodFanNorth"
+        Inherits="Industrial Fan North"
+    >
+        <part
+            Name="Render"
+            DisplayName="blood-processing fan"
+            ColorString="&amp;r"
+            TileColor="&amp;r"
+        />
+
+        <part
+            Name="Fan"
+            Direction="N"
+            ChargeUse="0"
+            BlowStrength="100"
+            BlowRange="9"
+        />
+
+        <part
+            Name="ElectricalPowerTransmission"
+            ChargeRate="0"
+            IsConsumer="false"
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevBloodFanSouth"
+        Inherits="Industrial Fan South"
+    >
+        <part
+            Name="Render"
+            DisplayName="blood-processing fan"
+            ColorString="&amp;r"
+            TileColor="&amp;r"
+        />
+
+        <part
+            Name="Fan"
+            Direction="S"
+            ChargeUse="0"
+            BlowStrength="100"
+            BlowRange="9"
+        />
+
+        <part
+            Name="ElectricalPowerTransmission"
+            ChargeRate="0"
+            IsConsumer="false"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevPortalEmptyMulticabinet" Inherits="MountedFurniture">
+        <part
+            Name="Render"
+            DisplayName="sliding drawer cabinet"
+            ColorString="&amp;c"
+            DetailColor="W"
+            RenderString="61"
+            Tile="Items/sw_multi_cabinet_1.bmp"
+            Occluding="true"
+        />
+
+        <part
+            Name="Description"
+            Short="Slide drawers of galvanized metal are arranged in a cabinet as rectangles of assorted dimensions. Storage is fractal."
+        />
+
+        <builder
+            Name="RandomTile"
+            Tiles="Items/sw_multi_cabinet_1.bmp,Items/sw_multi_cabinet_2.bmp"
+        />
+
+        <part
+            Name="Physics"
+            Weight="200"
+            Solid="true"
+        />
+
+        <stat Name="AV" Value="10" />
+        <stat Name="Hitpoints" Value="300" />
+
+        <part Name="Metal" />
+        <part Name="Container" />
+        <part Name="Inventory" />
+
+        <tag Name="ForceSmartUse" />
+
+        <stag Name="Storage" />
+        <stag Name="Crafts" />
+
+        <tag Name="Tier" Value="3" />
+        </object>
+
+    
+    <object Name="SubterraneanSiteDevPortalEmptyTable" Inherits="Furniture">
+        <part
+            Name="Render"
+            DisplayName="table"
+            ColorString="&amp;w"
+            DetailColor="C"
+            RenderString="227"
+            Tile="Assets_Content_Textures_Tiles_sw_table.bmp"
+            Occluding="false"
+            RenderIfDark="true"
+        />
+
+        <part
+            Name="Physics"
+            Weight="50"
+            Takeable="false"
+            Organic="true"
+        />
+
+        <part
+            Name="Description"
+            Short="Branches of the living tree were resorbed and reformed into trunk knots. Then, hundreds of years later, the oiled saw of a gorge woodworker disarranged the arbor geometry and flattened it for civil use."
+        />
+
+        <property Name="DontWarnOnOpen" Value="true" />
+
+        <part
+            Name="Container"
+            Preposition="on"
+            OpenSound="Sounds/Interact/sfx_interact_open_table"
+        />
+
+        <part Name="Inventory" />
+        <part Name="MissileCover" Percentage="10" />
+
+        <tag Name="BodyType" Value="Table" />
+        <tag Name="Class" Value="table" />
+        <stag Name="Storage" />
+        <stag Name="Contemporary" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevPortalEmptyWorkbench"
+        Inherits="SubterraneanSiteDevPortalEmptyTable"
+        >
+        <part
+            Name="Render"
+            DisplayName="workbench"
+            ColorString="&amp;w"
+            RenderString="227"
+            Occluding="false"
+            RenderIfDark="true"
+        />
+
+        <part
+            Name="Description"
+            Short="Knotted wood of good moisture content holds the weight of earth at right angles. Scorch marks and salt decorate the grooves."
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevPortalEmptyDesk"
+        Inherits="SubterraneanSiteDevPortalEmptyTable"
+        >
+        <part
+            Name="Render"
+            DisplayName="desk"
+            ColorString="&amp;w"
+            DetailColor="C"
+            RenderString="227"
+            Tile="Items/sw_table_desk.bmp"
+            Occluding="false"
+            RenderIfDark="true"
+        />
+
+        <part
+            Name="Container"
+            Preposition="on"
+            OpenSound="Sounds/Interact/sfx_interact_open_desk"
+        />
+
+        <part
+            Name="Description"
+            Short="Wood was salvaged from moist groves, shaved into planks, and carried to the freeholds on the Shale Bridge."
+        />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevPortalEmptyUndergroundBookshelf"
+        Inherits="BaseBookshelf"
+        >
+        <part
+            Name="Render"
+            DisplayName="wooden bookshelf"
+            Tile="Items/sw_bookshelf1.bmp"
+            DetailColor="W"
+            ColorString="&amp;w"
+        />
+
+        <tag Name="NoSparkingQuest" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevPortalEmptyWoodCarvedBookshelf"
+        Inherits="BaseBookshelf"
+        >
+        <part
+            Name="Physics"
+            Solid="false"
+            Weight="50"
+            Organic="true"
+            Takeable="false"
+        />
+
+        <part
+            Name="Render"
+            DisplayName="wood-carved bookshelf"
+            RenderString="182"
+            RenderLayer="6"
+            RenderIfDark="true"
+            Occluding="false"
+            Tile="Furniture/wood-carved-bookshelf.png"
+            DetailColor="W"
+            ColorString="&amp;w"
+        />
+
+        <part
+            Name="Description"
+            Short="Castle-dwelling wood artisans mimic the forest architecture of gnomes and create a hutch for their tales of outer spheres."
+        />
+
+        <tag Name="NoSparkingQuest" />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevStaticDilutedWarmStaticPuddle"
+        Inherits="Water"
+    >
+        <part
+            Name="LiquidVolume"
+            MaxVolume="-1"
+            Volume="500"
+            InitialLiquid="warmstatic-1000,water-500"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevStaticReef"
+        Inherits="Coral Polyp"
+    >
+        <part
+            Name="Render"
+            DisplayName="static reef"
+            ColorString="&amp;M"
+            TileColor="&amp;M"
+            DetailColor="B"
+            Occluding="false"
+        />
+
+        <part
+            Name="Description"
+            Short="Pale polyps branch through one another in impossible repetitions. Their calcified bodies tremble at the edge of sight, as though continually deciding which shape to occupy."
+        />
+
+        <part
+            Name="SubterraneanSiteDevStaticPluckablePolyp"
+            RevealObject="SubterraneanSiteDevStaticBuzzingCyst"
+            RevealChancePercent="0"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevStaticBuzzingCyst"
+        Inherits="PolypCache"
+    >
+        <part
+            Name="Render"
+            DisplayName="buzzing cyst"
+            ColorString="&amp;W"
+            TileColor="&amp;W"
+            DetailColor="M"
+            Occluding="false"
+        />
+
+        <part
+            Name="Description"
+            Short="A translucent cyst swells from the reef and buzzes with a thousand tiny contradictions. Something white and restless sloshes inside."
+        />
+
+        <part
+            Name="LiquidVolume"
+            StartVolume="1"
+            MaxVolume="1"
+            ManualSeal="false"
+            LiquidVisibleWhenSealed="true"
+            InitialLiquid="warmstatic-1"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevStaticReefCache"
+        Inherits="SubterraneanSiteDevStaticReef"
+    >
+        <part
+            Name="SubterraneanSiteDevStaticPluckablePolyp"
+            RevealObject="SubterraneanSiteDevStaticBuzzingCyst"
+            RevealChancePercent="100"
+        />
+    </object>
+
+    <!--
+        Village extradimensional gemstone walls.
+
+        These preserve the vanilla wall appearance and behavior but suppress
+        the rough-gem drop. Village uses the walls architecturally; they are
+        not intended to turn the pocket into a gemstone mine.
+    -->
+
+    <!-- <object
+        Name="SubterraneanSiteDevVillageAgateWall"
+        Inherits="AgateWall"
+    >
+        <removepart Name="Corpse" />
+    </object> -->
+
+
+    <object
+        Name="SubterraneanSiteDevVillageTopazWall"
+        Inherits="TopazWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;K^W"
+            TileColor="&amp;K"
+            DetailColor="W"
+        />
+
+        <removepart Name="Corpse" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevVillageJasperWall"
+        Inherits="JasperWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;b^R"
+            TileColor="&amp;b"
+            DetailColor="R"
+        />
+
+        <removepart Name="Corpse" />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevVillageAmethystWall"
+        Inherits="AmethystWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;K^M"
+            TileColor="&amp;K"
+            DetailColor="M"
+        />
+
+        <removepart Name="Corpse" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevVillageSapphireWall"
+        Inherits="SapphireWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;o^B"
+            TileColor="&amp;o"
+            DetailColor="B"
+        />
+
+        <removepart Name="Corpse" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevVillageEmeraldWall"
+        Inherits="EmeraldWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;B^G"
+            TileColor="&amp;B"
+            DetailColor="G"
+        />
+
+        <removepart Name="Corpse" />
+    </object>
+
+
+    <object
+        Name="SubterraneanSiteDevVillagePeridotWall"
+        Inherits="PeridotWall"
+    >
+        <removepart Name="Corpse" />
+    </object>
+
+    <object Name="SubterraneanSiteDevMushroomWallOrange" Inherits="BaseMushroomWall">
+        <part Name="Render" 
+        DisplayName="mushroom flesh" 
+        RenderString="007" 
+        ColorString="&amp;O^o" 
+        TileColor="&amp;o" 
+        DetailColor="O"
+        />
+
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageMangrove" Inherits="Shimscale Mangrove Tree">
+    <part Name="Render"
+        ColorString="&amp;b"
+        TileColor="&amp;b"
+        DetailColor="C"
+    />
+
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageDogthorn" Inherits="Dogthorn Tree">
+        <part Name="Render"
+            ColorString="&amp;r"
+            TileColor="&amp;r"
+            DetailColor="O"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageZivBough" Inherits="Ziv Bough">
+        <part Name="Render"
+            ColorString="&amp;m"
+            TileColor="&amp;m"
+            DetailColor="W"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageStarPalm" Inherits="Star Palm">
+        <part Name="Render"
+            ColorString="&amp;c"
+            TileColor="&amp;c"
+            DetailColor="G"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageGlitchwood" Inherits="Glitchwood Tree">
+        <part Name="Render"
+            ColorString="&amp;K"
+            TileColor="&amp;K"
+            DetailColor="M"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageIcosahedar" Inherits="Icosahedar">
+        <part Name="Render"
+            ColorString="&amp;o"
+            TileColor="&amp;o"
+            DetailColor="Y"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevVillageFarmFence"
+        Inherits="BrinestalkFence"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;K"
+            TileColor="&amp;K"
+            DetailColor="m"
+        />
+    </object>
+
+    <object
+        Name="SubterraneanSiteDevVillageFarmWall"
+        Inherits="BrinestalkWall"
+    >
+        <part
+            Name="Render"
+            ColorString="&amp;K"
+            TileColor="&amp;K"
+            DetailColor="m"
+        />
+    </object>
+
+    <object Name="SubterraneanSiteDevVillageBrinestalkGate" 
+      Inherits="Gate">
+        <part Name="Render" 
+            RenderLayer="6" 
+            DisplayName="brinestalk gate" 
+            ColorString="&amp;K" 
+            TileColor="&amp;K"
+            DetailColor="m" 
+            />
+
+  </object>
+
+
+
+</objects>
