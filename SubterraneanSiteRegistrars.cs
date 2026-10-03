@@ -1309,13 +1309,13 @@ namespace SubterraneanSites
     }
 
 
-    internal class ExtradimensionalPocketSiteRegistrar :
-        SubterraneanSiteDev.ISubterraneanSiteDevEPHost
+    internal class ExtradimensionalPocketSiteTypeRegistrar :
+        SubterraneanSites.ISubterraneanSitesEPHost
     {
         private readonly RuntimeZoneBuilderInjectionSystem parent;
 
 
-        public ExtradimensionalPocketSiteRegistrar(
+        public ExtradimensionalPocketSiteTypeRegistrar(
             RuntimeZoneBuilderInjectionSystem parent
         )
         {
@@ -1336,8 +1336,8 @@ namespace SubterraneanSites
             }
 
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevDimensionEngine
+                !SubterraneanSites
+                    .SubterraneanSitesDimensionEngine
                     .EnsureAssignments()
             )
             {
@@ -1346,18 +1346,13 @@ namespace SubterraneanSites
 
 
             //
-            // DEVELOPMENT THEME POOL
-            //
-            // This is the same theme-pool model used by the EP test site.
-            // During the staged production port, unported themes remain null
-            // placeholders in their permanent slots.
-            //
+            // THEME POOL
             List<
-                SubterraneanSiteDev
-                    .ISubterraneanSiteDevEPCategoryProvider
+                SubterraneanSites
+                    .ISubterraneanSitesEPCategoryProvider
             > themePool =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevDimensionEngine
+                SubterraneanSites
+                    .SubterraneanSitesDimensionEngine
                     .CreateThemeProviderPool();
 
 
@@ -1384,53 +1379,31 @@ namespace SubterraneanSites
                 secondaryIndex++;
             }
 
-
-            // Normal theme selection will be restored later when the
-            // remaining providers are ported and dimension-pair selection
-            // is connected.
-            //
-            // SubterraneanSiteDev
-            //     .ISubterraneanSiteDevEPCategoryProvider
-            //     primaryTheme =
-            //         themePool[primaryIndex];
-            //
-            // SubterraneanSiteDev
-            //     .ISubterraneanSiteDevEPCategoryProvider
-            //     secondaryTheme =
-            //         themePool[secondaryIndex];
-
-
-            //
-            // CURRENT INTEGRATION TEST:
-            // force a pure Fire pocket exactly the same way the old
-            // TestSite forced a pure theme.
-            //
-            SubterraneanSiteDev
-                .ISubterraneanSiteDevEPCategoryProvider
+            SubterraneanSites
+                .ISubterraneanSitesEPCategoryProvider
                 primaryTheme =
-                    themePool[0];
-
-            SubterraneanSiteDev
-                .ISubterraneanSiteDevEPCategoryProvider
+                    themePool[primaryIndex];
+            
+            SubterraneanSites
+                .ISubterraneanSitesEPCategoryProvider
                 secondaryTheme =
-                    themePool[0];
+                    themePool[secondaryIndex];
 
-
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPShuffledTheme
+            SubterraneanSites
+                .SubterraneanSitesEPShuffledTheme
                 shuffledTheme =
-                    new SubterraneanSiteDev
-                        .SubterraneanSiteDevEPShuffledTheme(
+                    new SubterraneanSites
+                        .SubterraneanSitesEPShuffledTheme(
                             siteZoneIds[0],
                             primaryTheme,
                             secondaryTheme
                         );
 
 
-            SubterraneanSiteDev
+            SubterraneanSites
                 .ExtradimensionalPocketSiteRegistrar
                 registrar =
-                    new SubterraneanSiteDev
+                    new SubterraneanSites
                         .ExtradimensionalPocketSiteRegistrar(
                             this,
                             shuffledTheme
@@ -1452,8 +1425,8 @@ namespace SubterraneanSites
             string pathAnchor =
                 The.ZoneManager.GetZoneProperty(
                     siteZoneIds[0],
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPVerticalTransitions
+                    SubterraneanSites
+                        .SubterraneanSitesEPVerticalTransitions
                         .OutgoingHoleProperty
                 ) as string;
 
@@ -1485,8 +1458,8 @@ namespace SubterraneanSites
             string siteDisplayName,
             string discoveryKey,
             Action<
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPLayerContext
+                SubterraneanSites
+                    .SubterraneanSitesEPLayerContext
             > registerLayer
         )
         {
@@ -1507,11 +1480,11 @@ namespace SubterraneanSites
                 discoveryKey,
                 delegate(SiteLayerContext context)
                 {
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPLayerContext
+                    SubterraneanSites
+                        .SubterraneanSitesEPLayerContext
                         epContext =
-                            new SubterraneanSiteDev
-                                .SubterraneanSiteDevEPLayerContext
+                            new SubterraneanSites
+                                .SubterraneanSitesEPLayerContext
                                 {
                                     ZoneId =
                                         context.ZoneId,

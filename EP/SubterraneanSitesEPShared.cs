@@ -1,3 +1,4 @@
+//v1.0.8
 using System;
 using System.Collections.Generic;
 using Genkit;
@@ -10,14 +11,14 @@ using XRL.World.Parts;
 using XRL.UI;
 
 
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// Minimal site-layer context owned by the extradimensional-pocket system.
-    /// The dev host constructs this from the same information that production
+    /// This host constructs this from the same information that production
     /// Subterranean Sites exposes through RegisterLayeredSite(...).
     /// </summary>
-    internal sealed class SubterraneanSiteDevEPLayerContext
+    internal sealed class SubterraneanSitesEPLayerContext
     {
         public string ZoneId;
         public int LayerIndex;
@@ -38,7 +39,7 @@ namespace SubterraneanSiteDev
     ///
     /// Attunement remains owned by C1.
     /// </summary>
-    internal sealed class SubterraneanSiteDevEPEntranceContext
+    internal sealed class SubterraneanSitesEPEntranceContext
     {
         public string ZoneId;
         public int Tier;
@@ -53,13 +54,13 @@ namespace SubterraneanSiteDev
     /// registration. The dev harness implements this for a fixed test stack;
     /// production can adapt RuntimeZoneBuilderInjectionSystem.RegisterLayeredSite.
     /// </summary>
-    internal interface ISubterraneanSiteDevEPHost
+    internal interface ISubterraneanSitesEPHost
     {
         bool RegisterLayeredSite(
             List<string> siteZoneIds,
             string siteDisplayName,
             string discoveryKey,
-            Action<SubterraneanSiteDevEPLayerContext> registerLayer
+            Action<SubterraneanSitesEPLayerContext> registerLayer
         );
     }
 
@@ -67,16 +68,16 @@ namespace SubterraneanSiteDev
     /// Top-level contract for a complete EP site composition.
     ///
     /// Individual dimensional themes contribute category implementations through
-    /// ISubterraneanSiteDevEPCategoryProvider. The shuffled-theme coordinator
+    /// ISubterraneanSitesEPCategoryProvider. The shuffled-theme coordinator
     /// composes those contributions into one complete EP and exposes that
     /// composition through this interface to the site registrar.
     /// </summary>
-    internal interface ISubterraneanSiteDevEPTheme
+    internal interface ISubterraneanSitesEPTheme
     {
         string ThemeKey { get; }
         string SiteDisplayName { get; }
         int MinimumHoleSeparation { get; }
-        void RegisterLayer(SubterraneanSiteDevEPLayerContext context);
+        void RegisterLayer(SubterraneanSitesEPLayerContext context);
     }
 
     /// <summary>
@@ -89,24 +90,24 @@ namespace SubterraneanSiteDev
     /// They remain one conceptual shuffled category even though their physical
     /// registration phases differ.
     /// </summary>
-    internal interface ISubterraneanSiteDevEPCategoryProvider
+    internal interface ISubterraneanSitesEPCategoryProvider
     {
         string ThemeKey { get; }
         int MinimumHoleSeparation { get; }
 
-        void RegisterCategory1(SubterraneanSiteDevEPLayerContext context);
-        void RegisterCategory2(SubterraneanSiteDevEPLayerContext context);
-        void RegisterCategory3(SubterraneanSiteDevEPLayerContext context);
-        void RegisterCategory4Layout(SubterraneanSiteDevEPLayerContext context);
-        void RegisterCategory4Floor(SubterraneanSiteDevEPLayerContext context);
-        void RegisterCategory5(SubterraneanSiteDevEPLayerContext context);
+        void RegisterCategory1(SubterraneanSitesEPLayerContext context);
+        void RegisterCategory2(SubterraneanSitesEPLayerContext context);
+        void RegisterCategory3(SubterraneanSitesEPLayerContext context);
+        void RegisterCategory4Layout(SubterraneanSitesEPLayerContext context);
+        void RegisterCategory4Floor(SubterraneanSitesEPLayerContext context);
+        void RegisterCategory5(SubterraneanSitesEPLayerContext context);
 
         // Entrance preview contributions. These use the same visual/content
         // language as Categories 4-floor and 5, but are explicitly scoped to
         // the entrance scar so the rest of the pre-existing origin zone stays
         // intact.
-        void RegisterEntranceFloor(SubterraneanSiteDevEPEntranceContext context);
-        void RegisterEntranceDecorations(SubterraneanSiteDevEPEntranceContext context);
+        void RegisterEntranceFloor(SubterraneanSitesEPEntranceContext context);
+        void RegisterEntranceDecorations(SubterraneanSitesEPEntranceContext context);
     }
 
     /// <summary>
@@ -123,18 +124,18 @@ namespace SubterraneanSiteDev
     /// Themes without Category-1 physical objects simply do not implement this
     /// interface.
     /// </summary>
-    internal interface ISubterraneanSiteDevEPPrimaryObjectProvider
+    internal interface ISubterraneanSitesEPPrimaryObjectProvider
     {
         void RegisterCategory1Objects(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         );
 
         void RegisterEntranceCategory1Objects(
-            SubterraneanSiteDevEPEntranceContext context
+            SubterraneanSitesEPEntranceContext context
         );
     }
 
-    internal enum SubterraneanSiteDevEPAttunementBuildResult
+    internal enum SubterraneanSitesEPAttunementBuildResult
     {
         Success,
         Cancelled,
@@ -158,19 +159,19 @@ namespace SubterraneanSiteDev
     ///   - theme-specific success text
     ///   - special apply/remove/event behavior
     /// </summary>
-    internal interface ISubterraneanSiteDevEPAttunementProvider
+    internal interface ISubterraneanSitesEPAttunementProvider
     {
         string ThemeKey { get; }
 
-        SubterraneanSiteDevEPAttunementBuildResult TryCreateAttunement(
+        SubterraneanSitesEPAttunementBuildResult TryCreateAttunement(
             GameObject actor,
             Zone zone,
-            out XRL.World.Effects.SubterraneanSiteDevEPAttunementEffect effect,
+            out XRL.World.Effects.SubterraneanSitesEPAttunementEffect effect,
             out string successMessage
         );
     }
 
-    internal interface ISubterraneanSiteDevEPDenizenAdaptationProvider
+    internal interface ISubterraneanSitesEPDenizenAdaptationProvider
     {
         string ThemeKey { get; }
 
@@ -179,7 +180,7 @@ namespace SubterraneanSiteDev
         );
     }
 
-    internal interface ISubterraneanSiteDevEPSignatureMutationProvider
+    internal interface ISubterraneanSitesEPSignatureMutationProvider
     {
         string ThemeKey { get; }
 
@@ -195,13 +196,13 @@ namespace SubterraneanSiteDev
     /// This helper reduces generated sale inventory to a controlled number
     /// of entries and dimensionalizes the survivors.
     ///
-    /// SubterraneanSiteDevEPMerchantStockController repeats the same
+    /// SubterraneanSitesEPMerchantStockController repeats the same
     /// normalization after future vanilla StockedEvent restocks.
     /// </summary>
-    internal static class SubterraneanSiteDevEPMerchantStockControl
+    internal static class SubterraneanSitesEPMerchantStockControl
     {
         internal const string ControlledStockProperty =
-            "SubterraneanSiteDevEPControlledMerchantStock";
+            "SubterraneanSitesEPControlledMerchantStock";
 
 
         //
@@ -475,8 +476,8 @@ namespace SubterraneanSiteDev
             }
 
 
-            SubterraneanSiteDevDimensionBinding dimension =
-                SubterraneanSiteDevDimensionEngine
+            SubterraneanSitesDimensionBinding dimension =
+                SubterraneanSitesDimensionEngine
                     .GetBindingByThemeKey(
                         dimensionThemeKey
                     );
@@ -785,7 +786,7 @@ namespace SubterraneanSiteDev
 
 
                     dimensionalized =
-                        SubterraneanSiteDevDimensionEngine
+                        SubterraneanSitesDimensionEngine
                             .ApplyDimensionToItem(
                                 item,
                                 dimension
@@ -863,7 +864,7 @@ namespace SubterraneanSiteDev
     /// _stock entries and dimensionalizes the surviving merchandise.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevEPMerchantStockController :
+    public class SubterraneanSitesEPMerchantStockController :
         IPart
     {
         public string DimensionThemeKey =
@@ -910,7 +911,7 @@ namespace SubterraneanSiteDev
                 //
                 int seed =
                     XRLCore.Core.Game.GetWorldSeed(
-                        "SubterraneanSiteDev:EPMerchantStock:" +
+                        "SubterraneanSites:EPMerchantStock:" +
                         ParentObject.ID +
                         ":" +
                         The.Game.TimeTicks.ToString()
@@ -923,7 +924,7 @@ namespace SubterraneanSiteDev
                     );
 
 
-                SubterraneanSiteDevEPMerchantStockControl
+                SubterraneanSitesEPMerchantStockControl
                     .TrimAndDimensionalizeRestockedStock(
                         ParentObject,
                         DimensionThemeKey,
@@ -939,7 +940,7 @@ namespace SubterraneanSiteDev
         }
     }
 
-    internal static class SubterraneanSiteDevEPProviderFactory
+    internal static class SubterraneanSitesEPProviderFactory
     {
         internal static bool TryCreate<TProvider>(
             string typeName,
@@ -1001,13 +1002,13 @@ namespace SubterraneanSiteDev
     /// Category 3 is the final consumer of the placeholders and replaces them
     /// with its own exterior/core and inner-boundary materials.
     /// </summary>
-    internal static class SubterraneanSiteDevEPGeometry
+    internal static class SubterraneanSitesEPGeometry
     {
         internal const string SolidPlaceholderBlueprint =
-            "SubterraneanSiteDevEPSolidPlaceholder";
+            "SubterraneanSitesEPSolidPlaceholder";
 
         internal const string BoundaryPlaceholderBlueprint =
-            "SubterraneanSiteDevEPBoundaryPlaceholder";
+            "SubterraneanSitesEPBoundaryPlaceholder";
 
         internal static bool IsSolidPlaceholder(Cell cell)
         {
@@ -1053,7 +1054,7 @@ namespace SubterraneanSiteDev
     /// They exist only while the zone is being built and are not saved as
     /// permanent per-cell game state.
     /// </summary>
-    internal static class SubterraneanSiteDevEPReservations
+    internal static class SubterraneanSitesEPReservations
     {
         private static readonly Dictionary<string, bool[,]> ClaimsByZone =
             new Dictionary<string, bool[,]>();
@@ -1362,7 +1363,7 @@ namespace SubterraneanSiteDev
     /// If the cell is dry, use the supplied pool blueprint so each theme keeps
     /// its intended native pool object, depth, rendering, and other properties.
     /// </summary>
-    internal static class SubterraneanSiteDevEPLiquids
+    internal static class SubterraneanSitesEPLiquids
     {
 
 
@@ -1482,7 +1483,7 @@ namespace SubterraneanSiteDev
     /// The shared floor system knows nothing about individual themes.
     /// Theme files construct these specifications.
     /// </summary>
-    internal sealed class SubterraneanSiteDevEPFloorSpec
+    internal sealed class SubterraneanSitesEPFloorSpec
     {
         public string FloorBlueprint = "";
 
@@ -1506,11 +1507,11 @@ namespace SubterraneanSiteDev
     /// creatures, walls, liquids, and other content do not affect whether
     /// a cell receives its floor.
     /// </summary>
-    internal static class SubterraneanSiteDevEPFloorSystem
+    internal static class SubterraneanSitesEPFloorSystem
     {
         internal static bool Apply(
             Zone Z,
-            SubterraneanSiteDevEPFloorSpec spec,
+            SubterraneanSitesEPFloorSpec spec,
             bool entranceOnly
         )
         {
@@ -1561,7 +1562,7 @@ namespace SubterraneanSiteDev
                 //
                 if (
                     entranceOnly &&
-                    !SubterraneanSiteDevEPEntrance
+                    !SubterraneanSitesEPEntrance
                         .IsInsideScar(
                             Z,
                             cell
@@ -1628,25 +1629,25 @@ namespace SubterraneanSiteDev
     /// its ordinary zone build everywhere except for a harsh, clipped circular
     /// overwrite around the planned outgoing EP hole.
     /// </summary>
-    internal static class SubterraneanSiteDevEPEntrance
+    internal static class SubterraneanSitesEPEntrance
     {
         internal const string CenterProperty =
-            "SubterraneanSiteDev_EPEntranceCenter";
+            "SubterraneanSites_EPEntranceCenter";
 
         internal const string ScarRadiusProperty =
-            "SubterraneanSiteDev_EPEntranceScarRadius";
+            "SubterraneanSites_EPEntranceScarRadius";
 
         internal const string HoleRadiusProperty =
-            "SubterraneanSiteDev_EPEntranceHoleRadius";
+            "SubterraneanSites_EPEntranceHoleRadius";
 
         internal const int DefaultScarRadius = 11;
         internal const int DefaultHoleRadius = 5;
 
         internal static void Register(
-            SubterraneanSiteDevEPLayerContext layer,
-            ISubterraneanSiteDevEPCategoryProvider category1Theme,
-            ISubterraneanSiteDevEPCategoryProvider decorationTheme,
-            ISubterraneanSiteDevEPCategoryProvider floorTheme
+            SubterraneanSitesEPLayerContext layer,
+            ISubterraneanSitesEPCategoryProvider category1Theme,
+            ISubterraneanSitesEPCategoryProvider decorationTheme,
+            ISubterraneanSitesEPCategoryProvider floorTheme
         )
         {
             if (
@@ -1661,9 +1662,9 @@ namespace SubterraneanSiteDev
 
             Location2D center = null;
 
-            SubterraneanSiteDevEPVerticalTransitions.TryGetCoordinate(
+            SubterraneanSitesEPVerticalTransitions.TryGetCoordinate(
                 layer.ZoneId,
-                SubterraneanSiteDevEPVerticalTransitions.OutgoingHoleProperty,
+                SubterraneanSitesEPVerticalTransitions.OutgoingHoleProperty,
                 out center
             );
 
@@ -1672,8 +1673,8 @@ namespace SubterraneanSiteDev
                 center = Location2D.Get(40, 12);
             }
 
-            SubterraneanSiteDevEPEntranceContext entrance =
-                new SubterraneanSiteDevEPEntranceContext
+            SubterraneanSitesEPEntranceContext entrance =
+                new SubterraneanSitesEPEntranceContext
                 {
                     ZoneId = layer.ZoneId,
                     Tier = layer.Tier,
@@ -1704,7 +1705,7 @@ namespace SubterraneanSiteDev
             // Preserve the ordinary origin zone outside this scar.
             The.ZoneManager.AddZonePostBuilder(
                 layer.ZoneId,
-                "SubterraneanSiteDevEPEntranceScar",
+                "SubterraneanSitesEPEntranceScar",
                 "CenterX", entrance.CenterX.ToString(),
                 "CenterY", entrance.CenterY.ToString(),
                 "Radius", entrance.ScarRadius.ToString()
@@ -1717,10 +1718,10 @@ namespace SubterraneanSiteDev
             // This is deliberately independent of entrance Category-5 decoration.
             // Fungus puffers, and future attunement-coupled C1 objects, belong here.
             //
-            ISubterraneanSiteDevEPPrimaryObjectProvider
+            ISubterraneanSitesEPPrimaryObjectProvider
                 primaryObjectProvider =
                     category1Theme
-                        as ISubterraneanSiteDevEPPrimaryObjectProvider;
+                        as ISubterraneanSitesEPPrimaryObjectProvider;
 
             if (primaryObjectProvider != null)
             {
@@ -1737,7 +1738,7 @@ namespace SubterraneanSiteDev
             //
             The.ZoneManager.AddZonePostBuilder(
                 layer.ZoneId,
-                "SubterraneanSiteDevEPAttunementStoneBuilder",
+                "SubterraneanSitesEPAttunementStoneBuilder",
                 "EntranceMode", "1"
             );
 
@@ -1892,16 +1893,16 @@ namespace SubterraneanSiteDev
     /// It is substrate and is registered once later by the shuffled-theme
     /// coordinator after shared treasure/population content.
     /// </summary>
-    internal static class SubterraneanSiteDevEPCategoryPipeline
+    internal static class SubterraneanSitesEPCategoryPipeline
     {
 
         internal static void RegisterMixedLayer(
-            SubterraneanSiteDevEPLayerContext context,
-            ISubterraneanSiteDevEPCategoryProvider category1,
-            ISubterraneanSiteDevEPCategoryProvider category2,
-            ISubterraneanSiteDevEPCategoryProvider category3,
-            ISubterraneanSiteDevEPCategoryProvider category4,
-            ISubterraneanSiteDevEPCategoryProvider category5
+            SubterraneanSitesEPLayerContext context,
+            ISubterraneanSitesEPCategoryProvider category1,
+            ISubterraneanSitesEPCategoryProvider category2,
+            ISubterraneanSitesEPCategoryProvider category3,
+            ISubterraneanSitesEPCategoryProvider category4,
+            ISubterraneanSitesEPCategoryProvider category5
         )
         {
             if (
@@ -1926,14 +1927,14 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPSolidPlaceholderFill"
+                "SubterraneanSitesEPSolidPlaceholderFill"
             );
 
             category4.RegisterCategory4Layout(context);
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPBoundaryClassifier"
+                "SubterraneanSitesEPBoundaryClassifier"
             );
 
             //
@@ -1945,7 +1946,7 @@ namespace SubterraneanSiteDev
             //
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPAnchorConnectivity"
+                "SubterraneanSitesEPAnchorConnectivity"
             );
 
             //
@@ -1955,8 +1956,8 @@ namespace SubterraneanSiteDev
             //
             // This executes while abstract geometry still exists and before C2/C5.
             //
-            ISubterraneanSiteDevEPPrimaryObjectProvider primaryObjectProvider =
-                category1 as ISubterraneanSiteDevEPPrimaryObjectProvider;
+            ISubterraneanSitesEPPrimaryObjectProvider primaryObjectProvider =
+                category1 as ISubterraneanSitesEPPrimaryObjectProvider;
 
             if (primaryObjectProvider != null)
             {
@@ -1976,7 +1977,7 @@ namespace SubterraneanSiteDev
             //
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPGeometryReachability"
+                "SubterraneanSitesEPGeometryReachability"
             );
 
             //
@@ -1987,7 +1988,7 @@ namespace SubterraneanSiteDev
             //
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPAttunementStoneBuilder"
+                "SubterraneanSitesEPAttunementStoneBuilder"
             );
 
             category5.RegisterCategory5(context);
@@ -1999,7 +2000,7 @@ namespace SubterraneanSiteDev
             //
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPGeometryReachability"
+                "SubterraneanSitesEPGeometryReachability"
             );
 
             category3.RegisterCategory3(context);
@@ -2014,27 +2015,27 @@ namespace SubterraneanSiteDev
     ///
     /// Category 1 owns the pocket's attunement target. Theme-specific
     /// attunement construction is delegated to that theme's
-    /// ISubterraneanSiteDevEPAttunementProvider.
+    /// ISubterraneanSitesEPAttunementProvider.
     ///
     /// Shared code owns duration, tier scaling, provider lookup,
     /// current-attunement lookup, and common effect lifecycle machinery.
     /// </summary>
-    internal static class SubterraneanSiteDevEPAttunementSystem
+    internal static class SubterraneanSitesEPAttunementSystem
     {
         internal const string StoneLeftBlueprint =
-            "SubterraneanSiteDevEPAttunementStoneLeft";
+            "SubterraneanSitesEPAttunementStoneLeft";
 
         internal const string StoneRightBlueprint =
-            "SubterraneanSiteDevEPAttunementStoneRight";
+            "SubterraneanSitesEPAttunementStoneRight";
 
         internal const int DefaultDuration = 300;
         internal const int CountdownInterval = 20;
 
         internal const string ProviderTypeProperty =
-            "SubterraneanSiteDev_EP_AttunementProviderType";
+            "SubterraneanSites_EP_AttunementProviderType";
 
         internal const string TierProperty =
-            "SubterraneanSiteDev_EP_Tier";
+            "SubterraneanSites_EP_Tier";
 
 
         internal static int GetAttunementMutationLevel(
@@ -2073,7 +2074,7 @@ namespace SubterraneanSiteDev
 
         internal static bool TryGetAttunementProvider(
             Zone Z,
-            out ISubterraneanSiteDevEPAttunementProvider provider
+            out ISubterraneanSitesEPAttunementProvider provider
         )
         {
             provider = null;
@@ -2093,7 +2094,7 @@ namespace SubterraneanSiteDev
                 ) as string;
 
             return
-                SubterraneanSiteDevEPProviderFactory
+                SubterraneanSitesEPProviderFactory
                     .TryCreate(
                         typeName,
                         out provider
@@ -2114,13 +2115,13 @@ namespace SubterraneanSiteDev
             return
                 The.ZoneManager.GetZoneProperty(
                     Z.ZoneID,
-                    SubterraneanSiteDevEPShuffledTheme
+                    SubterraneanSitesEPShuffledTheme
                         .Category1ThemeProperty
                 ) as string;
         }
 
         internal static XRL.World.Effects
-            .SubterraneanSiteDevEPAttunementEffect
+            .SubterraneanSitesEPAttunementEffect
             GetCurrentAttunement(
                 GameObject actor
             )
@@ -2137,7 +2138,7 @@ namespace SubterraneanSiteDev
             //
             return actor.GetEffectDescendedFrom<
                 XRL.World.Effects
-                    .SubterraneanSiteDevEPAttunementEffect
+                    .SubterraneanSitesEPAttunementEffect
             >();
         }
 
@@ -2155,7 +2156,7 @@ namespace SubterraneanSiteDev
                 }
 
                 XRL.World.Effects
-                    .SubterraneanSiteDevEPAttunementEffect effect =
+                    .SubterraneanSitesEPAttunementEffect effect =
                         GetCurrentAttunement(
                             actor
                         );
@@ -2184,31 +2185,31 @@ namespace SubterraneanSiteDev
     /// the primary and secondary themes. The choices are made once when this
     /// object is constructed and remain constant across every layer of the EP.
     /// </summary>
-    internal sealed class SubterraneanSiteDevEPShuffledTheme :
-        ISubterraneanSiteDevEPTheme
+    internal sealed class SubterraneanSitesEPShuffledTheme :
+        ISubterraneanSitesEPTheme
     {
         internal const string PrimaryThemeProperty =
-            "SubterraneanSiteDev_EP_PrimaryTheme";
+            "SubterraneanSites_EP_PrimaryTheme";
 
         internal const string SecondaryThemeProperty =
-            "SubterraneanSiteDev_EP_SecondaryTheme";
+            "SubterraneanSites_EP_SecondaryTheme";
 
         internal const string PrimaryDenizenProviderTypeProperty =
-            "SubterraneanSiteDev_EP_PrimaryDenizenProviderType";
+            "SubterraneanSites_EP_PrimaryDenizenProviderType";
 
         internal const string SecondaryDenizenProviderTypeProperty =
-            "SubterraneanSiteDev_EP_SecondaryDenizenProviderType";
+            "SubterraneanSites_EP_SecondaryDenizenProviderType";
 
         internal const string Category1ThemeProperty =
-            "SubterraneanSiteDev_EP_Category1Theme";
+            "SubterraneanSites_EP_Category1Theme";
         internal const string Category2ThemeProperty =
-            "SubterraneanSiteDev_EP_Category2Theme";
+            "SubterraneanSites_EP_Category2Theme";
         internal const string Category3ThemeProperty =
-            "SubterraneanSiteDev_EP_Category3Theme";
+            "SubterraneanSites_EP_Category3Theme";
         internal const string Category4ThemeProperty =
-            "SubterraneanSiteDev_EP_Category4Theme";
+            "SubterraneanSites_EP_Category4Theme";
         internal const string Category5ThemeProperty =
-            "SubterraneanSiteDev_EP_Category5Theme";
+            "SubterraneanSites_EP_Category5Theme";
 
         // DEV/DIAGNOSTIC NAME MODE.
         //
@@ -2219,21 +2220,21 @@ namespace SubterraneanSiteDev
         // while testing individual theme/category behavior.
         internal const bool UseCategoryDebugSiteName = false;
 
-        private readonly ISubterraneanSiteDevEPCategoryProvider primaryTheme;
-        private readonly ISubterraneanSiteDevEPCategoryProvider secondaryTheme;
+        private readonly ISubterraneanSitesEPCategoryProvider primaryTheme;
+        private readonly ISubterraneanSitesEPCategoryProvider secondaryTheme;
 
-        private readonly ISubterraneanSiteDevEPCategoryProvider category1;
-        private readonly ISubterraneanSiteDevEPCategoryProvider category2;
-        private readonly ISubterraneanSiteDevEPCategoryProvider category3;
-        private readonly ISubterraneanSiteDevEPCategoryProvider category4;
-        private readonly ISubterraneanSiteDevEPCategoryProvider category5;
+        private readonly ISubterraneanSitesEPCategoryProvider category1;
+        private readonly ISubterraneanSitesEPCategoryProvider category2;
+        private readonly ISubterraneanSitesEPCategoryProvider category3;
+        private readonly ISubterraneanSitesEPCategoryProvider category4;
+        private readonly ISubterraneanSitesEPCategoryProvider category5;
 
         private readonly string siteDisplayName;
 
-        public SubterraneanSiteDevEPShuffledTheme(
+        public SubterraneanSitesEPShuffledTheme(
             string siteKey,
-            ISubterraneanSiteDevEPCategoryProvider primaryTheme,
-            ISubterraneanSiteDevEPCategoryProvider secondaryTheme
+            ISubterraneanSitesEPCategoryProvider primaryTheme,
+            ISubterraneanSitesEPCategoryProvider secondaryTheme
         )
         {
             this.primaryTheme = primaryTheme;
@@ -2253,7 +2254,7 @@ namespace SubterraneanSiteDev
 
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
-                    "SubterraneanSiteDev:EPCategoryShuffle:" +
+                    "SubterraneanSites:EPCategoryShuffle:" +
                     stableSiteKey + ":" +
                     this.primaryTheme.ThemeKey + ":" +
                     this.secondaryTheme.ThemeKey
@@ -2302,7 +2303,7 @@ namespace SubterraneanSiteDev
             else
             {
                 string generatedName =
-                    SubterraneanSiteDevEPNameGenerator
+                    SubterraneanSitesEPNameGenerator
                         .Generate(
                             stableSiteKey,
                             this.primaryTheme.ThemeKey,
@@ -2337,7 +2338,7 @@ namespace SubterraneanSiteDev
         }
 
         public void RegisterLayer(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             if (context == null)
@@ -2345,7 +2346,7 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.SetZoneProperty(
                 context.ZoneId,
-                SubterraneanSiteDevEPAttunementSystem.TierProperty,
+                SubterraneanSitesEPAttunementSystem.TierProperty,
                 context.Tier.ToString()
             );
 
@@ -2363,16 +2364,16 @@ namespace SubterraneanSiteDev
                 secondaryTheme.ThemeKey
             );
 
-            ISubterraneanSiteDevEPDenizenAdaptationProvider
+            ISubterraneanSitesEPDenizenAdaptationProvider
                 primaryDenizenProvider =
                     primaryTheme
-                        as ISubterraneanSiteDevEPDenizenAdaptationProvider;
+                        as ISubterraneanSitesEPDenizenAdaptationProvider;
 
 
-            ISubterraneanSiteDevEPDenizenAdaptationProvider
+            ISubterraneanSitesEPDenizenAdaptationProvider
                 secondaryDenizenProvider =
                     secondaryTheme
-                        as ISubterraneanSiteDevEPDenizenAdaptationProvider;
+                        as ISubterraneanSitesEPDenizenAdaptationProvider;
 
 
             The.ZoneManager.SetZoneProperty(
@@ -2402,14 +2403,14 @@ namespace SubterraneanSiteDev
                 category1.ThemeKey
             );
 
-            ISubterraneanSiteDevEPAttunementProvider
+            ISubterraneanSitesEPAttunementProvider
                 attunementProvider =
                     category1
-                        as ISubterraneanSiteDevEPAttunementProvider;
+                        as ISubterraneanSitesEPAttunementProvider;
 
             The.ZoneManager.SetZoneProperty(
                 context.ZoneId,
-                SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSitesEPAttunementSystem
                     .ProviderTypeProperty,
                 attunementProvider == null
                     ? ""
@@ -2455,7 +2456,7 @@ namespace SubterraneanSiteDev
                 //
                 // Build the localized scar first.
                 //
-                SubterraneanSiteDevEPEntrance.Register(
+                SubterraneanSitesEPEntrance.Register(
                     context,
                     category1,
                     category5,
@@ -2473,7 +2474,7 @@ namespace SubterraneanSiteDev
                 return;
             }
 
-            SubterraneanSiteDevEPCategoryPipeline.RegisterMixedLayer(
+            SubterraneanSitesEPCategoryPipeline.RegisterMixedLayer(
                 context,
                 category1,
                 category2,
@@ -2488,7 +2489,7 @@ namespace SubterraneanSiteDev
             // pocket's two dimensional identities.
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPChestBuilder",
+                "SubterraneanSitesEPChestBuilder",
                 "Tier", context.Tier.ToString(),
                 "PrimaryThemeKey", primaryTheme.ThemeKey,
                 "SecondaryThemeKey", secondaryTheme.ThemeKey
@@ -2499,7 +2500,7 @@ namespace SubterraneanSiteDev
             {
                 The.ZoneManager.AddZonePostBuilder(
                     context.ZoneId,
-                    "SubterraneanSiteDevEPHeroBuilder",
+                    "SubterraneanSitesEPHeroBuilder",
                     "Tier", context.Tier.ToString(),
                     "PrimaryThemeKey", primaryTheme.ThemeKey,
                     "SecondaryThemeKey", secondaryTheme.ThemeKey
@@ -2507,7 +2508,7 @@ namespace SubterraneanSiteDev
 
                 The.ZoneManager.AddZonePostBuilder(
                     context.ZoneId,
-                    "SubterraneanSiteDevEPRelicBuilder",
+                    "SubterraneanSitesEPRelicBuilder",
                     "Tier", context.Tier.ToString(),
                     "PrimaryThemeKey", primaryTheme.ThemeKey,
                     "SecondaryThemeKey", secondaryTheme.ThemeKey
@@ -2517,7 +2518,7 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPDenizenBuilder",
+                "SubterraneanSitesEPDenizenBuilder",
                 "Tier", context.Tier.ToString(),
                 "PrimaryThemeKey", primaryTheme.ThemeKey,
                 "SecondaryThemeKey", secondaryTheme.ThemeKey,
@@ -2540,7 +2541,7 @@ namespace SubterraneanSiteDev
 
         }
 
-        private ISubterraneanSiteDevEPCategoryProvider PickTheme(
+        private ISubterraneanSitesEPCategoryProvider PickTheme(
             System.Random rng
         )
         {
@@ -2566,12 +2567,12 @@ namespace SubterraneanSiteDev
     /// </summary>
     internal sealed class ExtradimensionalPocketSiteRegistrar
     {
-        private readonly ISubterraneanSiteDevEPHost host;
-        private readonly ISubterraneanSiteDevEPTheme theme;
+        private readonly ISubterraneanSitesEPHost host;
+        private readonly ISubterraneanSitesEPTheme theme;
 
         public ExtradimensionalPocketSiteRegistrar(
-            ISubterraneanSiteDevEPHost host,
-            ISubterraneanSiteDevEPTheme theme
+            ISubterraneanSitesEPHost host,
+            ISubterraneanSitesEPTheme theme
         )
         {
             this.host = host;
@@ -2586,7 +2587,7 @@ namespace SubterraneanSiteDev
                 return false;
             }
 
-            if (!SubterraneanSiteDevEPVerticalTransitions.Prepare(
+            if (!SubterraneanSitesEPVerticalTransitions.Prepare(
                 siteZoneIds,
                 theme.MinimumHoleSeparation
             ))
@@ -2595,7 +2596,7 @@ namespace SubterraneanSiteDev
             }
 
             string discoveryKey =
-                "SubterraneanSiteDev_Discovered_ExtradimensionalPocket_" +
+                "SubterraneanSites_Discovered_ExtradimensionalPocket_" +
                 siteZoneIds[0];
 
             if (!host.RegisterLayeredSite(
@@ -2620,13 +2621,13 @@ namespace SubterraneanSiteDev
 
                 The.ZoneManager.AddZonePostBuilder(
                     bottomZoneId,
-                    "SubterraneanSiteDevEPExitTeleporterBuilder",
+                    "SubterraneanSitesEPExitTeleporterBuilder",
                     "TargetZone", originZoneId
                 );
             }
 
             // Must run after theme builders so layout/decorations cannot erase pits.
-            SubterraneanSiteDevEPVerticalTransitions.RegisterHoleBuilders(
+            SubterraneanSitesEPVerticalTransitions.RegisterHoleBuilders(
                 siteZoneIds
             );
 
@@ -2641,10 +2642,10 @@ namespace SubterraneanSiteDev
     /// Nondirectional mode is currently used by Fire and Electrical.
     /// Directional mode is currently used by Cold.
     /// </summary>
-    internal static class SubterraneanSiteDevEPBoundaryHazards
+    internal static class SubterraneanSitesEPBoundaryHazards
     {
         internal static void Register(
-            SubterraneanSiteDevEPLayerContext context,
+            SubterraneanSitesEPLayerContext context,
             string hazardBlueprint,
             int boundaryCellsPerMount,
             int minMounts,
@@ -2663,7 +2664,7 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPBoundaryHazardBuilder",
+                "SubterraneanSitesEPBoundaryHazardBuilder",
                 "HazardBlueprint", hazardBlueprint,
                 "BoundaryCellsPerMount",
                     boundaryCellsPerMount.ToString(),
@@ -2676,7 +2677,7 @@ namespace SubterraneanSiteDev
 
 
         internal static void RegisterDirectional(
-            SubterraneanSiteDevEPLayerContext context,
+            SubterraneanSitesEPLayerContext context,
             string northBlueprint,
             string southBlueprint,
             string eastBlueprint,
@@ -2708,7 +2709,7 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPBoundaryHazardBuilder",
+                "SubterraneanSitesEPBoundaryHazardBuilder",
                 "DirectionalBlueprints", directionalBlueprints,
                 "MinMounts", minMounts.ToString(),
                 "MaxMounts", maxMounts.ToString(),
@@ -2725,7 +2726,7 @@ namespace SubterraneanSiteDev
 
 namespace XRL.World.ZoneBuilders
 {
-    public class SubterraneanSiteDevEPSolidPlaceholderFill : ZoneBuilderSandbox
+    public class SubterraneanSitesEPSolidPlaceholderFill : ZoneBuilderSandbox
     {
         public bool BuildZone(Zone Z)
         {
@@ -2764,8 +2765,8 @@ namespace XRL.World.ZoneBuilders
             // Resetting here guarantees that no temporary claims from an earlier
             // build of this ZoneID can survive into the new construction pass.
             //
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .Reset(Z);
 
             foreach (Cell cell in Z.GetCells())
@@ -2775,7 +2776,7 @@ namespace XRL.World.ZoneBuilders
 
                 cell.Clear();
                 cell.AddObject(
-                    SubterraneanSiteDev.SubterraneanSiteDevEPGeometry
+                    SubterraneanSites.SubterraneanSitesEPGeometry
                         .SolidPlaceholderBlueprint
                 );
             }
@@ -2789,7 +2790,7 @@ namespace XRL.World.ZoneBuilders
     /// Classifies cave-facing/exposed abstract solid cells as boundary cells.
     /// Category 3 later decides what core and boundary materials actually are.
     /// </summary>
-    public class SubterraneanSiteDevEPBoundaryClassifier : ZoneBuilderSandbox
+    public class SubterraneanSitesEPBoundaryClassifier : ZoneBuilderSandbox
     {
         public bool BuildZone(Zone Z)
         {
@@ -2804,7 +2805,7 @@ namespace XRL.World.ZoneBuilders
                 {
                     Cell cell = Z.GetCell(x, y);
 
-                    if (!SubterraneanSiteDev.SubterraneanSiteDevEPGeometry
+                    if (!SubterraneanSites.SubterraneanSitesEPGeometry
                         .IsSolidPlaceholder(cell))
                     {
                         continue;
@@ -2827,7 +2828,7 @@ namespace XRL.World.ZoneBuilders
 
                     cell.ClearWalls();
                     cell.AddObject(
-                        SubterraneanSiteDev.SubterraneanSiteDevEPGeometry
+                        SubterraneanSites.SubterraneanSitesEPGeometry
                             .BoundaryPlaceholderBlueprint
                     );
                 }
@@ -2858,7 +2859,7 @@ namespace XRL.World.ZoneBuilders
 
                     Cell neighbor = Z.GetCell(nx, ny);
 
-                    if (SubterraneanSiteDev.SubterraneanSiteDevEPGeometry
+                    if (SubterraneanSites.SubterraneanSitesEPGeometry
                         .IsOpenGeometryCell(neighbor))
                     {
                         return true;
@@ -2870,7 +2871,7 @@ namespace XRL.World.ZoneBuilders
         }
     }
 
-    public class SubterraneanSiteDevEPAnchorConnectivity :
+    public class SubterraneanSitesEPAnchorConnectivity :
     ZoneBuilderSandbox
     {
         public int AnchorClearRadius = 1;
@@ -2885,8 +2886,8 @@ namespace XRL.World.ZoneBuilders
 
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -3263,8 +3264,8 @@ namespace XRL.World.ZoneBuilders
         {
             if (
                 cell == null ||
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                !SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(
                         cell
                     )
@@ -3518,7 +3519,7 @@ namespace XRL.World.ZoneBuilders
     /// final material. This keeps passable exteriors such as lava out of the
     /// intended traversable/reachable interior.
     /// </summary>
-    public class SubterraneanSiteDevEPGeometryReachability : ZoneBuilderSandbox
+    public class SubterraneanSitesEPGeometryReachability : ZoneBuilderSandbox
     {
         public bool BuildZone(Zone Z)
         {
@@ -3582,10 +3583,10 @@ namespace XRL.World.ZoneBuilders
         {
             Location2D anchor = null;
 
-            if (SubterraneanSiteDev.SubterraneanSiteDevEPVerticalTransitions
+            if (SubterraneanSites.SubterraneanSitesEPVerticalTransitions
                 .TryGetCoordinate(
                     Z.ZoneID,
-                    SubterraneanSiteDev.SubterraneanSiteDevEPVerticalTransitions
+                    SubterraneanSites.SubterraneanSitesEPVerticalTransitions
                         .IncomingLandingProperty,
                     out anchor
                 ) && anchor != null)
@@ -3597,10 +3598,10 @@ namespace XRL.World.ZoneBuilders
 
             anchor = null;
 
-            if (SubterraneanSiteDev.SubterraneanSiteDevEPVerticalTransitions
+            if (SubterraneanSites.SubterraneanSitesEPVerticalTransitions
                 .TryGetCoordinate(
                     Z.ZoneID,
-                    SubterraneanSiteDev.SubterraneanSiteDevEPVerticalTransitions
+                    SubterraneanSites.SubterraneanSitesEPVerticalTransitions
                         .OutgoingHoleProperty,
                     out anchor
                 ) && anchor != null)
@@ -3624,8 +3625,8 @@ namespace XRL.World.ZoneBuilders
         )
         {
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                !SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(cell)
             )
             {
@@ -3651,7 +3652,7 @@ namespace XRL.World.ZoneBuilders
     /// Shared Category-1 ambient-temperature builder. Denizen resistance is
     /// intentionally handled later by the denizen/attunement engine.
     /// </summary>
-    public class SubterraneanSiteDevEPTemperature :
+    public class SubterraneanSitesEPTemperature :
         ZoneBuilderSandbox
     {
         public int Temperature = 25;
@@ -3670,294 +3671,9 @@ namespace XRL.World.ZoneBuilders
         }
     }
 
-    /// <summary>
-    /// Dev-only regular faction-team builder.
-    ///
-    /// Intentionally mirrors the useful core of vanilla FactionEncounters:
-    /// - faction chosen from a population table
-    /// - members restricted to +/- 10 levels from the requested zone level
-    /// - members closer to the zone level are weighted more heavily
-    /// - party size comes from FactionEncounterNumber_<Faction> or *Default
-    /// - party members share an AllyRetinue leader
-    /// - faction member inventory and party/zone flavor objects are preserved
-    ///
-    /// Deliberate difference:
-    /// - NO HeroMaker.MakeHero(...)
-    /// - the first creature is an ordinary party leader
-    /// - the ordinary leader uses member inventory, not hero/leader inventory
-    /// </summary>
-    public class SubterraneanSiteDevFactionTeam : ZoneBuilderSandbox
-    {
-        public string Population = "";
-        public int Chance = 100;
-        public int Rolls = 1;
-
-        public bool BuildZone(Zone Z)
-        {
-            if (Z == null || Population.IsNullOrEmpty())
-                return true;
-
-            for (int roll = 0; roll < Rolls; roll++)
-            {
-                if (!Chance.in100())
-                    continue;
-
-                PopulationResult factionResult =
-                    PopulationManager.RollOneFrom(Population);
-
-                if (factionResult == null ||
-                    factionResult.Blueprint.IsNullOrEmpty())
-                    continue;
-
-                BuildRegularFactionTeam(
-                    factionResult.Blueprint,
-                    Z,
-                    Z.Level,
-                    Z.NewTier
-                );
-            }
-
-            return true;
-        }
-
-        public static bool BuildRegularFactionTeam(
-            string faction,
-            Zone Z,
-            int zoneLevel,
-            int zoneTier
-        )
-        {
-            if (Z == null || faction.IsNullOrEmpty())
-                return false;
-
-            BallBag<string> candidates = new BallBag<string>();
-
-            foreach (GameObjectBlueprint member
-                in GameObjectFactory.Factory.GetFactionMembers(faction))
-            {
-                if (member == null)
-                    continue;
-
-                int memberLevel =
-                    ZoneBuilderSandbox.GetLevelOfObject(member.Name);
-
-                int difference = Math.Abs(zoneLevel - memberLevel);
-
-                if (difference <= 10)
-                {
-                    candidates.Add(
-                        member.Name,
-                        Math.Max(5, 25 - difference)
-                    );
-                }
-            }
-
-            if (candidates.Count == 0)
-                return false;
-
-            string numberText;
-
-            int partySize =
-                !XRL.Data.TryGetText(
-                    "FactionEncounterNumber_" + faction,
-                    out numberText
-                )
-                ? XRL.Data.GetText(
-                    "FactionEncounterNumber_*Default"
-                ).RollCached()
-                : numberText.RollCached();
-
-            if (partySize < 1)
-                partySize = 1;
-
-            List<GameObject> party = Event.NewGameObjectList();
-            GameObject leader = null;
-
-            for (int i = 0; i < partySize; i++)
-            {
-                string blueprint = candidates.PeekOne();
-
-                if (blueprint.IsNullOrEmpty())
-                    continue;
-
-                GameObject member = GameObject.Create(blueprint);
-
-                if (member == null)
-                    continue;
-
-                party.Add(member);
-
-                if (leader == null)
-                    leader = member;
-            }
-
-            if (leader == null || party.Count == 0)
-                return false;
-
-            string memberInventory =
-                ZoneBuilderSandbox.PopulationOr(
-                    "FactionEncounterMemberInventory_" + faction,
-                    "FactionEncounterMemberInventory_*Default"
-                );
-
-            string partyObjects =
-                ZoneBuilderSandbox.PopulationOr(
-                    "FactionEncounterPartyObjects_" + faction,
-                    "FactionEncounterPartyObjects_*Default"
-                );
-
-            string zoneObjects =
-                ZoneBuilderSandbox.PopulationOr(
-                    "FactionEncounterZoneObjects_" + faction,
-                    "FactionEncounterZoneObjects_*Default"
-                );
-
-            foreach (GameObject member in party)
-            {
-                if (member == null)
-                    continue;
-
-                if (member != leader)
-                {
-                    member.SetAlliedLeader<AllyRetinue>(leader);
-                }
-
-                member.EquipFromPopulationTable(
-                    memberInventory,
-                    zoneTier
-                );
-            }
-
-            foreach (PopulationResult result
-                in PopulationManager.Generate(
-                    partyObjects,
-                    "zonetier",
-                    zoneTier.ToString()
-                ))
-            {
-                if (result == null)
-                    continue;
-
-                for (int i = 0; i < result.Number; i++)
-                {
-                    GameObject obj =
-                        GameObject.Create(result.Blueprint);
-
-                    if (obj == null)
-                        continue;
-
-                    if (!string.IsNullOrEmpty(result.Hint))
-                    {
-                        obj.SetStringProperty(
-                            "PlacementHint",
-                            result.Hint
-                        );
-                    }
-
-                    party.Add(obj);
-                }
-            }
-
-            ZoneBuilderSandbox.PlaceParty(party, Z);
-
-            foreach (PopulationResult result
-                in PopulationManager.Generate(
-                    zoneObjects,
-                    "zonetier",
-                    zoneTier.ToString()
-                ))
-            {
-                if (result == null)
-                    continue;
-
-                for (int i = 0; i < result.Number; i++)
-                {
-                    GameObject obj =
-                        GameObject.Create(result.Blueprint);
-
-                    if (obj == null)
-                        continue;
-
-                    ZoneBuilderSandbox.PlaceObjectInArea(
-                        Z,
-                        (ILocationArea) Z.area,
-                        obj,
-                        Hints: result.Hint
-                    );
-                }
-            }
-
-            return true;
-        }
-    }
 }
 
-namespace XRL.World.ZoneBuilders
-{
-// Namespaced copy of the production custom population-placement builder.
-    public class SubterraneanSiteDevMobs : ZoneBuilderSandbox
-    {
-        public int Rolls = 1;
-        public int Tier = 1;
-        public string Table = "";
-
-        public bool BuildZone(Zone Z)
-        {
-            if (Tier < 1) Tier = 1;
-            if (Tier > 8) Tier = 8;
-
-            string table = Table;
-            if (table.IsNullOrEmpty())
-                table = "SubterraneanSiteDev_Tier" + Tier.ToString() + "_Mobs";
-
-            List<Location2D> locations = new List<Location2D>();
-            foreach (Cell cell in Z.GetCells())
-            {
-                if (cell.IsReachable() && cell.IsEmptyOfSolid() && !cell.HasSpawnBlocker())
-                    locations.Add(cell.Location);
-            }
-
-            if (locations.Count == 0)
-                return true;
-
-            LocationList area = new LocationList(locations);
-
-            for (int roll = 0; roll < Rolls; roll++)
-            {
-                List<GameObject> objects = PopulationManager.Expand(
-                    PopulationManager.Generate(table, "zonetier", Tier.ToString())
-                );
-
-                if (objects == null)
-                    continue;
-
-                int placementIndex = 0;
-                foreach (GameObject obj in objects)
-                {
-                    if (obj == null)
-                        continue;
-
-                    ZoneBuilderSandbox.PlaceObjectInArea(
-                        Z,
-                        area,
-                        obj,
-                        placementIndex,
-                        0,
-                        null,
-                        null,
-                        true
-                    );
-
-                    placementIndex++;
-                }
-            }
-
-            return true;
-        }
-    }
-}
-
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// Shared extradimensional-pocket vertical transition planning.
@@ -3968,13 +3684,13 @@ namespace SubterraneanSiteDev
     /// Theme-specific code decides what placement parameters to use.
     /// Fire currently requests a 25-tile minimum separation.
     /// </summary>
-    internal static class SubterraneanSiteDevEPVerticalTransitions
+    internal static class SubterraneanSitesEPVerticalTransitions
     {
         internal const string IncomingLandingProperty =
-            "SubterraneanSiteDev_EPIncomingLanding";
+            "SubterraneanSites_EPIncomingLanding";
 
         internal const string OutgoingHoleProperty =
-            "SubterraneanSiteDev_EPOutgoingHole";
+            "SubterraneanSites_EPOutgoingHole";
 
         //
         // Keep transition centers away from the absolute
@@ -4017,7 +3733,7 @@ namespace SubterraneanSiteDev
 
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
-                    "SubterraneanSiteDev:EPVertical:" +
+                    "SubterraneanSites:EPVertical:" +
                     siteZoneIds[0] +
                     ":MinSeparation:" +
                     minHoleSeparation.ToString()
@@ -4154,18 +3870,38 @@ namespace SubterraneanSiteDev
                 }
 
                 int holeRadius =
-                    SubterraneanSiteDevEPEntrance.GetHoleRadius(
+                    SubterraneanSitesEPEntrance.GetHoleRadius(
                         zoneId,
                         3
                     );
 
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
-                    "SubterraneanSiteDevEPHoleBuilder",
+                    "SubterraneanSitesEPHoleBuilder",
                     "CenterX", hole.X.ToString(),
                     "CenterY", hole.Y.ToString(),
                     "Radius", holeRadius.ToString(),
                     "HoleObject", "Pit"
+                );
+            }
+
+            //
+            // Final origin-layer integrity check.
+            //
+            // Attunement is essential EP infrastructure. Normally the stone
+            // was already placed before entrance decoration. Run the same
+            // idempotent builder once more after the final destructive hole
+            // pass so any unexpected later overwrite is repaired.
+            //
+            if (
+                siteZoneIds.Count > 0 &&
+                !siteZoneIds[0].IsNullOrEmpty()
+            )
+            {
+                The.ZoneManager.AddZonePostBuilder(
+                    siteZoneIds[0],
+                    "SubterraneanSitesEPAttunementStoneBuilder",
+                    "EntranceMode", "1"
                 );
             }
 
@@ -4188,7 +3924,7 @@ namespace SubterraneanSiteDev
 
                 The.ZoneManager.AddZonePostBuilder(
                     zoneId,
-                    "SubterraneanSiteDevEPReservationCleanup"
+                    "SubterraneanSitesEPReservationCleanup"
                 );
             }
         }
@@ -4447,7 +4183,7 @@ namespace XRL.World.Effects
     /// extend this behavior through the shared hooks.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevEPAttunementEffect : Effect
+    public class SubterraneanSitesEPAttunementEffect : Effect
     {
         public string ThemeKey = "";
         public string ResistanceStat = "";
@@ -4465,12 +4201,12 @@ namespace XRL.World.Effects
         // exactly our contribution when the attunement ends.
         public Guid MutationModID = Guid.Empty;
 
-        public SubterraneanSiteDevEPAttunementEffect()
+        public SubterraneanSitesEPAttunementEffect()
         {
             DisplayName = "{{C|extradimensionally attuned}}";
         }
 
-        public SubterraneanSiteDevEPAttunementEffect(
+        public SubterraneanSitesEPAttunementEffect(
             int duration,
             string themeKey,
             string resistanceStat,
@@ -4593,12 +4329,12 @@ namespace XRL.World.Effects
                 base.Object.IsPlayer() &&
                 Duration > 0 &&
                 Duration <
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .DefaultDuration &&
                 Duration %
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .CountdownInterval ==
                     0
             )
@@ -4977,8 +4713,8 @@ namespace XRL.World.Effects
             }
 
             string currentTheme =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSites
+                    .SubterraneanSitesEPAttunementSystem
                     .GetCategory1Theme(
                         Z
                     );
@@ -4995,8 +4731,8 @@ namespace XRL.World.Effects
             }
 
             int expectedMutationLevel =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSites
+                    .SubterraneanSitesEPAttunementSystem
                     .GetAttunementMutationLevel(
                         Z
                     );
@@ -5159,7 +4895,7 @@ namespace XRL.World.Conversations.Parts
     /// player). Re-attuning refreshes the duration. Attuning to a different
     /// Category-1 theme replaces the old EP attunement cleanly.
     /// </summary>
-    public class SubterraneanSiteDevEPAttune : IConversationPart
+    public class SubterraneanSitesEPAttune : IConversationPart
     {
         public string FailTarget = "Unavailable";
 
@@ -5194,20 +4930,20 @@ namespace XRL.World.Conversations.Parts
 
 
             string themeKey =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSites
+                    .SubterraneanSitesEPAttunementSystem
                     .GetCategory1Theme(
                         listener.CurrentZone
                     );
 
 
-            SubterraneanSiteDev
-                .ISubterraneanSiteDevEPAttunementProvider provider;
+            SubterraneanSites
+                .ISubterraneanSitesEPAttunementProvider provider;
 
 
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementSystem
+                !SubterraneanSites
+                    .SubterraneanSitesEPAttunementSystem
                     .TryGetAttunementProvider(
                         listener.CurrentZone,
                         out provider
@@ -5237,8 +4973,8 @@ namespace XRL.World.Conversations.Parts
             GameObject listener,
             Zone zone,
             string themeKey,
-            SubterraneanSiteDev
-                .ISubterraneanSiteDevEPAttunementProvider provider,
+            SubterraneanSites
+                .ISubterraneanSitesEPAttunementProvider provider,
             GetTargetElementEvent E
         )
         {
@@ -5256,9 +4992,9 @@ namespace XRL.World.Conversations.Parts
             }
 
             XRL.World.Effects
-                .SubterraneanSiteDevEPAttunementEffect existing =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                .SubterraneanSitesEPAttunementEffect existing =
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .GetCurrentAttunement(
                             listener
                         );
@@ -5280,20 +5016,20 @@ namespace XRL.World.Conversations.Parts
             )
             {
                 existing.Duration =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .DefaultDuration;
 
                 return;
             }
 
             XRL.World.Effects
-                .SubterraneanSiteDevEPAttunementEffect candidate;
+                .SubterraneanSitesEPAttunementEffect candidate;
 
             string successMessage;
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPAttunementBuildResult result =
+            SubterraneanSites
+                .SubterraneanSitesEPAttunementBuildResult result =
                     provider.TryCreateAttunement(
                         listener,
                         zone,
@@ -5306,8 +5042,8 @@ namespace XRL.World.Conversations.Parts
             //
             if (
                 result ==
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementBuildResult
+                SubterraneanSites
+                    .SubterraneanSitesEPAttunementBuildResult
                     .Cancelled
             )
             {
@@ -5319,8 +5055,8 @@ namespace XRL.World.Conversations.Parts
 
             if (
                 result !=
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementBuildResult
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementBuildResult
                         .Success ||
                 candidate == null
             )
@@ -5357,8 +5093,8 @@ namespace XRL.World.Conversations.Parts
             // attunements by forgetting to set their duration.
             //
             candidate.Duration =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSites
+                    .SubterraneanSitesEPAttunementSystem
                     .DefaultDuration;
 
             //
@@ -5418,7 +5154,7 @@ namespace XRL.World.ZoneBuilders
     /// ownership, may coexist with permissive spills, and claims its two cells
     /// against later discrete EP content.
     /// </summary>
-    public class SubterraneanSiteDevEPAttunementStoneBuilder :
+    public class SubterraneanSitesEPAttunementStoneBuilder :
         ZoneBuilderSandbox
     {
         public int EntranceMode = 0;
@@ -5429,6 +5165,9 @@ namespace XRL.World.ZoneBuilders
         public bool BuildZone(Zone Z)
         {
             if (Z == null)
+                return true;
+            
+            if (HasCompleteStonePair(Z))
                 return true;
 
             List<Cell> candidates = new List<Cell>();
@@ -5458,7 +5197,7 @@ namespace XRL.World.ZoneBuilders
 
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
-                    "SubterraneanSiteDev:EPAttunementStone:" +
+                    "SubterraneanSites:EPAttunementStone:" +
                     Z.ZoneID + ":Entrance:" + EntranceMode.ToString()
                 );
 
@@ -5475,15 +5214,15 @@ namespace XRL.World.ZoneBuilders
 
             GameObject leftStone =
                 GameObjectFactory.Factory.CreateObject(
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .StoneLeftBlueprint
                 );
 
             GameObject rightStone =
                 GameObjectFactory.Factory.CreateObject(
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .StoneRightBlueprint
                 );
 
@@ -5493,8 +5232,8 @@ namespace XRL.World.ZoneBuilders
                     leftStone
                 );
 
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .ClaimCell(
                         Z,
                         chosenLeft
@@ -5507,8 +5246,8 @@ namespace XRL.World.ZoneBuilders
                     rightStone
                 );
 
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .ClaimCell(
                         Z,
                         chosenRight
@@ -5516,6 +5255,44 @@ namespace XRL.World.ZoneBuilders
             }
 
             return true;
+        }
+
+        private bool HasCompleteStonePair(Zone Z)
+        {
+            if (Z == null)
+                return false;
+
+            foreach (Cell left in Z.GetCells())
+            {
+                if (
+                    left == null ||
+                    !left.HasObjectWithBlueprint(
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
+                            .StoneLeftBlueprint
+                    )
+                )
+                {
+                    continue;
+                }
+
+                Cell right =
+                    left.GetCellFromDirection("E");
+
+                if (
+                    right != null &&
+                    right.HasObjectWithBlueprint(
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
+                            .StoneRightBlueprint
+                    )
+                )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool IsValidEntrancePair(
@@ -5529,8 +5306,8 @@ namespace XRL.World.ZoneBuilders
             int holeRadius;
 
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPEntrance
+                !SubterraneanSites
+                    .SubterraneanSitesEPEntrance
                     .TryGetSpec(
                         Z,
                         out center,
@@ -5612,11 +5389,11 @@ namespace XRL.World.ZoneBuilders
             }
 
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                !SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(left) ||
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                !SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(right)
             )
             {
@@ -5627,21 +5404,21 @@ namespace XRL.World.ZoneBuilders
                 return false;
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(Z.ZoneID);
 
             if (
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPPlacement
+                SubterraneanSites
+                    .SubterraneanSitesEPPlacement
                     .IsNearAnyAnchor(
                         left.X,
                         left.Y,
                         anchors,
                         TransitionExclusionRadius
                     ) ||
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPPlacement
+                SubterraneanSites
+                    .SubterraneanSitesEPPlacement
                     .IsNearAnyAnchor(
                         right.X,
                         right.Y,
@@ -5676,8 +5453,8 @@ namespace XRL.World.ZoneBuilders
             // C1 objects, C2 functional footprints, C5 objects, and object-like pools.
             //
             if (
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .IsClaimed(
                         Z,
                         cell
@@ -5728,7 +5505,7 @@ namespace XRL.World.ZoneBuilders
     /// Fire and Electrical currently use nondirectional mode.
     /// Cold currently uses directional mode.
     /// </summary>
-    public class SubterraneanSiteDevEPBoundaryHazardBuilder :
+    public class SubterraneanSitesEPBoundaryHazardBuilder :
         ZoneBuilderSandbox
     {
         public int OuterBorderExclusion = 0;
@@ -5829,8 +5606,8 @@ namespace XRL.World.ZoneBuilders
             ClampSettings();
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -6007,8 +5784,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    !SubterraneanSiteDev
-                        .SubterraneanSiteDevEPGeometry
+                    !SubterraneanSites
+                        .SubterraneanSitesEPGeometry
                         .IsBoundaryPlaceholder(
                             cell
                         )
@@ -6022,8 +5799,8 @@ namespace XRL.World.ZoneBuilders
                 // Never replace a boundary cell already owned by earlier EP content.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -6036,8 +5813,8 @@ namespace XRL.World.ZoneBuilders
 
                 if (
                     AnchorExclusionRadius > 0 &&
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .IsNearAnyAnchor(
                             cell.X,
                             cell.Y,
@@ -6190,8 +5967,8 @@ namespace XRL.World.ZoneBuilders
                 return;
 
             if (
-                !SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                !SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(
                         target
                     )
@@ -6211,8 +5988,8 @@ namespace XRL.World.ZoneBuilders
             // compatible liquid environment.
             //
             if (
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .IsClaimed(
                         Z,
                         target
@@ -6416,8 +6193,8 @@ namespace XRL.World.ZoneBuilders
             //
             // Category 2 now owns the actual wall mount.
             //
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     hazardCell
@@ -6430,8 +6207,8 @@ namespace XRL.World.ZoneBuilders
             // still free to interact with the hazard farther out, while later discrete
             // decoration cannot completely plug the hazard at its mouth.
             //
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     candidate.InteriorX,
@@ -6456,11 +6233,11 @@ namespace XRL.World.Parts
     /// Combat does not prevent use.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevEPExitTeleporter : IPoweredPart
+    public class SubterraneanSitesEPExitTeleporter : IPoweredPart
     {
         public string TargetZone = "";
 
-        public SubterraneanSiteDevEPExitTeleporter()
+        public SubterraneanSitesEPExitTeleporter()
         {
             ChargeUse = 0;
             WorksOnCellContents = true;
@@ -6590,8 +6367,8 @@ namespace XRL.World.Parts
             // attunement stone, which is already outside the large pit.
             GameObject stone =
                 targetZone.FindFirstObject(
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPAttunementSystem
+                    SubterraneanSites
+                        .SubterraneanSitesEPAttunementSystem
                         .StoneLeftBlueprint
                 );
 
@@ -6638,15 +6415,15 @@ namespace XRL.World.ZoneBuilders
     /// permanent zone state and should not survive after the EP has finished
     /// materializing.
     /// </summary>
-    public class SubterraneanSiteDevEPReservationCleanup :
+    public class SubterraneanSitesEPReservationCleanup :
         ZoneBuilderSandbox
     {
         public bool BuildZone(
             Zone Z
         )
         {
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .Clear(Z);
 
             return true;
@@ -6656,7 +6433,7 @@ namespace XRL.World.ZoneBuilders
 
 namespace XRL.World.ZoneBuilders
 {
-    public class SubterraneanSiteDevEPExitTeleporterBuilder :
+    public class SubterraneanSitesEPExitTeleporterBuilder :
     ZoneBuilderSandbox
     {
         public string TargetZone = "";
@@ -6677,8 +6454,8 @@ namespace XRL.World.ZoneBuilders
                 new List<Cell>();
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -6703,8 +6480,8 @@ namespace XRL.World.ZoneBuilders
                 // including object-like pools. Permissive spills remain valid terrain.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -6717,13 +6494,13 @@ namespace XRL.World.ZoneBuilders
                 if (
                     cell.HasObjectWithBlueprint("Pit") ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneLeftBlueprint
                     ) ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneRightBlueprint
                     ) ||
                     cell.HasObjectWithBlueprint("RelicChest")
@@ -6733,8 +6510,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .IsNearAnyAnchor(
                             cell.X,
                             cell.Y,
@@ -6792,9 +6569,9 @@ namespace XRL.World.ZoneBuilders
             teleporter.RemovePart<CatacombsExitTeleporter>();
 
             teleporter.AddPart<
-                SubterraneanSiteDevEPExitTeleporter
+                SubterraneanSitesEPExitTeleporter
             >(
-                new SubterraneanSiteDevEPExitTeleporter
+                new SubterraneanSitesEPExitTeleporter
                 {
                     TargetZone = TargetZone
                 }
@@ -6804,8 +6581,8 @@ namespace XRL.World.ZoneBuilders
                 teleporter
             );
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     destination
@@ -6821,7 +6598,7 @@ namespace XRL.World.ZoneBuilders
     /// mostly circular footprint are overwritten; everything else in the
     /// pre-existing zone is intentionally left alone.
         /// </summary>
-    public class SubterraneanSiteDevEPEntranceScar : ZoneBuilderSandbox
+    public class SubterraneanSitesEPEntranceScar : ZoneBuilderSandbox
     {
         public int CenterX = 40;
         public int CenterY = 12;
@@ -6839,8 +6616,8 @@ namespace XRL.World.ZoneBuilders
             // outside the scar, but its C1/C5 preview content still needs the same
             // shared reservation system.
             //
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .Reset(Z);
 
             if (Radius < 1)
@@ -6882,7 +6659,7 @@ namespace XRL.World.ZoneBuilders
     /// Ported from the proven Subterranean Sites path-hole implementation,
     /// but deliberately does NOT draw a path to the hole.
     /// </summary>
-    public class SubterraneanSiteDevEPHoleBuilder :
+    public class SubterraneanSitesEPHoleBuilder :
         ZoneBuilderSandbox
     {
         public int CenterX = 40;
@@ -7001,7 +6778,7 @@ namespace XRL.World.ZoneBuilders
     }
 }
 
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// Shared, theme-agnostic placement geometry for extradimensional pockets.
@@ -7010,7 +6787,7 @@ namespace SubterraneanSiteDev
     /// floors, or decoration blueprints. Theme code supplies the legal cells;
     /// these helpers only choose/grow spatial patterns and reserve shared areas.
     /// </summary>
-    internal static class SubterraneanSiteDevEPPlacement
+    internal static class SubterraneanSitesEPPlacement
     {
 
         /// <summary>

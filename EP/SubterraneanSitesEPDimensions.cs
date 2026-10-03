@@ -16,7 +16,7 @@ using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using HistoryKit;
 
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// A stable Sub-Sites-facing reference to one of vanilla Qud's generated
@@ -32,7 +32,7 @@ namespace SubterraneanSiteDev
     /// training, faction identity, etc.; this record only points at them and
     /// carries the Sub-Sites theme-slot assignment.
     /// </summary>
-    internal sealed class SubterraneanSiteDevDimensionBinding
+    internal sealed class SubterraneanSitesDimensionBinding
     {
         public int ReportIndex;
         public int ThemeSlot;
@@ -63,7 +63,7 @@ namespace SubterraneanSiteDev
         {
             get
             {
-                return SubterraneanSiteDevDimensionEngine
+                return SubterraneanSitesDimensionEngine
                     .GetThemeSlotLabel(ThemeSlot);
             }
         }
@@ -92,9 +92,9 @@ namespace SubterraneanSiteDev
         }
     }
 
-    internal sealed class SubterraneanSiteDevDimensionEligibility
+    internal sealed class SubterraneanSitesDimensionEligibility
     {
-        public SubterraneanSiteDevDimensionBinding Dimension;
+        public SubterraneanSitesDimensionBinding Dimension;
         public int TargetTier;
 
         public int EligibleMemberCount;
@@ -118,16 +118,16 @@ namespace SubterraneanSiteDev
         public string AvailableTiers = "";
     }
 
-    internal sealed class SubterraneanSiteDevDimensionPairSelection
+    internal sealed class SubterraneanSitesDimensionPairSelection
     {
-        public SubterraneanSiteDevDimensionBinding Primary;
-        public SubterraneanSiteDevDimensionBinding Secondary;
+        public SubterraneanSitesDimensionBinding Primary;
+        public SubterraneanSitesDimensionBinding Secondary;
         public bool PrimaryUsedFallback;
         public bool SecondaryUsedFallback;
         public int EligibleThemeCount;
     }
 
-    internal static class SubterraneanSiteDevEPNameGenerator
+    internal static class SubterraneanSitesEPNameGenerator
     {
         private static readonly string[] RelationshipWords =
         {
@@ -189,13 +189,13 @@ namespace SubterraneanSiteDev
             }
 
             string primaryName =
-                SubterraneanSiteDevDimensionEngine
+                SubterraneanSitesDimensionEngine
                     .GetDimensionNameByThemeKey(
                         primaryThemeKey
                     );
 
             string secondaryName =
-                SubterraneanSiteDevDimensionEngine
+                SubterraneanSitesDimensionEngine
                     .GetDimensionNameByThemeKey(
                         secondaryThemeKey
                     );
@@ -225,7 +225,7 @@ namespace SubterraneanSiteDev
 
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
-                    "SubterraneanSiteDev:EPName:v1:" +
+                    "SubterraneanSites:EPName:v1:" +
                     stableSiteKey + ":" +
                     primaryThemeKey + ":" +
                     secondaryThemeKey
@@ -309,19 +309,19 @@ namespace SubterraneanSiteDev
     /// - EP denizen hostility, merchant normalization, and loot behavior;
     /// - dimension-development diagnostic wishes.
     /// </summary>
-    internal static class SubterraneanSiteDevDimensionEngine
+    internal static class SubterraneanSitesDimensionEngine
     {
         private const string InitializationFlag =
-            "SubterraneanSiteDev_DimensionAssignments_v1";
+            "SubterraneanSites_DimensionAssignments_v1";
 
         private const string SlotStatePrefix =
-            "SubterraneanSiteDev_DimensionSlot_v1_";
+            "SubterraneanSites_DimensionSlot_v1_";
 
         private const string ThemeDimensionNameStatePrefix =
-            "SubterraneanSiteDev_DimensionNameByTheme_v1_";
+            "SubterraneanSites_DimensionNameByTheme_v1_";
 
         private const string AssignmentSeedKey =
-            "SubterraneanSiteDev:DimensionAssignments:v1";
+            "SubterraneanSites:DimensionAssignments:v1";
 
         // v2 rejects faction assignments with no usable creature members and
         // allows a replacement denizen faction for an unusable vanilla
@@ -329,13 +329,13 @@ namespace SubterraneanSiteDev
         // lore. Bumping the state version intentionally rebuilds old test-save
         // faction assignments once.
         private const string FactionInitializationFlag =
-            "SubterraneanSiteDev_DimensionFactions_v2";
+            "SubterraneanSites_DimensionFactions_v2";
 
         private const string FactionStatePrefix =
-            "SubterraneanSiteDev_DimensionFaction_v2_";
+            "SubterraneanSites_DimensionFaction_v2_";
 
         private const string LegacyFactionStatePrefix =
-            "SubterraneanSiteDev_DimensionFaction_v1_";
+            "SubterraneanSites_DimensionFaction_v1_";
 
         // The eleven vanilla dimensional identities map one-to-one onto the
         // eleven implemented EP themes. Slot numbers are persistent save data
@@ -363,42 +363,22 @@ namespace SubterraneanSiteDev
             return ThemeSlotLabels[slot];
         }
 
-        internal static List<ISubterraneanSiteDevEPCategoryProvider>
+        internal static List<ISubterraneanSitesEPCategoryProvider>
             CreateThemeProviderPool()
         {
-            return new List<ISubterraneanSiteDevEPCategoryProvider>
+            return new List<ISubterraneanSitesEPCategoryProvider>
             {
-                new SubterraneanSiteDevEPFireTheme(),
-
-                // Cold
-                null,
-
-                // Electrical
-                null,
-
-                // Ooze
-                null,
-
-                // Fungus
-                null,
-
-                // Light
-                null,
-
-                // Darkness
-                null,
-
-                // Blood
-                null,
-
-                // Portal
-                null,
-
-                // Static
-                null,
-
-                // Village
-                null
+                new SubterraneanSitesEPFireTheme(),
+                new SubterraneanSitesEPColdTheme(),
+                new SubterraneanSitesEPElectricalTheme(),
+                new SubterraneanSitesEPOozeTheme(),
+                new SubterraneanSitesEPLightTheme(),
+                new SubterraneanSitesEPDarknessTheme(),
+                new SubterraneanSitesEPFungusTheme(),
+                new SubterraneanSitesEPBloodTheme(),
+                new SubterraneanSitesEPPortalTheme(),
+                new SubterraneanSitesEPStaticTheme(),
+                new SubterraneanSitesEPVillageTheme()
             };
         }
 
@@ -413,7 +393,7 @@ namespace SubterraneanSiteDev
             if (manager == null)
                 return false;
 
-            List<SubterraneanSiteDevDimensionBinding> dimensions =
+            List<SubterraneanSitesDimensionBinding> dimensions =
                 EnumerateVanillaDimensions(manager, readAssignedSlots: false);
 
             // Current vanilla source establishes exactly 8 ExtraDimensions and
@@ -471,7 +451,7 @@ namespace SubterraneanSiteDev
         }
 
         private static bool EnsureFactionAssignments(
-            List<SubterraneanSiteDevDimensionBinding> dimensions
+            List<SubterraneanSitesDimensionBinding> dimensions
         )
         {
             if (The.Game == null || dimensions == null || dimensions.Count != 11)
@@ -488,7 +468,7 @@ namespace SubterraneanSiteDev
             // keeps the vanilla identity whenever possible while preventing a
             // zero-member faction such as Resheph from making an EP dimension
             // unpopulatable.
-            foreach (SubterraneanSiteDevDimensionBinding dimension in dimensions)
+            foreach (SubterraneanSitesDimensionBinding dimension in dimensions)
             {
                 if (!dimension.IsPsychicFactionDimension)
                     continue;
@@ -510,7 +490,7 @@ namespace SubterraneanSiteDev
             // world's already-observed dimension identities just because the
             // validation rules became stricter. Unusable or duplicate legacy
             // factions are deliberately discarded and rerolled below.
-            foreach (SubterraneanSiteDevDimensionBinding dimension in dimensions)
+            foreach (SubterraneanSitesDimensionBinding dimension in dimensions)
             {
                 if (dimension.IsPsychicFactionDimension)
                     continue;
@@ -538,7 +518,7 @@ namespace SubterraneanSiteDev
             // factions across all eleven dimensions; if the vanilla pool cannot
             // provide eleven unique usable factions, permit a duplicate rather
             // than leave a dimension without denizens.
-            foreach (SubterraneanSiteDevDimensionBinding dimension in dimensions)
+            foreach (SubterraneanSitesDimensionBinding dimension in dimensions)
             {
                 string existing = The.Game.GetStringGameState(
                     GetFactionStateKey(dimension)
@@ -606,14 +586,14 @@ namespace SubterraneanSiteDev
             return GetEligibleFactionMembersByName(factionName).Count > 0;
         }
 
-        internal static List<SubterraneanSiteDevDimensionBinding>
+        internal static List<SubterraneanSitesDimensionBinding>
             GetBindings()
         {
             EnsureAssignments();
 
             DimensionManager manager = GetDimensionManager();
             if (manager == null)
-                return new List<SubterraneanSiteDevDimensionBinding>();
+                return new List<SubterraneanSitesDimensionBinding>();
 
             return EnumerateVanillaDimensions(
                 manager,
@@ -657,7 +637,7 @@ namespace SubterraneanSiteDev
             if (manager == null)
                 return "";
 
-            List<SubterraneanSiteDevDimensionBinding> dimensions =
+            List<SubterraneanSitesDimensionBinding> dimensions =
                 EnumerateVanillaDimensions(
                     manager,
                     readAssignedSlots: false
@@ -674,7 +654,7 @@ namespace SubterraneanSiteDev
         }
 
         private static void PersistThemeDimensionNames(
-            List<SubterraneanSiteDevDimensionBinding> dimensions
+            List<SubterraneanSitesDimensionBinding> dimensions
         )
         {
             if (
@@ -686,7 +666,7 @@ namespace SubterraneanSiteDev
             }
 
             foreach (
-                SubterraneanSiteDevDimensionBinding dimension
+                SubterraneanSitesDimensionBinding dimension
                 in dimensions
             )
             {
@@ -733,7 +713,7 @@ namespace SubterraneanSiteDev
         }
 
         private static string ResolveDimensionDisplayName(
-            SubterraneanSiteDevDimensionBinding dimension
+            SubterraneanSitesDimensionBinding dimension
         )
         {
             if (
@@ -781,13 +761,13 @@ namespace SubterraneanSiteDev
             return name;
         }
 
-        internal static SubterraneanSiteDevDimensionBinding
+        internal static SubterraneanSitesDimensionBinding
             GetBindingByReportIndex(int reportIndex)
         {
-            List<SubterraneanSiteDevDimensionBinding> bindings =
+            List<SubterraneanSitesDimensionBinding> bindings =
                 GetBindings();
 
-            foreach (SubterraneanSiteDevDimensionBinding binding in bindings)
+            foreach (SubterraneanSitesDimensionBinding binding in bindings)
             {
                 if (binding.ReportIndex == reportIndex)
                     return binding;
@@ -796,13 +776,13 @@ namespace SubterraneanSiteDev
             return null;
         }
 
-        internal static SubterraneanSiteDevDimensionBinding
+        internal static SubterraneanSitesDimensionBinding
             GetBindingByThemeKey(string themeKey)
         {
             if (themeKey.IsNullOrEmpty())
                 return null;
 
-            foreach (SubterraneanSiteDevDimensionBinding binding in GetBindings())
+            foreach (SubterraneanSitesDimensionBinding binding in GetBindings())
             {
                 if (string.Equals(
                     binding.ThemeLabel,
@@ -849,7 +829,7 @@ namespace SubterraneanSiteDev
         }
 
         internal static List<GameObjectBlueprint> GetEligibleFactionMembers(
-            SubterraneanSiteDevDimensionBinding dimension
+            SubterraneanSitesDimensionBinding dimension
         )
         {
             return GetEligibleFactionMembersByName(
@@ -858,13 +838,13 @@ namespace SubterraneanSiteDev
         }
 
         /// <summary>
-        /// Development EP selection rule: choose randomly from eligible members
+        /// EP selection rule: choose randomly from eligible members
         /// of the dimension's assigned faction whose blueprint Tier exactly
-        /// matches targetTier. No fallback is used in this test pass; an empty
+        /// matches targetTier. No fallback is used ; an empty
         /// tier is information we want to see.
         /// </summary>
         internal static GameObject CreateFactionCreatureAtTier(
-            SubterraneanSiteDevDimensionBinding dimension,
+            SubterraneanSitesDimensionBinding dimension,
             int targetTier,
             out string sourceDescription
         )
@@ -899,7 +879,7 @@ namespace SubterraneanSiteDev
         /// is crossed" behavior without repeatedly rebuilding test characters.
         /// </summary>
         internal static GameObject CreateFactionCreatureAtLevel(
-            SubterraneanSiteDevDimensionBinding dimension,
+            SubterraneanSitesDimensionBinding dimension,
             int targetLevel,
             out string sourceDescription
         )
@@ -1004,16 +984,16 @@ namespace SubterraneanSiteDev
         ///   5. otherwise the dimension/theme is unavailable and the site roll
         ///      chooses another theme.
         /// </summary>
-        internal static SubterraneanSiteDevDimensionEligibility
+        internal static SubterraneanSitesDimensionEligibility
             EvaluateDimensionForSite(
-                SubterraneanSiteDevDimensionBinding dimension,
+                SubterraneanSitesDimensionBinding dimension,
                 int targetTier
             )
         {
             targetTier = Math.Max(1, Math.Min(8, targetTier));
 
-            SubterraneanSiteDevDimensionEligibility result =
-                new SubterraneanSiteDevDimensionEligibility
+            SubterraneanSitesDimensionEligibility result =
+                new SubterraneanSitesDimensionEligibility
                 {
                     Dimension = dimension,
                     TargetTier = targetTier
@@ -1121,13 +1101,13 @@ namespace SubterraneanSiteDev
             return result;
         }
 
-        internal static List<SubterraneanSiteDevDimensionEligibility>
+        internal static List<SubterraneanSitesDimensionEligibility>
             GetDimensionEligibilityTable(int targetTier)
         {
-            List<SubterraneanSiteDevDimensionEligibility> result =
-                new List<SubterraneanSiteDevDimensionEligibility>();
+            List<SubterraneanSitesDimensionEligibility> result =
+                new List<SubterraneanSitesDimensionEligibility>();
 
-            foreach (SubterraneanSiteDevDimensionBinding binding in GetBindings())
+            foreach (SubterraneanSitesDimensionBinding binding in GetBindings())
             {
                 result.Add(EvaluateDimensionForSite(binding, targetTier));
             }
@@ -1145,7 +1125,7 @@ namespace SubterraneanSiteDev
         /// slot with the dimension whose lowest creature is closest above the
         /// target tier ceiling. This is only the requested generation safety net.
         /// </summary>
-        internal static SubterraneanSiteDevDimensionPairSelection
+        internal static SubterraneanSitesDimensionPairSelection
             SelectDimensionPairForSite(
                 string siteKey,
                 int targetTier
@@ -1153,13 +1133,13 @@ namespace SubterraneanSiteDev
         {
             targetTier = Math.Max(1, Math.Min(8, targetTier));
 
-            List<SubterraneanSiteDevDimensionEligibility> evaluations =
+            List<SubterraneanSitesDimensionEligibility> evaluations =
                 GetDimensionEligibilityTable(targetTier);
 
-            List<SubterraneanSiteDevDimensionEligibility> eligible =
-                new List<SubterraneanSiteDevDimensionEligibility>();
+            List<SubterraneanSitesDimensionEligibility> eligible =
+                new List<SubterraneanSitesDimensionEligibility>();
 
-            foreach (SubterraneanSiteDevDimensionEligibility evaluation in evaluations)
+            foreach (SubterraneanSitesDimensionEligibility evaluation in evaluations)
             {
                 if (evaluation.Eligible)
                     eligible.Add(evaluation);
@@ -1170,27 +1150,27 @@ namespace SubterraneanSiteDev
                 : siteKey;
 
             int seed = XRLCore.Core.Game.GetWorldSeed(
-                "SubterraneanSiteDev:EPDimensionPair:v2:" +
+                "SubterraneanSites:EPDimensionPair:v2:" +
                 stableSiteKey + ":T" + targetTier.ToString()
             );
 
             System.Random rng = new System.Random(seed);
 
-            SubterraneanSiteDevDimensionPairSelection result =
-                new SubterraneanSiteDevDimensionPairSelection();
+            SubterraneanSitesDimensionPairSelection result =
+                new SubterraneanSitesDimensionPairSelection();
 
             result.EligibleThemeCount = eligible.Count;
 
-            SubterraneanSiteDevDimensionEligibility primaryEval = null;
-            SubterraneanSiteDevDimensionEligibility secondaryEval = null;
+            SubterraneanSitesDimensionEligibility primaryEval = null;
+            SubterraneanSitesDimensionEligibility secondaryEval = null;
 
             if (eligible.Count >= 2)
             {
                 int primaryIndex = rng.Next(eligible.Count);
                 primaryEval = eligible[primaryIndex];
 
-                List<SubterraneanSiteDevDimensionEligibility> remaining =
-                    new List<SubterraneanSiteDevDimensionEligibility>(eligible);
+                List<SubterraneanSitesDimensionEligibility> remaining =
+                    new List<SubterraneanSitesDimensionEligibility>(eligible);
                 remaining.RemoveAt(primaryIndex);
 
                 secondaryEval = remaining[rng.Next(remaining.Count)];
@@ -1224,18 +1204,18 @@ namespace SubterraneanSiteDev
             return result;
         }
 
-        private static SubterraneanSiteDevDimensionEligibility
+        private static SubterraneanSitesDimensionEligibility
             PickClosestFallback(
-                List<SubterraneanSiteDevDimensionEligibility> evaluations,
-                SubterraneanSiteDevDimensionBinding exclude,
+                List<SubterraneanSitesDimensionEligibility> evaluations,
+                SubterraneanSitesDimensionBinding exclude,
                 System.Random rng
             )
         {
             int bestDistance = int.MaxValue;
-            List<SubterraneanSiteDevDimensionEligibility> best =
-                new List<SubterraneanSiteDevDimensionEligibility>();
+            List<SubterraneanSitesDimensionEligibility> best =
+                new List<SubterraneanSitesDimensionEligibility>();
 
-            foreach (SubterraneanSiteDevDimensionEligibility evaluation in evaluations)
+            foreach (SubterraneanSitesDimensionEligibility evaluation in evaluations)
             {
                 if (evaluation == null ||
                     evaluation.Dimension == null ||
@@ -1277,14 +1257,14 @@ namespace SubterraneanSiteDev
         /// equipment replacement, or placement.
         /// </summary>
         internal static GameObject CreateDenizenForSite(
-            SubterraneanSiteDevDimensionBinding dimension,
+            SubterraneanSitesDimensionBinding dimension,
             int targetTier,
             out string sourceDescription
         )
         {
             targetTier = Math.Max(1, Math.Min(8, targetTier));
 
-            SubterraneanSiteDevDimensionEligibility evaluation =
+            SubterraneanSitesDimensionEligibility evaluation =
                 EvaluateDimensionForSite(dimension, targetTier);
 
             List<GameObjectBlueprint> members =
@@ -1329,14 +1309,8 @@ namespace SubterraneanSiteDev
                     " for T" + targetTier.ToString();
                 scaleUp = true;
             }
-            else
+           else
             {
-                if (!evaluation.Eligible)
-                {
-                    sourceDescription = evaluation.Rule;
-                    return null;
-                }
-
                 foreach (GameObjectBlueprint blueprint in members)
                 {
                     if (blueprint.GetStat("Level").Value ==
@@ -1346,12 +1320,25 @@ namespace SubterraneanSiteDev
                     }
                 }
 
-                selectionRule = evaluation.Tier8Override
-                    ? "T8 all-themes native fallback L" +
-                      evaluation.LowestAvailableLevel.ToString()
-                    : "native higher within tolerance L" +
-                      evaluation.LowestAvailableLevel.ToString();
-            }
+                if (evaluation.Tier8Override)
+                {
+                    selectionRule =
+                        "T8 all-themes native fallback L" +
+                        evaluation.LowestAvailableLevel.ToString();
+                }
+                else if (evaluation.Eligible)
+                {
+                    selectionRule =
+                        "native higher within tolerance L" +
+                        evaluation.LowestAvailableLevel.ToString();
+                }
+                else
+                {
+                    selectionRule =
+                        "native higher emergency fallback L" +
+                        evaluation.LowestAvailableLevel.ToString();
+                }
+            }       
 
             if (candidates.Count == 0)
             {
@@ -1374,15 +1361,15 @@ namespace SubterraneanSiteDev
             int originalLevel = creature.Stat("Level");
 
             creature.SetIntProperty(
-                "SubterraneanSiteDevEPOriginalTier",
+                "SubterraneanSitesEPOriginalTier",
                 selected.Tier
             );
             creature.SetIntProperty(
-                "SubterraneanSiteDevEPOriginalLevel",
+                "SubterraneanSitesEPOriginalLevel",
                 originalLevel
             );
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPSelectionRule",
+                "SubterraneanSitesEPSelectionRule",
                 selectionRule
             );
 
@@ -1724,19 +1711,19 @@ namespace SubterraneanSiteDev
             }
 
             creature.SetIntProperty(
-                "SubterraneanSiteDevEPMutationBudget",
+                "SubterraneanSitesEPMutationBudget",
                 initialBudget
             );
             creature.SetIntProperty(
-                "SubterraneanSiteDevEPMutationSpent",
+                "SubterraneanSitesEPMutationSpent",
                 initialBudget - remaining
             );
             creature.SetIntProperty(
-                "SubterraneanSiteDevEPMutationRankCap",
+                "SubterraneanSitesEPMutationRankCap",
                 rankCap
             );
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPSignatureMutation",
+                "SubterraneanSitesEPSignatureMutation",
                 signatureClass ?? ""
             );
         }
@@ -1776,7 +1763,7 @@ namespace SubterraneanSiteDev
 
             creature.RequirePart<
                 XRL.World.Parts
-                    .SubterraneanSiteDevEPDenizenLoot
+                    .SubterraneanSitesEPDenizenLoot
             >();
 
 
@@ -1838,7 +1825,7 @@ namespace SubterraneanSiteDev
         /// </summary>
         internal static bool ApplyDimensionToItem(
             GameObject item,
-            SubterraneanSiteDevDimensionBinding dimension
+            SubterraneanSitesDimensionBinding dimension
         )
         {
             if (item == null || dimension == null)
@@ -1925,7 +1912,7 @@ namespace SubterraneanSiteDev
         /// </summary>
         internal static void ApplyExtradimensionalIdentity(
             GameObject creature,
-            SubterraneanSiteDevDimensionBinding dimension
+            SubterraneanSitesDimensionBinding dimension
         )
         {
             if (
@@ -2091,12 +2078,12 @@ namespace SubterraneanSiteDev
             }
 
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPDimensionSecretID",
+                "SubterraneanSitesEPDimensionSecretID",
                 secretID
             );
 
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPTheme",
+                "SubterraneanSitesEPTheme",
                 dimension.ThemeLabel
             );
         }
@@ -2123,7 +2110,7 @@ namespace SubterraneanSiteDev
                 return;
             }
 
-            SubterraneanSiteDevDimensionBinding dimension =
+            SubterraneanSitesDimensionBinding dimension =
                 GetBindingByThemeKey(
                     themeKey
                 );
@@ -2157,7 +2144,7 @@ namespace SubterraneanSiteDev
             }
 
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPDecorationFaction",
+                "SubterraneanSitesEPDecorationFaction",
                 dimension.FactionName ?? ""
             );
         }
@@ -2315,7 +2302,7 @@ namespace SubterraneanSiteDev
         /// </summary>
         internal static void ApplyDimensionIdentityAndAdaptation(
             GameObject creature,
-            SubterraneanSiteDevDimensionBinding dimension,
+            SubterraneanSitesDimensionBinding dimension,
             string denizenProviderType
         )
         {
@@ -2339,22 +2326,22 @@ namespace SubterraneanSiteDev
             );
 
 
-            ISubterraneanSiteDevEPDenizenAdaptationProvider
+            ISubterraneanSitesEPDenizenAdaptationProvider
                 denizenProvider =
                     null;
 
 
-            SubterraneanSiteDevEPProviderFactory
+            SubterraneanSitesEPProviderFactory
                 .TryCreate(
                     denizenProviderType,
                     out denizenProvider
                 );
 
 
-            ISubterraneanSiteDevEPSignatureMutationProvider
+            ISubterraneanSitesEPSignatureMutationProvider
                 signatureProvider =
                     denizenProvider
-                        as ISubterraneanSiteDevEPSignatureMutationProvider;
+                        as ISubterraneanSitesEPSignatureMutationProvider;
 
 
             string signatureClass =
@@ -2417,19 +2404,19 @@ namespace SubterraneanSiteDev
 
 
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPTheme",
+                "SubterraneanSitesEPTheme",
                 dimension.ThemeLabel
             );
 
             creature.SetStringProperty(
-                "SubterraneanSiteDevEPDenizenFaction",
+                "SubterraneanSitesEPDenizenFaction",
                 dimension.FactionName ?? ""
             );
         }
 
         private static void ConfigureMerchantStock(
             GameObject creature,
-            SubterraneanSiteDevDimensionBinding dimension
+            SubterraneanSitesDimensionBinding dimension
         )
         {
             if (
@@ -2460,9 +2447,9 @@ namespace SubterraneanSiteDev
             //
             // Keep all future vanilla restocks constrained too.
             //
-            SubterraneanSiteDevEPMerchantStockController controller =
+            SubterraneanSitesEPMerchantStockController controller =
                 creature.RequirePart<
-                    SubterraneanSiteDevEPMerchantStockController
+                    SubterraneanSitesEPMerchantStockController
                 >();
 
 
@@ -2485,7 +2472,7 @@ namespace SubterraneanSiteDev
             //
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
-                    "SubterraneanSiteDev:EPMerchantInitialStock:" +
+                    "SubterraneanSites:EPMerchantInitialStock:" +
                     creature.ID + ":" +
                     dimension.ThemeLabel
                 );
@@ -2497,7 +2484,7 @@ namespace SubterraneanSiteDev
                 );
 
 
-            SubterraneanSiteDevEPMerchantStockControl
+            SubterraneanSitesEPMerchantStockControl
                 .TrimAndDimensionalizeStock(
                     creature,
                     dimension.ThemeLabel,
@@ -2538,14 +2525,14 @@ namespace SubterraneanSiteDev
                 as DimensionManager;
         }
 
-        private static List<SubterraneanSiteDevDimensionBinding>
+        private static List<SubterraneanSitesDimensionBinding>
             EnumerateVanillaDimensions(
                 DimensionManager manager,
                 bool readAssignedSlots
             )
         {
-            List<SubterraneanSiteDevDimensionBinding> result =
-                new List<SubterraneanSiteDevDimensionBinding>();
+            List<SubterraneanSitesDimensionBinding> result =
+                new List<SubterraneanSitesDimensionBinding>();
 
             if (manager == null)
                 return result;
@@ -2563,8 +2550,8 @@ namespace SubterraneanSiteDev
                     if (extra == null)
                         continue;
 
-                    SubterraneanSiteDevDimensionBinding binding =
-                        new SubterraneanSiteDevDimensionBinding
+                    SubterraneanSitesDimensionBinding binding =
+                        new SubterraneanSitesDimensionBinding
                         {
                             ReportIndex = reportIndex++,
                             SecretID = extra.SecretID,
@@ -2599,8 +2586,8 @@ namespace SubterraneanSiteDev
                     if (psychic == null)
                         continue;
 
-                    SubterraneanSiteDevDimensionBinding binding =
-                        new SubterraneanSiteDevDimensionBinding
+                    SubterraneanSitesDimensionBinding binding =
+                        new SubterraneanSitesDimensionBinding
                         {
                             ReportIndex = reportIndex++,
                             SecretID = psychic.dimensionSecretID,
@@ -2642,7 +2629,7 @@ namespace SubterraneanSiteDev
         }
 
         private static int ReadAssignedSlot(
-            SubterraneanSiteDevDimensionBinding binding
+            SubterraneanSitesDimensionBinding binding
         )
         {
             if (The.Game == null || binding == null)
@@ -2663,7 +2650,7 @@ namespace SubterraneanSiteDev
         }
 
         private static string ReadAssignedFaction(
-            SubterraneanSiteDevDimensionBinding binding
+            SubterraneanSitesDimensionBinding binding
         )
         {
             if (The.Game == null || binding == null)
@@ -2673,7 +2660,7 @@ namespace SubterraneanSiteDev
         }
 
         private static string GetFactionStateKey(
-            SubterraneanSiteDevDimensionBinding binding
+            SubterraneanSitesDimensionBinding binding
         )
         {
             string identity = binding == null
@@ -2692,7 +2679,7 @@ namespace SubterraneanSiteDev
         }
 
         private static string GetLegacyFactionStateKey(
-            SubterraneanSiteDevDimensionBinding binding
+            SubterraneanSitesDimensionBinding binding
         )
         {
             string identity = binding == null
@@ -2711,7 +2698,7 @@ namespace SubterraneanSiteDev
         }
 
         private static string GetSlotStateKey(
-            SubterraneanSiteDevDimensionBinding binding
+            SubterraneanSitesDimensionBinding binding
         )
         {
             string identity = binding == null
@@ -2747,18 +2734,18 @@ namespace SubterraneanSiteDev
     /// Generated test objects are reported and immediately destroyed.
     /// </summary>
     [HasWishCommand]
-    public static class SubterraneanSiteDevDimensionWishes
+    public static class SubterraneanSitesDimensionWishes
     {
         [WishCommand("subsites:dimensions", null)]
         public static void ShowDimensions()
         {
-            List<SubterraneanSiteDevDimensionBinding> bindings =
-                SubterraneanSiteDevDimensionEngine.GetBindings();
+            List<SubterraneanSitesDimensionBinding> bindings =
+                SubterraneanSitesDimensionEngine.GetBindings();
 
             if (bindings.Count == 0)
             {
                 Popup.Show(
-                    "Subterranean Site Dev\n\n" +
+                    "Subterranean Sites\n\n" +
                     "DimensionManager is not available yet."
                 );
                 return;
@@ -2766,14 +2753,14 @@ namespace SubterraneanSiteDev
 
             StringBuilder text = new StringBuilder();
 
-            text.AppendLine("Subterranean Site Dev - dimensions");
+            text.AppendLine("Subterranean Sites - dimensions");
             text.AppendLine();
             text.AppendLine(
                 "Index | theme slot | vanilla kind | dimension | denizen faction"
             );
             text.AppendLine();
 
-            foreach (SubterraneanSiteDevDimensionBinding binding in bindings)
+            foreach (SubterraneanSitesDimensionBinding binding in bindings)
             {
                 text.Append(binding.ReportIndex.ToString("00"));
                 text.Append(" | ");
@@ -2879,14 +2866,14 @@ namespace SubterraneanSiteDev
             if (count > 50)
                 count = 50;
 
-            SubterraneanSiteDevDimensionBinding binding =
-                SubterraneanSiteDevDimensionEngine
+            SubterraneanSitesDimensionBinding binding =
+                SubterraneanSitesDimensionEngine
                     .GetBindingByReportIndex(dimensionIndex);
 
             if (binding == null)
             {
                 Popup.Show(
-                    "Subterranean Site Dev\n\n" +
+                    "Subterranean Sites\n\n" +
                     "No vanilla dimension exists at index " +
                     dimensionIndex.ToString() + ".\n\n" +
                     "Use subsites:dimensions first."
@@ -2897,7 +2884,7 @@ namespace SubterraneanSiteDev
             StringBuilder text = new StringBuilder();
 
             text.AppendLine(
-                "Subterranean Site Dev - dimension faction pull"
+                "Subterranean Sites - dimension faction pull"
             );
             text.AppendLine();
             text.AppendLine(
@@ -2925,7 +2912,7 @@ namespace SubterraneanSiteDev
 
                 if (tierMode)
                 {
-                    creature = SubterraneanSiteDevDimensionEngine
+                    creature = SubterraneanSitesDimensionEngine
                         .CreateFactionCreatureAtTier(
                             binding,
                             requestedValue,
@@ -2934,7 +2921,7 @@ namespace SubterraneanSiteDev
                 }
                 else
                 {
-                    creature = SubterraneanSiteDevDimensionEngine
+                    creature = SubterraneanSitesDimensionEngine
                         .CreateFactionCreatureAtLevel(
                             binding,
                             requestedValue,
@@ -3015,8 +3002,8 @@ namespace SubterraneanSiteDev
         {
             int targetTier = int.Parse(match.Groups[1].Value);
 
-            List<SubterraneanSiteDevDimensionEligibility> evaluations =
-                SubterraneanSiteDevDimensionEngine
+            List<SubterraneanSitesDimensionEligibility> evaluations =
+                SubterraneanSitesDimensionEngine
                     .GetDimensionEligibilityTable(targetTier);
 
             StringBuilder text = new StringBuilder();
@@ -3025,22 +3012,22 @@ namespace SubterraneanSiteDev
             );
             text.AppendLine(
                 "Tier level band: L" +
-                SubterraneanSiteDevDimensionEngine
+                SubterraneanSitesDimensionEngine
                     .GetMinimumLevelForTier(targetTier).ToString() +
                 "-" +
-                SubterraneanSiteDevDimensionEngine
+                SubterraneanSitesDimensionEngine
                     .GetMaximumLevelForTier(targetTier).ToString()
             );
             text.AppendLine();
 
             int eligibleCount = 0;
 
-            foreach (SubterraneanSiteDevDimensionEligibility evaluation in evaluations)
+            foreach (SubterraneanSitesDimensionEligibility evaluation in evaluations)
             {
                 if (evaluation.Eligible)
                     eligibleCount++;
 
-                SubterraneanSiteDevDimensionBinding d = evaluation.Dimension;
+                SubterraneanSitesDimensionBinding d = evaluation.Dimension;
 
                 text.Append(d.ReportIndex.ToString("00"));
                 text.Append(" | ");
@@ -3073,7 +3060,7 @@ namespace SubterraneanSiteDev
                 "Rule: exact tier; else nearest lower tier and scale upward; " +
                 "if no creature exists at/below the target tier, allow the " +
                 "faction's lowest native creature only when it is within +" +
-                SubterraneanSiteDevDimensionEngine.MaximumNativeOverlevel.ToString() +
+                SubterraneanSitesDimensionEngine.MaximumNativeOverlevel.ToString() +
                 " levels of the target tier ceiling. T8 makes every dimension " +
                 "with a usable denizen faction available."
             );
@@ -3082,75 +3069,6 @@ namespace SubterraneanSiteDev
             return true;
         }
 
-        [WishCommand(
-            null,
-            null,
-            Regex = @"^subsites:pair:\s*([1-8])(?::(\d+))?$"
-        )]
-        public static bool RollDimensionPairs(Match match)
-        {
-            int targetTier = int.Parse(match.Groups[1].Value);
-            int count = 10;
-
-            if (match.Groups[2].Success)
-                int.TryParse(match.Groups[2].Value, out count);
-
-            count = Math.Max(1, Math.Min(30, count));
-
-            StringBuilder text = new StringBuilder();
-            text.AppendLine(
-                "EP dimension-pair test - T" + targetTier.ToString()
-            );
-            text.AppendLine();
-
-            for (int i = 0; i < count; i++)
-            {
-                SubterraneanSiteDevDimensionPairSelection pair =
-                    SubterraneanSiteDevDimensionEngine
-                        .SelectDimensionPairForSite(
-                            "WishPair:" + i.ToString(),
-                            targetTier
-                        );
-
-                text.Append((i + 1).ToString());
-                text.Append(". ");
-
-                if (pair.Primary == null || pair.Secondary == null)
-                {
-                    text.AppendLine("FAILED TO SELECT TWO DIMENSIONS");
-                    continue;
-                }
-
-                text.Append(
-                    pair.Primary.ThemeLabel +
-                    " [" + pair.Primary.FactionName + "]"
-                );
-                if (pair.PrimaryUsedFallback)
-                    text.Append(" {FALLBACK}");
-
-                text.Append(" + ");
-
-                text.Append(
-                    pair.Secondary.ThemeLabel +
-                    " [" + pair.Secondary.FactionName + "]"
-                );
-                if (pair.SecondaryUsedFallback)
-                    text.Append(" {FALLBACK}");
-
-                text.Append(" | eligible pool ");
-                text.AppendLine(pair.EligibleThemeCount.ToString());
-            }
-
-            text.AppendLine();
-            text.AppendLine(
-                "Eligible pool = how many of the 11 dimensions can legally " +
-                "supply denizens at this EP tier before the Primary/Secondary " +
-                "pair is rolled."
-            );
-
-            Popup.Show(text.ToString());
-            return true;
-        }
 
         [WishCommand(
             null,
@@ -3168,8 +3086,8 @@ namespace SubterraneanSiteDev
 
             count = Math.Max(1, Math.Min(30, count));
 
-            SubterraneanSiteDevDimensionBinding binding =
-                SubterraneanSiteDevDimensionEngine
+            SubterraneanSitesDimensionBinding binding =
+                SubterraneanSitesDimensionEngine
                     .GetBindingByReportIndex(dimensionIndex);
 
             if (binding == null)
@@ -3178,8 +3096,8 @@ namespace SubterraneanSiteDev
                 return true;
             }
 
-            SubterraneanSiteDevDimensionEligibility evaluation =
-                SubterraneanSiteDevDimensionEngine
+            SubterraneanSitesDimensionEligibility evaluation =
+                SubterraneanSitesDimensionEngine
                     .EvaluateDimensionForSite(binding, targetTier);
 
             StringBuilder text = new StringBuilder();
@@ -3213,7 +3131,7 @@ namespace SubterraneanSiteDev
             {
                 string source;
                 GameObject creature =
-                    SubterraneanSiteDevDimensionEngine
+                    SubterraneanSitesDimensionEngine
                         .CreateDenizenForSite(
                             binding,
                             targetTier,
@@ -3307,18 +3225,18 @@ namespace SubterraneanSiteDev
                 foreach (GameObject obj in cell.GetObjects())
                 {
                     if (obj == null ||
-                        !obj.HasStringProperty("SubterraneanSiteDevEPTheme"))
+                        !obj.HasStringProperty("SubterraneanSitesEPTheme"))
                     {
                         continue;
                     }
 
                     count++;
                     string theme = obj.GetStringProperty(
-                        "SubterraneanSiteDevEPTheme",
+                        "SubterraneanSitesEPTheme",
                         "?"
                     );
                     string faction = obj.GetStringProperty(
-                        "SubterraneanSiteDevEPDenizenFaction",
+                        "SubterraneanSitesEPDenizenFaction",
                         "?"
                     );
 
@@ -3332,13 +3250,13 @@ namespace SubterraneanSiteDev
                     text.Append(" | T");
                     text.Append(
                         obj.GetIntProperty(
-                            "SubterraneanSiteDevEPOriginalTier",
+                            "SubterraneanSitesEPOriginalTier",
                             obj.GetBlueprint().Tier
                         ).ToString()
                     );
                     text.Append(" L");
                     int originalLevel = obj.GetIntProperty(
-                        "SubterraneanSiteDevEPOriginalLevel",
+                        "SubterraneanSitesEPOriginalLevel",
                         obj.Stat("Level")
                     );
                     text.Append(originalLevel.ToString());
@@ -3354,21 +3272,21 @@ namespace SubterraneanSiteDev
                     text.Append(" | MP ");
                     text.Append(
                         obj.GetIntProperty(
-                            "SubterraneanSiteDevEPMutationSpent",
+                            "SubterraneanSitesEPMutationSpent",
                             0
                         ).ToString()
                     );
                     text.Append("/");
                     text.Append(
                         obj.GetIntProperty(
-                            "SubterraneanSiteDevEPMutationBudget",
+                            "SubterraneanSitesEPMutationBudget",
                             0
                         ).ToString()
                     );
                     text.Append(" cap ");
                     text.Append(
                         obj.GetIntProperty(
-                            "SubterraneanSiteDevEPMutationRankCap",
+                            "SubterraneanSitesEPMutationRankCap",
                             0
                         ).ToString()
                     );
@@ -3415,7 +3333,7 @@ namespace XRL.World.Parts
     /// initial EP conversion, including merchant restocks.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevEPDenizenLoot :
+    public class SubterraneanSitesEPDenizenLoot :
         ExtradimensionalLoot
     {
         public override bool FireEvent(
@@ -3430,8 +3348,8 @@ namespace XRL.World.Parts
             {
                 try
                 {
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevDimensionEngine
+                    SubterraneanSites
+                        .SubterraneanSitesDimensionEngine
                         .BindDenizenLootToExistence(
                             ParentObject
                         );
@@ -3482,7 +3400,7 @@ namespace XRL.World.ZoneBuilders
     /// items. The ordinary vanilla chest roll remains responsible for deciding
     /// what the player might receive.
     /// </summary>
-    public class SubterraneanSiteDevEPChestBuilder : ZoneBuilderSandbox
+    public class SubterraneanSitesEPChestBuilder : ZoneBuilderSandbox
     {
         public int Tier = 1;
 
@@ -3505,18 +3423,18 @@ namespace XRL.World.ZoneBuilders
                     )
                 );
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding primary =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding primary =
+                    SubterraneanSites
+                        .SubterraneanSitesDimensionEngine
                         .GetBindingByThemeKey(
                             PrimaryThemeKey
                         );
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding secondary =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding secondary =
+                    SubterraneanSites
+                        .SubterraneanSitesDimensionEngine
                         .GetBindingByThemeKey(
                             SecondaryThemeKey
                         );
@@ -3661,8 +3579,8 @@ namespace XRL.World.ZoneBuilders
             if (container == null)
                 return true;
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     destination
@@ -3673,10 +3591,10 @@ namespace XRL.World.ZoneBuilders
 
         private bool KeepOneAndDimensionalizeContents(
             GameObject container,
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding primary,
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding secondary
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding primary,
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding secondary
         )
         {
             if (container == null)
@@ -3751,8 +3669,8 @@ namespace XRL.World.ZoneBuilders
                 item.Release();
             }
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding chosen;
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding chosen;
 
             if (primary == null)
             {
@@ -3776,8 +3694,8 @@ namespace XRL.World.ZoneBuilders
                         : secondary;
             }
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionEngine
                 .ApplyDimensionToItem(
                     kept,
                     chosen
@@ -3795,8 +3713,8 @@ namespace XRL.World.ZoneBuilders
                 new List<Cell>();
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -3822,8 +3740,8 @@ namespace XRL.World.ZoneBuilders
                 // is not an ownership test.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -3836,13 +3754,13 @@ namespace XRL.World.ZoneBuilders
                 if (
                     cell.HasObjectWithBlueprint("Pit") ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneLeftBlueprint
                     ) ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneRightBlueprint
                     )
                 )
@@ -3851,8 +3769,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .IsNearAnyAnchor(
                             cell.X,
                             cell.Y,
@@ -3879,7 +3797,7 @@ namespace XRL.World.ZoneBuilders
         }
     }
 
-    public class SubterraneanSiteDevEPRelicBuilder : ZoneBuilderSandbox
+    public class SubterraneanSitesEPRelicBuilder : ZoneBuilderSandbox
     {
         private const int TransitionExclusionRadius = 4;
         public int Tier = 1;
@@ -3894,12 +3812,12 @@ namespace XRL.World.ZoneBuilders
 
             Tier = Math.Max(1, Math.Min(8, Tier));
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding primary =
-                SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+            SubterraneanSites.SubterraneanSitesDimensionBinding primary =
+                SubterraneanSites.SubterraneanSitesDimensionEngine
                     .GetBindingByThemeKey(PrimaryThemeKey);
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding secondary =
-                SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+            SubterraneanSites.SubterraneanSitesDimensionBinding secondary =
+                SubterraneanSites.SubterraneanSitesDimensionEngine
                     .GetBindingByThemeKey(SecondaryThemeKey);
 
             if (primary == null && secondary == null)
@@ -3925,7 +3843,7 @@ namespace XRL.World.ZoneBuilders
             if (relic == null)
                 return true;
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding chosen;
+            SubterraneanSites.SubterraneanSitesDimensionBinding chosen;
 
             if (primary == null)
             {
@@ -3947,8 +3865,8 @@ namespace XRL.World.ZoneBuilders
                 new List<Cell>();
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -3973,8 +3891,8 @@ namespace XRL.World.ZoneBuilders
                 // The relic chest is discrete shared content.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -3994,8 +3912,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .IsNearAnyAnchor(
                             cell.X,
                             cell.Y,
@@ -4045,8 +3963,8 @@ namespace XRL.World.ZoneBuilders
                 relicChest
             );
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     destination
@@ -4086,7 +4004,7 @@ namespace XRL.World.ZoneBuilders
                         continue;
                     }
 
-                    SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding itemDimension;
+                    SubterraneanSites.SubterraneanSitesDimensionBinding itemDimension;
 
                     if (primary == null)
                     {
@@ -4104,7 +4022,7 @@ namespace XRL.World.ZoneBuilders
                                 : secondary;
                     }
 
-                    SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+                    SubterraneanSites.SubterraneanSitesDimensionEngine
                         .ApplyDimensionToItem(
                             item,
                             itemDimension
@@ -4117,7 +4035,7 @@ namespace XRL.World.ZoneBuilders
     }
 
 
-    public class SubterraneanSiteDevEPHeroBuilder : ZoneBuilderSandbox
+    public class SubterraneanSitesEPHeroBuilder : ZoneBuilderSandbox
     {
         public int Tier = 1;
 
@@ -4133,19 +4051,19 @@ namespace XRL.World.ZoneBuilders
 
             Tier = Math.Max(1, Math.Min(8, Tier));
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding primary =
-                SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+            SubterraneanSites.SubterraneanSitesDimensionBinding primary =
+                SubterraneanSites.SubterraneanSitesDimensionEngine
                     .GetBindingByThemeKey(PrimaryThemeKey);
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding secondary =
-                SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+            SubterraneanSites.SubterraneanSitesDimensionBinding secondary =
+                SubterraneanSites.SubterraneanSitesDimensionEngine
                     .GetBindingByThemeKey(SecondaryThemeKey);
 
             if (primary == null && secondary == null)
                 return true;
 
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding chosen;
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding alternate;
+            SubterraneanSites.SubterraneanSitesDimensionBinding chosen;
+            SubterraneanSites.SubterraneanSitesDimensionBinding alternate;
 
             if (primary == null)
             {
@@ -4172,7 +4090,7 @@ namespace XRL.World.ZoneBuilders
             string sourceDescription;
 
             GameObject hero =
-                SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+                SubterraneanSites.SubterraneanSitesDimensionEngine
                     .CreateDenizenForSite(
                         chosen,
                         Tier,
@@ -4187,7 +4105,7 @@ namespace XRL.World.ZoneBuilders
                 chosen = alternate;
 
                 hero =
-                    SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+                    SubterraneanSites.SubterraneanSitesDimensionEngine
                         .CreateDenizenForSite(
                             chosen,
                             Tier,
@@ -4237,8 +4155,8 @@ namespace XRL.World.ZoneBuilders
                 denizenProviderType =
                     The.ZoneManager.GetZoneProperty(
                         Z.ZoneID,
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPShuffledTheme
+                        SubterraneanSites
+                            .SubterraneanSitesEPShuffledTheme
                             .PrimaryDenizenProviderTypeProperty
                     ) as string ?? "";
             }
@@ -4253,8 +4171,8 @@ namespace XRL.World.ZoneBuilders
                 denizenProviderType =
                     The.ZoneManager.GetZoneProperty(
                         Z.ZoneID,
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPShuffledTheme
+                        SubterraneanSites
+                            .SubterraneanSitesEPShuffledTheme
                             .SecondaryDenizenProviderTypeProperty
                     ) as string ?? "";
             }
@@ -4262,7 +4180,7 @@ namespace XRL.World.ZoneBuilders
             // Run this AFTER HeroMaker so the mutation budget sees the promoted
             // level, hero-added inventory participates in dimensional loot rules,
             // and EP hostility/adaptation is the final behavioral pass.
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+            SubterraneanSites.SubterraneanSitesDimensionEngine
                 .ApplyDimensionIdentityAndAdaptation(
                     hero,
                     chosen,
@@ -4270,7 +4188,7 @@ namespace XRL.World.ZoneBuilders
                 );
                 
             hero.SetIntProperty(
-                "SubterraneanSiteDevEPHero",
+                "SubterraneanSitesEPHero",
                 1
             );
 
@@ -4292,8 +4210,8 @@ namespace XRL.World.ZoneBuilders
 
             hero.MakeActive();
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPReservations
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
                 .ClaimCell(
                     Z,
                     destination
@@ -4311,8 +4229,8 @@ namespace XRL.World.ZoneBuilders
                 new List<Cell>();
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -4329,8 +4247,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -4342,21 +4260,21 @@ namespace XRL.World.ZoneBuilders
 
                 if (cell.HasObjectWithBlueprint("Pit") ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneLeftBlueprint
                     ) ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneRightBlueprint
                     ))
                 {
                     continue;
                 }
 
-                if (SubterraneanSiteDev
-                    .SubterraneanSiteDevEPPlacement
+                if (SubterraneanSites
+                    .SubterraneanSitesEPPlacement
                     .IsNearAnyAnchor(
                         cell.X,
                         cell.Y,
@@ -4394,7 +4312,7 @@ namespace XRL.World.ZoneBuilders
     /// the primary theme, the secondary dimension remains part of the pocket's
     /// denizen population.
     /// </summary>
-    public class SubterraneanSiteDevEPDenizenBuilder : ZoneBuilderSandbox
+    public class SubterraneanSitesEPDenizenBuilder : ZoneBuilderSandbox
     {
         public int Tier = 1;
         public int MinDenizensPerTheme = 2;
@@ -4415,8 +4333,8 @@ namespace XRL.World.ZoneBuilders
             string primaryDenizenProviderType =
                 The.ZoneManager.GetZoneProperty(
                     Z.ZoneID,
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPShuffledTheme
+                    SubterraneanSites
+                        .SubterraneanSitesEPShuffledTheme
                         .PrimaryDenizenProviderTypeProperty
                 ) as string ?? "";
 
@@ -4424,8 +4342,8 @@ namespace XRL.World.ZoneBuilders
             string secondaryDenizenProviderType =
                 The.ZoneManager.GetZoneProperty(
                     Z.ZoneID,
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPShuffledTheme
+                    SubterraneanSites
+                        .SubterraneanSitesEPShuffledTheme
                         .SecondaryDenizenProviderTypeProperty
                 ) as string ?? "";
 
@@ -4454,19 +4372,19 @@ namespace XRL.World.ZoneBuilders
                 );
 
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding primary =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding primary =
+                    SubterraneanSites
+                        .SubterraneanSitesDimensionEngine
                         .GetBindingByThemeKey(
                             PrimaryThemeKey
                         );
 
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionBinding secondary =
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionBinding secondary =
+                    SubterraneanSites
+                        .SubterraneanSitesDimensionEngine
                         .GetBindingByThemeKey(
                             SecondaryThemeKey
                         );
@@ -4529,7 +4447,7 @@ namespace XRL.World.ZoneBuilders
 
         private void SpawnForDimension(
             Zone Z,
-            SubterraneanSiteDev.SubterraneanSiteDevDimensionBinding dimension,
+            SubterraneanSites.SubterraneanSitesDimensionBinding dimension,
             string denizenProviderType,
             int count
         )
@@ -4541,7 +4459,7 @@ namespace XRL.World.ZoneBuilders
             {
                 string sourceDescription;
                 GameObject creature =
-                    SubterraneanSiteDev.SubterraneanSiteDevDimensionEngine
+                    SubterraneanSites.SubterraneanSitesDimensionEngine
                         .CreateDenizenForSite(
                             dimension,
                             Tier,
@@ -4551,8 +4469,8 @@ namespace XRL.World.ZoneBuilders
                 if (creature == null)
                     continue;
 
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevDimensionEngine
+                SubterraneanSites
+                    .SubterraneanSitesDimensionEngine
                     .ApplyDimensionIdentityAndAdaptation(
                         creature,
                         dimension,
@@ -4572,8 +4490,8 @@ namespace XRL.World.ZoneBuilders
 
                 creature.MakeActive();
 
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .ClaimCell(
                         Z,
                         destination
@@ -4585,7 +4503,7 @@ namespace XRL.World.ZoneBuilders
         {
             List<Cell> candidates = new List<Cell>();
             List<Location2D> anchors =
-                SubterraneanSiteDev.SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites.SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(Z.ZoneID);
 
             foreach (Cell cell in Z.GetCells())
@@ -4604,8 +4522,8 @@ namespace XRL.World.ZoneBuilders
                 // or object-like pool space.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             Z,
                             cell
@@ -4617,20 +4535,20 @@ namespace XRL.World.ZoneBuilders
 
                 if (cell.HasObjectWithBlueprint("Pit") ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneLeftBlueprint
                     ) ||
                     cell.HasObjectWithBlueprint(
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPAttunementSystem
+                        SubterraneanSites
+                            .SubterraneanSitesEPAttunementSystem
                             .StoneRightBlueprint
                     ))
                 {
                     continue;
                 }
 
-                if (SubterraneanSiteDev.SubterraneanSiteDevEPPlacement
+                if (SubterraneanSites.SubterraneanSitesEPPlacement
                     .IsNearAnyAnchor(
                         cell.X,
                         cell.Y,

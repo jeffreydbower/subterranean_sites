@@ -9,7 +9,7 @@
         and Village inhabitants do not fight each other.
     -->
     <faction
-        Name="SubterraneanSiteDevVillageInhabitants"
+        Name="SubterraneanSitesVillageInhabitants"
         DisplayName="extradimensional villagers"
         Visible="false"
         HatesPlayer="false"
@@ -30,7 +30,7 @@
     <faction Name="Playerhater">
 
         <feeling
-            About="SubterraneanSiteDevVillageInhabitants"
+            About="SubterraneanSitesVillageInhabitants"
             Value="100"
         />
 

@@ -1,3 +1,4 @@
+//v1.0.8
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ using XRL.World.ZoneBuilders.Utility;
 using XRL.Core;
 using XRL.UI;
 
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// FIRE DIMENSION
@@ -22,11 +23,11 @@ namespace SubterraneanSiteDev
     ///             dark-orange smoldering dirt.
     /// Category 5: hot asphalt/oil, bones, boulders.
     /// </summary>
-    internal sealed class SubterraneanSiteDevEPFireTheme :
-        ISubterraneanSiteDevEPCategoryProvider,
-        ISubterraneanSiteDevEPAttunementProvider,
-        ISubterraneanSiteDevEPDenizenAdaptationProvider,
-        ISubterraneanSiteDevEPSignatureMutationProvider
+    internal sealed class SubterraneanSitesEPFireTheme :
+        ISubterraneanSitesEPCategoryProvider,
+        ISubterraneanSitesEPAttunementProvider,
+        ISubterraneanSitesEPDenizenAdaptationProvider,
+        ISubterraneanSitesEPSignatureMutationProvider
     {
         public string ThemeKey
         {
@@ -43,12 +44,12 @@ namespace SubterraneanSiteDev
             get { return 25; }
         }
 
-        public SubterraneanSiteDevEPAttunementBuildResult
+        public SubterraneanSitesEPAttunementBuildResult
             TryCreateAttunement(
                 GameObject actor,
                 Zone zone,
                 out XRL.World.Effects
-                    .SubterraneanSiteDevEPAttunementEffect effect,
+                    .SubterraneanSitesEPAttunementEffect effect,
                 out string successMessage
             )
         {
@@ -61,20 +62,20 @@ namespace SubterraneanSiteDev
             )
             {
                 return
-                    SubterraneanSiteDevEPAttunementBuildResult
+                    SubterraneanSitesEPAttunementBuildResult
                         .Unavailable;
             }
 
             int mutationLevel =
-                SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSitesEPAttunementSystem
                     .GetAttunementMutationLevel(
                         zone
                     );
 
             effect =
                 new XRL.World.Effects
-                    .SubterraneanSiteDevEPAttunementEffect(
-                        SubterraneanSiteDevEPAttunementSystem
+                    .SubterraneanSitesEPAttunementEffect(
+                        SubterraneanSitesEPAttunementSystem
                             .DefaultDuration,
                         ThemeKey,
 
@@ -97,15 +98,15 @@ namespace SubterraneanSiteDev
                 "+100 Heat Resistance";
 
             return
-                SubterraneanSiteDevEPAttunementBuildResult
+                SubterraneanSitesEPAttunementBuildResult
                     .Success;
         }
 
-        internal static SubterraneanSiteDevEPFloorSpec
+        internal static SubterraneanSitesEPFloorSpec
             CreateFloorSpec()
         {
             return
-                new SubterraneanSiteDevEPFloorSpec
+                new SubterraneanSitesEPFloorSpec
                 {
                     //
                     // Salt dunes provide a pale dirt-like tile mask that
@@ -164,7 +165,7 @@ namespace SubterraneanSiteDev
         }
 
         public void RegisterCategory1(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             if (context == null)
@@ -172,25 +173,25 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPTemperature",
+                "SubterraneanSitesEPTemperature",
                 "Temperature", "200"
             );
 
             if (The.Game != null)
             {
                 The.Game.RequireSystem<
-                    SubterraneanSiteDevEPFireEnvironmentSystem
+                    SubterraneanSitesEPFireEnvironmentSystem
                 >();
             }
         }
 
         public void RegisterCategory2(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
-            SubterraneanSiteDevEPBoundaryHazards.Register(
+            SubterraneanSitesEPBoundaryHazards.Register(
                 context,
-                "SubterraneanSiteDevFireVent",
+                "SubterraneanSitesFireVent",
                 40,
                 3,
                 7,
@@ -199,29 +200,29 @@ namespace SubterraneanSiteDev
         }
 
         public void RegisterCategory3(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevFireMaterials"
+                "SubterraneanSitesFireMaterials"
             );
         }
 
         public void RegisterCategory4Layout(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPBlobLayout",
+                "SubterraneanSitesEPBlobLayout",
                 "LandDepth", "4",
                 "AnchorRadius", "4"
             );
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevEPBlobConnector",
+                "SubterraneanSitesEPBlobConnector",
                 "OptionalConnectionPercent", "80",
                 "CausewayRadius", "1",
                 "MinRegionSize", "6"
@@ -229,7 +230,7 @@ namespace SubterraneanSiteDev
         }
 
         public void RegisterCategory4Floor(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             if (context == null)
@@ -237,17 +238,17 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevFireFloor"
+                "SubterraneanSitesFireFloor"
             );
         }
 
         public void RegisterCategory5(
-            SubterraneanSiteDevEPLayerContext context
+            SubterraneanSitesEPLayerContext context
         )
         {
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevFireDecorations",
+                "SubterraneanSitesFireDecorations",
                 "AsphaltPercent", "25",
                 "OilPercent", "20",
                 "AsphaltPatchCount", "4"
@@ -255,7 +256,7 @@ namespace SubterraneanSiteDev
         }
 
         public void RegisterEntranceFloor(
-            SubterraneanSiteDevEPEntranceContext context
+            SubterraneanSitesEPEntranceContext context
         )
         {
             if (context == null)
@@ -263,13 +264,13 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevFireFloor",
+                "SubterraneanSitesFireFloor",
                 "EntranceOnly", "1"
             );
         }
 
         public void RegisterEntranceDecorations(
-            SubterraneanSiteDevEPEntranceContext context
+            SubterraneanSitesEPEntranceContext context
         )
         {
             if (context == null)
@@ -277,7 +278,7 @@ namespace SubterraneanSiteDev
 
             The.ZoneManager.AddZonePostBuilder(
                 context.ZoneId,
-                "SubterraneanSiteDevFireDecorations",
+                "SubterraneanSitesFireDecorations",
                 "EntranceOnly", "1"
             );
         }
@@ -297,7 +298,7 @@ namespace SubterraneanSiteDev
     }
 }
 
-namespace SubterraneanSiteDev
+namespace SubterraneanSites
 {
     /// <summary>
     /// Player-facing Fire Category-1 exposure tracking.
@@ -314,7 +315,7 @@ namespace SubterraneanSiteDev
     /// exposure and does not repeat the warning.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevEPFireEnvironmentSystem :
+    public class SubterraneanSitesEPFireEnvironmentSystem :
         IGameSystem
     {
         public bool WasInFireEnvironment =
@@ -376,7 +377,7 @@ namespace SubterraneanSiteDev
 
 
             string category1 =
-                SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSitesEPAttunementSystem
                     .GetCategory1Theme(
                         player.CurrentZone
                     );
@@ -399,7 +400,7 @@ namespace SubterraneanSiteDev
 
 
             bool fireAttuned =
-                SubterraneanSiteDevEPAttunementSystem
+                SubterraneanSitesEPAttunementSystem
                     .IsAttunedTo(
                         player,
                         "Fire"
@@ -449,7 +450,7 @@ namespace XRL.World.ZoneBuilders
     /// Fire owns its floor appearance. The shared EP floor system owns
     /// universal underground/scar scope and application mechanics.
     /// </summary>
-    public class SubterraneanSiteDevFireFloor :
+    public class SubterraneanSitesFireFloor :
         ZoneBuilderSandbox
     {
         public int EntranceOnly = 0;
@@ -460,19 +461,19 @@ namespace XRL.World.ZoneBuilders
         )
         {
             return
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPFloorSystem
+                SubterraneanSites
+                    .SubterraneanSitesEPFloorSystem
                     .Apply(
                         Z,
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPFireTheme
+                        SubterraneanSites
+                            .SubterraneanSitesEPFireTheme
                             .CreateFloorSpec(),
                         EntranceOnly != 0
                     );
         }
     }
 
-    public class SubterraneanSiteDevFireMaterials : ZoneBuilderSandbox
+    public class SubterraneanSitesFireMaterials : ZoneBuilderSandbox
     {
         public string ExteriorBlueprint = "LavaPuddle";
 
@@ -486,7 +487,7 @@ namespace XRL.World.ZoneBuilders
                 if (cell == null)
                     continue;
 
-                if (!SubterraneanSiteDev.SubterraneanSiteDevEPGeometry
+                if (!SubterraneanSites.SubterraneanSitesEPGeometry
                     .IsAnyPlaceholder(cell))
                 {
                     continue;
@@ -507,7 +508,7 @@ namespace XRL.World.ZoneBuilders
         }
     }
 
-    public class SubterraneanSiteDevEPBlobLayout : ZoneBuilderSandbox
+    public class SubterraneanSitesEPBlobLayout : ZoneBuilderSandbox
     {
         public int LandDepth = 4;
         public int AnchorRadius = 4;
@@ -526,8 +527,8 @@ namespace XRL.World.ZoneBuilders
             // dry-space anchors for this level.
             //
             List<Location2D> verticalAnchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -796,7 +797,7 @@ namespace XRL.World.ZoneBuilders
 
 namespace XRL.World.ZoneBuilders
 {
-    public class SubterraneanSiteDevEPBlobConnector :
+    public class SubterraneanSitesEPBlobConnector :
         ZoneBuilderSandbox
     {
         public int OptionalConnectionPercent = 80;
@@ -838,22 +839,22 @@ namespace XRL.World.ZoneBuilders
             Location2D incoming = null;
             Location2D outgoing = null;
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPVerticalTransitions
+            SubterraneanSites
+                .SubterraneanSitesEPVerticalTransitions
                 .TryGetCoordinate(
                     Z.ZoneID,
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPVerticalTransitions
+                    SubterraneanSites
+                        .SubterraneanSitesEPVerticalTransitions
                         .IncomingLandingProperty,
                     out incoming
                 );
 
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPVerticalTransitions
+            SubterraneanSites
+                .SubterraneanSitesEPVerticalTransitions
                 .TryGetCoordinate(
                     Z.ZoneID,
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPVerticalTransitions
+                    SubterraneanSites
+                        .SubterraneanSitesEPVerticalTransitions
                         .OutgoingHoleProperty,
                     out outgoing
                 );
@@ -1238,8 +1239,8 @@ namespace XRL.World.ZoneBuilders
         )
         {
             return
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(cell);
         }
 
@@ -1658,7 +1659,7 @@ namespace XRL.World.ZoneBuilders
 
 namespace XRL.World.ZoneBuilders
 {
-    public class SubterraneanSiteDevFireDecorations :
+    public class SubterraneanSitesFireDecorations :
         ZoneBuilderSandbox
     {
         public int EntranceOnly = 0;
@@ -1673,7 +1674,7 @@ namespace XRL.World.ZoneBuilders
         public int MaxBones = 120;
 
         private const string AsphaltBlueprint =
-            "SubterraneanSiteDevFireAsphaltPuddle";
+            "SubterraneanSitesFireAsphaltPuddle";
 
         private const string BonesBlueprint =
             "Bones";
@@ -1701,8 +1702,8 @@ namespace XRL.World.ZoneBuilders
             }
 
             List<Location2D> anchors =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPVerticalTransitions
+                SubterraneanSites
+                    .SubterraneanSitesEPVerticalTransitions
                     .GetVerticalAnchors(
                         Z.ZoneID
                     );
@@ -1727,8 +1728,8 @@ namespace XRL.World.ZoneBuilders
                 interior.Count * AsphaltPercent / 100;
 
             HashSet<Cell> asphaltCells =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPPlacement
+                SubterraneanSites
+                    .SubterraneanSitesEPPlacement
                     .GrowDistributedPatches(
                         interior,
                         asphaltTarget,
@@ -1748,12 +1749,12 @@ namespace XRL.World.ZoneBuilders
                 // Fire asphalt is a spill:
                 // ignore reservations and mix with any existing open liquid.
                 //
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPLiquids
+                SubterraneanSites
+                    .SubterraneanSitesEPLiquids
                     .AddOrMixLiquid(
                         cell,
                         XRL.Liquids
-                            .SubterraneanSiteDevFireAsphalt
+                            .SubterraneanSitesFireAsphalt
                             .LiquidID,
                         AsphaltBlueprint
                     );
@@ -1776,8 +1777,8 @@ namespace XRL.World.ZoneBuilders
                 );
 
             HashSet<Cell> oilCells =
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPPlacement
+                SubterraneanSites
+                    .SubterraneanSitesEPPlacement
                     .GrowBestPatch(
                         oilCandidates,
                         oilTarget,
@@ -1823,18 +1824,18 @@ namespace XRL.World.ZoneBuilders
 
                 if (EntranceOnly != 0)
                 {
-                    if (!SubterraneanSiteDev
-                        .SubterraneanSiteDevEPEntrance
+                    if (!SubterraneanSites
+                        .SubterraneanSitesEPEntrance
                         .IsInsideScar(Z, cell) ||
-                        SubterraneanSiteDev
-                            .SubterraneanSiteDevEPEntrance
+                        SubterraneanSites
+                            .SubterraneanSitesEPEntrance
                             .IsInsideHoleExclusion(Z, cell, 1))
                     {
                         continue;
                     }
                 }
-                else if (!SubterraneanSiteDev
-                    .SubterraneanSiteDevEPGeometry
+                else if (!SubterraneanSites
+                    .SubterraneanSitesEPGeometry
                     .IsOpenGeometryCell(cell))
                 {
                     continue;
@@ -1848,8 +1849,8 @@ namespace XRL.World.ZoneBuilders
                 //
                 if (
                     EntranceOnly == 0 &&
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .IsNearAnyAnchor(
                             cell.X,
                             cell.Y,
@@ -1892,14 +1893,14 @@ namespace XRL.World.ZoneBuilders
             // Fire oil is a spill:
             // mix into an existing open liquid or create its native puddle on dry cells.
             //
-            SubterraneanSiteDev
-                .SubterraneanSiteDevEPLiquids
+            SubterraneanSites
+                .SubterraneanSitesEPLiquids
                 .AddOrMixLiquid(
                     cell,
                     XRL.Liquids
-                        .SubterraneanSiteDevFireOil
+                        .SubterraneanSitesFireOil
                         .LiquidID,
-                    "SubterraneanSiteDevFireOilPuddle"
+                    "SubterraneanSitesFireOilPuddle"
                 );
         }
 
@@ -1970,8 +1971,8 @@ namespace XRL.World.ZoneBuilders
                 // Unlike the Fire spills above, they must respect earlier semantic ownership.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             cell.ParentZone,
                             cell
@@ -1991,8 +1992,8 @@ namespace XRL.World.ZoneBuilders
                 }
 
                 if (
-                    !SubterraneanSiteDev
-                        .SubterraneanSiteDevEPPlacement
+                    !SubterraneanSites
+                        .SubterraneanSitesEPPlacement
                         .HasBroadOpenClearance(
                             cell.ParentZone,
                             cell,
@@ -2009,8 +2010,8 @@ namespace XRL.World.ZoneBuilders
                                 }
 
                                 if (
-                                    SubterraneanSiteDev
-                                        .SubterraneanSiteDevEPReservations
+                                    SubterraneanSites
+                                        .SubterraneanSitesEPReservations
                                         .IsClaimed(
                                             cell.ParentZone,
                                             neighbor
@@ -2072,8 +2073,8 @@ namespace XRL.World.ZoneBuilders
                     }
                 }
 
-                SubterraneanSiteDev
-                    .SubterraneanSiteDevEPReservations
+                SubterraneanSites
+                    .SubterraneanSitesEPReservations
                     .ClaimCell(
                         cell.ParentZone,
                         cell
@@ -2120,8 +2121,8 @@ namespace XRL.World.ZoneBuilders
                 // boulders placed immediately above.
                 //
                 if (
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .IsClaimed(
                             cell.ParentZone,
                             cell
@@ -2163,8 +2164,8 @@ namespace XRL.World.ZoneBuilders
                         BonesBlueprint
                     );
 
-                    SubterraneanSiteDev
-                        .SubterraneanSiteDevEPReservations
+                    SubterraneanSites
+                        .SubterraneanSitesEPReservations
                         .ClaimCell(
                             cell.ParentZone,
                             cell
@@ -2183,7 +2184,7 @@ namespace XRL.World.Parts
     /// interaction: open liquids in the visible jet path are heated too.
     /// </summary>
     [Serializable]
-    public class SubterraneanSiteDevFireVentLiquidHeat : IPart
+    public class SubterraneanSitesFireVentLiquidHeat : IPart
     {
         public override bool SameAs(IPart p)
         {
@@ -2289,11 +2290,11 @@ namespace XRL.Liquids
 {
     [IsLiquid]
     [Serializable]
-    public class SubterraneanSiteDevFireAsphalt : LiquidAsphalt
+    public class SubterraneanSitesFireAsphalt : LiquidAsphalt
     {
-        public const string LiquidID = "SubterraneanSiteDevFireAsphalt";
+        public const string LiquidID = "SubterraneanSitesFireAsphalt";
 
-        public SubterraneanSiteDevFireAsphalt()
+        public SubterraneanSitesFireAsphalt()
             : base()
         {
             // LiquidAsphalt's constructor creates ordinary asphalt,
@@ -2343,11 +2344,11 @@ namespace XRL.Liquids
 
     [IsLiquid]
     [Serializable]
-    public class SubterraneanSiteDevFireOil : LiquidOil
+    public class SubterraneanSitesFireOil : LiquidOil
     {
-        public const string LiquidID = "SubterraneanSiteDevFireOil";
+        public const string LiquidID = "SubterraneanSitesFireOil";
 
-        public SubterraneanSiteDevFireOil()
+        public SubterraneanSitesFireOil()
             : base()
         {
             // Give this subclass its own liquid ID.

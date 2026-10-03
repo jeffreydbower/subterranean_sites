@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <conversations>
-  <conversation ID="SubterraneanSiteDevEPAttunement">
+  <conversation ID="SubterraneanSitesEPAttunement">
     <start ID="Welcome">
       <text>{{emote|*The paired stones hum in sympathetic resonance.*}}</text>
 
       <choice GotoID="Attuned">
         <text>[Touch the stones and attune to the dominant extradimensional influence.]</text>
-        <part Name="SubterraneanSiteDevEPAttune" FailTarget="Unavailable"/>
+        <part Name="SubterraneanSitesEPAttune" FailTarget="Unavailable"/>
       </choice>
 
       <choice GotoID="End">Withdraw your hand.</choice>

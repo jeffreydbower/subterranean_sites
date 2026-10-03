@@ -41,8 +41,8 @@ namespace SubterraneanSites
             // EP dimensional assignments are persistent world/save infrastructure.
             // This also initializes them when Subterranean Sites is first installed
             // into an already-existing save.
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionEngine
                 .EnsureAssignments();
 
             RuntimeZoneBuilderInjectionSystem system =
@@ -1608,8 +1608,8 @@ namespace SubterraneanSites
             // Qud's DimensionManager has been established by this point in worldgen.
             // Build and persist the EP dimension/theme/faction assignments now so they
             // belong to the world independently of whether an EP is ever encountered.
-            SubterraneanSiteDev
-                .SubterraneanSiteDevDimensionEngine
+            SubterraneanSites
+                .SubterraneanSitesDimensionEngine
                 .EnsureAssignments();
 
             RuntimeZoneBuilderInjectionSystem system =
@@ -1641,8 +1641,6 @@ namespace SubterraneanSites
         private const int MinPathSteps = 12;
         private const int MaxPathStepsExclusive = 21;
         private const bool DebugShowMatrixGenerationPopup = false;
-
-        private const bool DebugForceExtradimensionalPockets = true;
 
         internal const string SitePathAnchorProperty =
             "SubterraneanSites_PathSiteAnchor";
@@ -2565,7 +2563,7 @@ namespace SubterraneanSites
                 return new MerchantHiveSiteRegistrar(this).Register(siteZoneIds);
 
             case SiteKind.ExtradimensionalPocket:
-                return new ExtradimensionalPocketSiteRegistrar(this)
+                return new ExtradimensionalPocketSiteTypeRegistrar(this)
                     .Register(siteZoneIds);
 
             default:
@@ -2580,27 +2578,28 @@ namespace SubterraneanSites
                 return SiteKind.SultanHistoric;
             }
 
-            if (DebugForceExtradimensionalPockets)
-            {
-                return SiteKind.ExtradimensionalPocket;
-            }
-
             // Weighted deterministic site archetype selection.
             //
             // Current weights:
-            //   35 = SultanHistoric
-            //   30 = ProperLair
-            //   25 = BasicLairChaos
+            //   30 = extradimensional pocket
+            //   30 = SultanHistoric
+            //   15 = ProperLair
+            //   15 = BasicLairChaos
             //   10 = MerchantHive
 
             int roll = rng.Next(100);
 
-            if (roll < 35)
+            if (roll < 30)
+            {
+                return SiteKind.ExtradimensionalPocket;
+            }
+
+            if (roll < 60)
             {
                 return SiteKind.SultanHistoric;
             }
 
-            if (roll < 65)
+            if (roll < 75)
             {
                 return SiteKind.ProperLair;
             }
@@ -2879,10 +2878,10 @@ namespace SubterraneanSites
         {
             if (originZ <= 15)
             {
-                return 5;
+                return 4;
             }
 
-            return 24;
+            return 12;
         }
 
       internal int GetTierForZoneId(string zoneId)
@@ -3297,11 +3296,11 @@ namespace SubterraneanSites
         private const int MainWeight = 33;
         private const int SideWeight = 17;
         private const int DiagonalComponentWeight = 33;
-        private int upWeight = 2;
+        private int upWeight = 4;
 
         public SubterraneanPathCoordinateGenerator()
         {
-            upWeight = 2;
+            upWeight = 4;
         }
 
         public SubterraneanPathCoordinateGenerator(int upWeight)

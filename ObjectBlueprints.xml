@@ -1,7 +1,7 @@
 <objects>
 
     <object
-        Name="SubterraneanSiteDevElectricalMainframeMonitor"
+        Name="SubterraneanSitesElectricalMainframeMonitor"
         Inherits="BaseWallMainframe"
     >
         <part Name="Render"
@@ -43,7 +43,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevElectricalMainframeStatus"
+        Name="SubterraneanSitesElectricalMainframeStatus"
         Inherits="BaseWallMainframe"
     >
         <part Name="Render"
@@ -84,7 +84,7 @@
         <part Name="ModWired"/>
     </object>
 
-    <object Name="SubterraneanSiteDevElectricalSquareWave_CW"
+    <object Name="SubterraneanSitesElectricalSquareWave_CW"
             Inherits="FulcreteWithSquareWave">
         <part Name="Render"
             DisplayName="wired fulcrete with square wave"
@@ -96,34 +96,34 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevFireAsphaltPuddle"
+        Name="SubterraneanSitesFireAsphaltPuddle"
         Inherits="AsphaltPuddle"
     >
         <part
             Name="LiquidVolume"
-            InitialLiquid="SubterraneanSiteDevFireAsphalt-1000"
+            InitialLiquid="SubterraneanSitesFireAsphalt-1000"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevFireOilPuddle"
+        Name="SubterraneanSitesFireOilPuddle"
         Inherits="OilPool"
     >
         <part
             Name="LiquidVolume"
-            InitialLiquid="SubterraneanSiteDevFireOil-1000"
+            InitialLiquid="SubterraneanSitesFireOil-1000"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevFireVent"
+        Name="SubterraneanSitesFireVent"
         Inherits="WalltrapFireCrematory"
     >
-        <part Name="SubterraneanSiteDevFireVentLiquidHeat" />
+        <part Name="SubterraneanSitesFireVentLiquidHeat" />
     </object>
 
     <object
-        Name="SubterraneanSiteDevFungusSleepVent"
+        Name="SubterraneanSitesFungusSleepVent"
         Inherits="Walltrap"
     >
         <part
@@ -148,7 +148,7 @@
         />
 
         <part
-            Name="SubterraneanSiteDevFungusSleepVent"
+            Name="SubterraneanSitesFungusSleepVent"
             GasBlueprint="SleepGas80"
             GasDensity="80"
         />
@@ -157,17 +157,17 @@
 
 
     <object
-        Name="SubterraneanSiteDevColdConvalessencePuddle"
+        Name="SubterraneanSitesColdConvalessencePuddle"
         Inherits="ConvalessenceDeepPool"
     >
         <part
             Name="LiquidVolume"
-            InitialLiquid="SubterraneanSiteDevColdConvalessence-1000"
+            InitialLiquid="SubterraneanSitesColdConvalessence-1000"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdVent"
+        Name="SubterraneanSitesColdVent"
         Inherits="CryochamberWallBroken"
     >
         <part
@@ -180,57 +180,57 @@
             Short="Freezing mist billows from frost-rimed vents sunk into the wall."
         />
 
-        <part Name="SubterraneanSiteDevColdVent"
-            GasDensity="100"
+        <part Name="SubterraneanSitesColdVent"
+            GasDensity="48"
             ForwardLength="4"
-            DensityFalloff="15"
+            DensityFalloff="12"
             SideSprayChance="60"
-            SideGasDensity="60"
+            SideGasDensity="36"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdVentN"
-        Inherits="SubterraneanSiteDevColdVent"
+        Name="SubterraneanSitesColdVentN"
+        Inherits="SubterraneanSitesColdVent"
     >
         <part
-            Name="SubterraneanSiteDevColdVent"
+            Name="SubterraneanSitesColdVent"
             Direction="N"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdVentS"
-        Inherits="SubterraneanSiteDevColdVent"
+        Name="SubterraneanSitesColdVentS"
+        Inherits="SubterraneanSitesColdVent"
     >
         <part
-            Name="SubterraneanSiteDevColdVent"
+            Name="SubterraneanSitesColdVent"
             Direction="S"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdVentE"
-        Inherits="SubterraneanSiteDevColdVent"
+        Name="SubterraneanSitesColdVentE"
+        Inherits="SubterraneanSitesColdVent"
     >
         <part
-            Name="SubterraneanSiteDevColdVent"
+            Name="SubterraneanSitesColdVent"
             Direction="E"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdVentW"
-        Inherits="SubterraneanSiteDevColdVent"
+        Name="SubterraneanSitesColdVentW"
+        Inherits="SubterraneanSitesColdVent"
     >
         <part
-            Name="SubterraneanSiteDevColdVent"
+            Name="SubterraneanSitesColdVent"
             Direction="W"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevColdRubble"
+        Name="SubterraneanSitesColdRubble"
         Inherits="Rubble Grey"
     >
         <part
@@ -240,13 +240,13 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevEPSolidPlaceholder" Inherits="Marble">
+    <object Name="SubterraneanSitesEPSolidPlaceholder" Inherits="Marble">
     </object>
 
-    <object Name="SubterraneanSiteDevEPBoundaryPlaceholder" Inherits="Marble">
+    <object Name="SubterraneanSitesEPBoundaryPlaceholder" Inherits="Marble">
     </object>
 
-    <object Name="SubterraneanSiteDevEPAttunementStoneLeft" Inherits="Crystal">
+    <object Name="SubterraneanSitesEPAttunementStoneLeft" Inherits="Crystal">
         <part Name="Physics"
                 IsReal="true"
                 Solid="false"
@@ -272,7 +272,7 @@
                 Short="An unfamiliar crystalline instrument hums with extradimensional resonance." />
 
         <part Name="ConversationScript"
-                ConversationID="SubterraneanSiteDevEPAttunement" />
+                ConversationID="SubterraneanSitesEPAttunement" />
 
         <part Name="Interesting"
                 Radius="1"
@@ -292,7 +292,7 @@
         <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
-    <object Name="SubterraneanSiteDevEPAttunementStoneRight" Inherits="Crystal">
+    <object Name="SubterraneanSitesEPAttunementStoneRight" Inherits="Crystal">
         <part Name="Physics"
                 IsReal="true"
                 Solid="false"
@@ -318,7 +318,7 @@
                 Short="An unfamiliar crystalline instrument hums with extradimensional resonance." />
 
         <part Name="ConversationScript"
-                ConversationID="SubterraneanSiteDevEPAttunement" />
+                ConversationID="SubterraneanSitesEPAttunement" />
 
         <part Name="Interesting"
                 Radius="1"
@@ -339,7 +339,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevLightEmitter"
+        Name="SubterraneanSitesLightEmitter"
         Inherits="Psychal Rhythm Rock"
     >
         <part
@@ -354,7 +354,7 @@
         />
 
         <part
-            Name="SubterraneanSiteDevLightEmitter"
+            Name="SubterraneanSitesLightEmitter"
             MinCooldown="6"
             MaxCooldown="12"
         />
@@ -366,7 +366,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevDarknessOilVase"
+        Name="SubterraneanSitesDarknessOilVase"
         Inherits="Vase">
 
         <part
@@ -385,7 +385,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevDarknessWhiteMarbleWalkway"
+        Name="SubterraneanSitesDarknessWhiteMarbleWalkway"
         Inherits="GreyMarbleWalkway"
     >
         <part
@@ -398,7 +398,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevDarknessWhiteFracti"
+        Name="SubterraneanSitesDarknessWhiteFracti"
         Inherits="Fracti"
     >
         <part
@@ -424,7 +424,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindGas"
+        Name="SubterraneanSitesDarknessBlindGas"
         Inherits="Gas"
     >
         <part
@@ -434,12 +434,12 @@
 
         <part
             Name="Gas"
-            GasType="SubterraneanSiteDevDarknessBlindGas"
+            GasType="SubterraneanSitesDarknessBlindGas"
             ColorString="&amp;K^m"
         />
 
         <part
-            Name="SubterraneanSiteDevDarknessBlindGasBehavior"
+            Name="SubterraneanSitesDarknessBlindGasBehavior"
         />
 
         <part
@@ -459,7 +459,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindVent"
+        Name="SubterraneanSitesDarknessBlindVent"
         Inherits="CryochamberWallBroken"
     >
         <part
@@ -473,8 +473,8 @@
         />
 
         <part
-            Name="SubterraneanSiteDevDarknessBlindVent"
-            GasBlueprint="SubterraneanSiteDevDarknessBlindGas"
+            Name="SubterraneanSitesDarknessBlindVent"
+            GasBlueprint="SubterraneanSitesDarknessBlindGas"
             GasDensity="100"
             ForwardLength="4"
             DensityFalloff="15"
@@ -485,79 +485,79 @@
 
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindVentN"
-        Inherits="SubterraneanSiteDevDarknessBlindVent"
+        Name="SubterraneanSitesDarknessBlindVentN"
+        Inherits="SubterraneanSitesDarknessBlindVent"
     >
         <part
-            Name="SubterraneanSiteDevDarknessBlindVent"
+            Name="SubterraneanSitesDarknessBlindVent"
             Direction="N"
         />
     </object>
 
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindVentS"
-        Inherits="SubterraneanSiteDevDarknessBlindVent"
+        Name="SubterraneanSitesDarknessBlindVentS"
+        Inherits="SubterraneanSitesDarknessBlindVent"
     >
         <part
-            Name="SubterraneanSiteDevDarknessBlindVent"
+            Name="SubterraneanSitesDarknessBlindVent"
             Direction="S"
         />
     </object>
 
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindVentE"
-        Inherits="SubterraneanSiteDevDarknessBlindVent"
+        Name="SubterraneanSitesDarknessBlindVentE"
+        Inherits="SubterraneanSitesDarknessBlindVent"
     >
         <part
-            Name="SubterraneanSiteDevDarknessBlindVent"
+            Name="SubterraneanSitesDarknessBlindVent"
             Direction="E"
         />
     </object>
 
 
     <object
-        Name="SubterraneanSiteDevDarknessBlindVentW"
-        Inherits="SubterraneanSiteDevDarknessBlindVent"
+        Name="SubterraneanSitesDarknessBlindVentW"
+        Inherits="SubterraneanSitesDarknessBlindVent"
     >
         <part
-            Name="SubterraneanSiteDevDarknessBlindVent"
+            Name="SubterraneanSitesDarknessBlindVent"
             Direction="W"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevBloodDismembermentStatue"
+        Name="SubterraneanSitesBloodDismembermentStatue"
         Inherits="EaterStatue">
         <part
-            Name="SubterraneanSiteDevBloodDismemberer"
+            Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
     </object>
 
     <object
-        Name="SubterraneanSiteDevBloodDismembermentStatueFlipped"
+        Name="SubterraneanSitesBloodDismembermentStatueFlipped"
         Inherits="EaterStatueFlipped">
         <part
-            Name="SubterraneanSiteDevBloodDismemberer"
+            Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
     </object>
 
     <object
-        Name="SubterraneanSiteDevBloodDismembermentStatueImplanted"
+        Name="SubterraneanSitesBloodDismembermentStatueImplanted"
         Inherits="ImplantedEaterStatue">
         <part
-            Name="SubterraneanSiteDevBloodDismemberer"
+            Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
     </object>
 
-    <object Name="SubterraneanSiteDevBloodConveyorPad"
+    <object Name="SubterraneanSitesBloodConveyorPad"
             Inherits="ConveyorPad">
-        <part Name="SubterraneanSiteDevConveyorLiquidDrain" />
+        <part Name="SubterraneanSitesConveyorLiquidDrain" />
     </object>
 
         <object
-        Name="SubterraneanSiteDevBloodFanNorth"
+        Name="SubterraneanSitesBloodFanNorth"
         Inherits="Industrial Fan North"
     >
         <part
@@ -584,7 +584,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevBloodFanSouth"
+        Name="SubterraneanSitesBloodFanSouth"
         Inherits="Industrial Fan South"
     >
         <part
@@ -609,7 +609,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevPortalEmptyMulticabinet" Inherits="MountedFurniture">
+    <object Name="SubterraneanSitesPortalEmptyMulticabinet" Inherits="MountedFurniture">
         <part
             Name="Render"
             DisplayName="sliding drawer cabinet"
@@ -652,7 +652,7 @@
         </object>
 
     
-    <object Name="SubterraneanSiteDevPortalEmptyTable" Inherits="Furniture">
+    <object Name="SubterraneanSitesPortalEmptyTable" Inherits="Furniture">
         <part
             Name="Render"
             DisplayName="table"
@@ -695,8 +695,8 @@
 
 
     <object
-        Name="SubterraneanSiteDevPortalEmptyWorkbench"
-        Inherits="SubterraneanSiteDevPortalEmptyTable"
+        Name="SubterraneanSitesPortalEmptyWorkbench"
+        Inherits="SubterraneanSitesPortalEmptyTable"
         >
         <part
             Name="Render"
@@ -715,8 +715,8 @@
 
 
     <object
-        Name="SubterraneanSiteDevPortalEmptyDesk"
-        Inherits="SubterraneanSiteDevPortalEmptyTable"
+        Name="SubterraneanSitesPortalEmptyDesk"
+        Inherits="SubterraneanSitesPortalEmptyTable"
         >
         <part
             Name="Render"
@@ -743,7 +743,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevPortalEmptyUndergroundBookshelf"
+        Name="SubterraneanSitesPortalEmptyUndergroundBookshelf"
         Inherits="BaseBookshelf"
         >
         <part
@@ -759,7 +759,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevPortalEmptyWoodCarvedBookshelf"
+        Name="SubterraneanSitesPortalEmptyWoodCarvedBookshelf"
         Inherits="BaseBookshelf"
         >
         <part
@@ -791,7 +791,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevStaticDilutedWarmStaticPuddle"
+        Name="SubterraneanSitesStaticDilutedWarmStaticPuddle"
         Inherits="Water"
     >
         <part
@@ -803,7 +803,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevStaticReef"
+        Name="SubterraneanSitesStaticReef"
         Inherits="Coral Polyp"
     >
         <part
@@ -821,14 +821,14 @@
         />
 
         <part
-            Name="SubterraneanSiteDevStaticPluckablePolyp"
-            RevealObject="SubterraneanSiteDevStaticBuzzingCyst"
+            Name="SubterraneanSitesStaticPluckablePolyp"
+            RevealObject="SubterraneanSitesStaticBuzzingCyst"
             RevealChancePercent="0"
         />
     </object>
 
     <object
-        Name="SubterraneanSiteDevStaticBuzzingCyst"
+        Name="SubterraneanSitesStaticBuzzingCyst"
         Inherits="PolypCache"
     >
         <part
@@ -856,12 +856,12 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevStaticReefCache"
-        Inherits="SubterraneanSiteDevStaticReef"
+        Name="SubterraneanSitesStaticReefCache"
+        Inherits="SubterraneanSitesStaticReef"
     >
         <part
-            Name="SubterraneanSiteDevStaticPluckablePolyp"
-            RevealObject="SubterraneanSiteDevStaticBuzzingCyst"
+            Name="SubterraneanSitesStaticPluckablePolyp"
+            RevealObject="SubterraneanSitesStaticBuzzingCyst"
             RevealChancePercent="100"
         />
     </object>
@@ -875,7 +875,7 @@
     -->
 
     <!-- <object
-        Name="SubterraneanSiteDevVillageAgateWall"
+        Name="SubterraneanSitesVillageAgateWall"
         Inherits="AgateWall"
     >
         <removepart Name="Corpse" />
@@ -883,7 +883,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevVillageTopazWall"
+        Name="SubterraneanSitesVillageTopazWall"
         Inherits="TopazWall"
     >
         <part
@@ -898,7 +898,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevVillageJasperWall"
+        Name="SubterraneanSitesVillageJasperWall"
         Inherits="JasperWall"
     >
         <part
@@ -912,7 +912,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevVillageAmethystWall"
+        Name="SubterraneanSitesVillageAmethystWall"
         Inherits="AmethystWall"
     >
         <part
@@ -927,7 +927,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevVillageSapphireWall"
+        Name="SubterraneanSitesVillageSapphireWall"
         Inherits="SapphireWall"
     >
         <part
@@ -942,7 +942,7 @@
 
 
     <object
-        Name="SubterraneanSiteDevVillageEmeraldWall"
+        Name="SubterraneanSitesVillageEmeraldWall"
         Inherits="EmeraldWall"
     >
         <part
@@ -957,13 +957,13 @@
 
 
     <object
-        Name="SubterraneanSiteDevVillagePeridotWall"
+        Name="SubterraneanSitesVillagePeridotWall"
         Inherits="PeridotWall"
     >
         <removepart Name="Corpse" />
     </object>
 
-    <object Name="SubterraneanSiteDevMushroomWallOrange" Inherits="BaseMushroomWall">
+    <object Name="SubterraneanSitesMushroomWallOrange" Inherits="BaseMushroomWall">
         <part Name="Render" 
         DisplayName="mushroom flesh" 
         RenderString="007" 
@@ -974,7 +974,7 @@
 
     </object>
 
-    <object Name="SubterraneanSiteDevVillageMangrove" Inherits="Shimscale Mangrove Tree">
+    <object Name="SubterraneanSitesVillageMangrove" Inherits="Shimscale Mangrove Tree">
     <part Name="Render"
         ColorString="&amp;b"
         TileColor="&amp;b"
@@ -983,7 +983,7 @@
 
     </object>
 
-    <object Name="SubterraneanSiteDevVillageDogthorn" Inherits="Dogthorn Tree">
+    <object Name="SubterraneanSitesVillageDogthorn" Inherits="Dogthorn Tree">
         <part Name="Render"
             ColorString="&amp;r"
             TileColor="&amp;r"
@@ -991,7 +991,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevVillageZivBough" Inherits="Ziv Bough">
+    <object Name="SubterraneanSitesVillageZivBough" Inherits="Ziv Bough">
         <part Name="Render"
             ColorString="&amp;m"
             TileColor="&amp;m"
@@ -999,7 +999,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevVillageStarPalm" Inherits="Star Palm">
+    <object Name="SubterraneanSitesVillageStarPalm" Inherits="Star Palm">
         <part Name="Render"
             ColorString="&amp;c"
             TileColor="&amp;c"
@@ -1007,7 +1007,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevVillageGlitchwood" Inherits="Glitchwood Tree">
+    <object Name="SubterraneanSitesVillageGlitchwood" Inherits="Glitchwood Tree">
         <part Name="Render"
             ColorString="&amp;K"
             TileColor="&amp;K"
@@ -1015,7 +1015,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevVillageIcosahedar" Inherits="Icosahedar">
+    <object Name="SubterraneanSitesVillageIcosahedar" Inherits="Icosahedar">
         <part Name="Render"
             ColorString="&amp;o"
             TileColor="&amp;o"
@@ -1024,7 +1024,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevVillageFarmFence"
+        Name="SubterraneanSitesVillageFarmFence"
         Inherits="BrinestalkFence"
     >
         <part
@@ -1036,7 +1036,7 @@
     </object>
 
     <object
-        Name="SubterraneanSiteDevVillageFarmWall"
+        Name="SubterraneanSitesVillageFarmWall"
         Inherits="BrinestalkWall"
     >
         <part
@@ -1047,7 +1047,7 @@
         />
     </object>
 
-    <object Name="SubterraneanSiteDevVillageBrinestalkGate" 
+    <object Name="SubterraneanSitesVillageBrinestalkGate" 
       Inherits="Gate">
         <part Name="Render" 
             RenderLayer="6" 
