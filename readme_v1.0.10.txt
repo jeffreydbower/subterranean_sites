@@ -1,8 +1,10 @@
-[h1]Subterranean Sites — v1.0.8 Now with extradimensional pockets!!! [/h1]
+[h1]Subterranean Sites — v1.0.10 Now with extradimensional pockets!!! [/h1]
 
 This mod adds procedurally generated subterranean sites connected by long discoverable paths through the underground. Sites are generated dynamically during exploration and are designed to avoid protected vanilla locations, historic sites, lairs, and major special areas.
 
-[h2]Game Features[/h2]
+~If you enjoy this mod please support it by leaving a positive rating.
+
+[h2]Features[/h2]
 
 ~ Procedurally generated subterranean sites
 
@@ -33,7 +35,7 @@ Extradimensional pockets extend Qud’s existing 11 extradimensions into real pl
 
 There has been a hypertranslational event causing collisions between the extradimensions. A pocket appears from the collision of 2 distinct extradimensions and will contain features from both.. 
 
-The extradimensional pockets all have an environmental hazard, unique effects, and their own denizens.
+Extradimensional pockets all have an environmental hazard, unique effects, and their own denizens.
 
 Each pocket will have an attunement stone at the entrance scar and on each level. 
 
@@ -57,7 +59,7 @@ The bottom layer features a teleporter to bring you back to the entrance because
 Extensive work and testing was put into ensuring that this mod does not break any vanilla content. Once the safety system was working, there were zero observed instances of the mod overwriting protected content.
 
 However, while Shug'ruith's mouth and cradle are 100% protected, there is a very, very, very small chance the resin path could be affected in a way that makes it difficult to follow. In testing it was never a problem, but be warned if you are going to attempt that.
-```
+
 [h2]Compatibility[/h2]
 
 Subterranean Sites tries to avoid vanilla special locations, historic sites, lairs, settlements, and other protected content. If another mod adds a fixed underground location, Subterranean Sites may not know about it automatically.
@@ -94,6 +96,16 @@ v1.0.7
 V1.0.8
 -Added extradimensional pockets
 -Increased the density of sites per matrix from 4 to 8 and reduced the path length to 12-20. This will shorten the amount of time a player spends on paths while maintaining the same discovery density.
+
+V1.0.9
+-Fixed issue where the attunement stone would not appear in the EP scar sometimes.
+-Fixed issue where Sub-Sites custom objects were bleeding into the rest of Qud.
+-Fixed normal loot appearing in EP containers.
+-Added more denizens per EP layer.
+
+V1.0.10
+-Added the underground river between the Waterlogged Tunnel and Red Rock to the protected locations. 
+
 
 [h2]Subterranean Sites work amazing with my other mod, Atlas of Qud[/h2]
 

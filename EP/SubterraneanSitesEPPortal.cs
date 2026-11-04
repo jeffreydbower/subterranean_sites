@@ -5809,22 +5809,27 @@ namespace XRL.World.ZoneBuilders
                 return false;
             }
 
-
             GameObject obj =
                 GameObjectFactory.Factory
                     .CreateObject(
                         blueprint
                     );
 
-
             if (obj == null)
                 return false;
-
 
             cell.AddObject(
                 obj
             );
 
+            //
+            // Portal C5 furniture is scenery, not a source of ordinary
+            // generated loot. Some vanilla/container-derived blueprints
+            // may populate themselves during construction or placement.
+            //
+            EmptyGeneratedInventory(
+                obj
+            );
 
             SubterraneanSites
                 .SubterraneanSitesEPReservations
@@ -5833,8 +5838,40 @@ namespace XRL.World.ZoneBuilders
                     cell
                 );
 
-
             return true;
+        }
+
+        private void EmptyGeneratedInventory(
+            GameObject obj
+        )
+        {
+            if (
+                obj == null ||
+                obj.Inventory == null
+            )
+            {
+                return;
+            }
+
+            for (
+                int i =
+                    obj.Inventory.Objects.Count - 1;
+                i >= 0;
+                i--
+            )
+            {
+                GameObject item =
+                    obj.Inventory.Objects[i];
+
+                if (item == null)
+                    continue;
+
+                obj.Inventory.RemoveObject(
+                    item
+                );
+
+                item.Obliterate();
+            }
         }
 
 

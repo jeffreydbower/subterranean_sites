@@ -40,6 +40,7 @@
         />
 
         <part Name="ModWired"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -82,6 +83,7 @@
         />
 
         <part Name="ModWired"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesElectricalSquareWave_CW"
@@ -93,6 +95,7 @@
             DetailColor="W"
             Occluding="true" />
         <part Name="ModWired"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -103,6 +106,7 @@
             Name="LiquidVolume"
             InitialLiquid="SubterraneanSitesFireAsphalt-1000"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -113,6 +117,7 @@
             Name="LiquidVolume"
             InitialLiquid="SubterraneanSitesFireOil-1000"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -120,6 +125,7 @@
         Inherits="WalltrapFireCrematory"
     >
         <part Name="SubterraneanSitesFireVentLiquidHeat" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -152,6 +158,7 @@
             GasBlueprint="SleepGas80"
             GasDensity="80"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -164,6 +171,7 @@
             Name="LiquidVolume"
             InitialLiquid="SubterraneanSitesColdConvalessence-1000"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -187,6 +195,7 @@
             SideSprayChance="60"
             SideGasDensity="36"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -197,6 +206,7 @@
             Name="SubterraneanSitesColdVent"
             Direction="N"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -207,6 +217,7 @@
             Name="SubterraneanSitesColdVent"
             Direction="S"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -217,6 +228,7 @@
             Name="SubterraneanSitesColdVent"
             Direction="E"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -227,6 +239,7 @@
             Name="SubterraneanSitesColdVent"
             Direction="W"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -238,12 +251,15 @@
             ColorString="&amp;W"
             DetailColor="c"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesEPSolidPlaceholder" Inherits="Marble">
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesEPBoundaryPlaceholder" Inherits="Marble">
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesEPAttunementStoneLeft" Inherits="Crystal">
@@ -289,6 +305,7 @@
 
         <tag Name="Category" Value="object" />
         <tag Name="Crystal" />
+        
         <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
@@ -335,6 +352,7 @@
 
         <tag Name="Category" Value="object" />
         <tag Name="Crystal" />
+        
         <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
@@ -362,6 +380,7 @@
         <stat Name="Hitpoints" Value="60" />
         <stat Name="AV" Value="7" />
 
+        
         <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
@@ -382,6 +401,7 @@
         <removepart
             Name="PopulationLiquidFiller" />
 
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -395,6 +415,7 @@
             TileColor="&amp;Y"
             DetailColor="K"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -421,6 +442,8 @@
             UnripeTileColor="&amp;Y"
             UnripeDetailColor="K"
         />
+
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -456,6 +479,7 @@
             Name="ActivationColorString"
             Value="&amp;m^B"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -481,6 +505,7 @@
             NearDiagonalDensity="85"
             FarDiagonalDensity="65"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -492,6 +517,7 @@
             Name="SubterraneanSitesDarknessBlindVent"
             Direction="N"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -503,6 +529,7 @@
             Name="SubterraneanSitesDarknessBlindVent"
             Direction="S"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -514,6 +541,7 @@
             Name="SubterraneanSitesDarknessBlindVent"
             Direction="E"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -525,6 +553,7 @@
             Name="SubterraneanSitesDarknessBlindVent"
             Direction="W"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -533,6 +562,7 @@
         <part
             Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -541,6 +571,7 @@
         <part
             Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -549,11 +580,13 @@
         <part
             Name="SubterraneanSitesBloodDismemberer"
             ChancePerCreature="25"/>
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesBloodConveyorPad"
             Inherits="ConveyorPad">
         <part Name="SubterraneanSitesConveyorLiquidDrain" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
         <object
@@ -580,6 +613,7 @@
             ChargeRate="0"
             IsConsumer="false"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -607,6 +641,7 @@
             ChargeRate="0"
             IsConsumer="false"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesPortalEmptyMulticabinet" Inherits="MountedFurniture">
@@ -649,6 +684,7 @@
         <stag Name="Crafts" />
 
         <tag Name="Tier" Value="3" />
+            <tag Name="ExcludeFromDynamicEncounters" />
         </object>
 
     
@@ -691,6 +727,7 @@
         <tag Name="Class" Value="table" />
         <stag Name="Storage" />
         <stag Name="Contemporary" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -711,6 +748,7 @@
             Name="Description"
             Short="Knotted wood of good moisture content holds the weight of earth at right angles. Scorch marks and salt decorate the grooves."
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -739,6 +777,7 @@
             Name="Description"
             Short="Wood was salvaged from moist groves, shaved into planks, and carried to the freeholds on the Shale Bridge."
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -755,6 +794,7 @@
         />
 
         <tag Name="NoSparkingQuest" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -788,6 +828,7 @@
         />
 
         <tag Name="NoSparkingQuest" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -800,6 +841,7 @@
             Volume="500"
             InitialLiquid="warmstatic-1000,water-500"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -825,6 +867,7 @@
             RevealObject="SubterraneanSitesStaticBuzzingCyst"
             RevealChancePercent="0"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -853,6 +896,7 @@
             LiquidVisibleWhenSealed="true"
             InitialLiquid="warmstatic-1"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -864,6 +908,7 @@
             RevealObject="SubterraneanSitesStaticBuzzingCyst"
             RevealChancePercent="100"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <!--
@@ -879,6 +924,7 @@
         Inherits="AgateWall"
     >
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object> -->
 
 
@@ -894,6 +940,7 @@
         />
 
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -909,6 +956,7 @@
         />
 
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -923,6 +971,7 @@
         />
 
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -938,6 +987,7 @@
         />
 
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -953,6 +1003,7 @@
         />
 
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
 
@@ -961,6 +1012,7 @@
         Inherits="PeridotWall"
     >
         <removepart Name="Corpse" />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesMushroomWallOrange" Inherits="BaseMushroomWall">
@@ -972,6 +1024,7 @@
         DetailColor="O"
         />
 
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageMangrove" Inherits="Shimscale Mangrove Tree">
@@ -981,6 +1034,7 @@
         DetailColor="C"
     />
 
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageDogthorn" Inherits="Dogthorn Tree">
@@ -989,6 +1043,7 @@
             TileColor="&amp;r"
             DetailColor="O"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageZivBough" Inherits="Ziv Bough">
@@ -997,6 +1052,7 @@
             TileColor="&amp;m"
             DetailColor="W"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageStarPalm" Inherits="Star Palm">
@@ -1005,6 +1061,7 @@
             TileColor="&amp;c"
             DetailColor="G"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageGlitchwood" Inherits="Glitchwood Tree">
@@ -1013,6 +1070,7 @@
             TileColor="&amp;K"
             DetailColor="M"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageIcosahedar" Inherits="Icosahedar">
@@ -1021,6 +1079,7 @@
             TileColor="&amp;o"
             DetailColor="Y"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -1033,6 +1092,7 @@
             TileColor="&amp;K"
             DetailColor="m"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object
@@ -1045,6 +1105,7 @@
             TileColor="&amp;K"
             DetailColor="m"
         />
+        <tag Name="ExcludeFromDynamicEncounters" />
     </object>
 
     <object Name="SubterraneanSitesVillageBrinestalkGate" 
@@ -1057,6 +1118,7 @@
             DetailColor="m" 
             />
 
+      <tag Name="ExcludeFromDynamicEncounters" />
   </object>
 
 

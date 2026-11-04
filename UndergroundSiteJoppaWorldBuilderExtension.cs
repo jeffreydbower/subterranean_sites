@@ -1,4 +1,4 @@
-//v1.0.8
+//v1.0.9
 using System;
 using System.Collections.Generic;
 using HistoryKit;
@@ -1899,6 +1899,11 @@ namespace SubterraneanSites
                 return true;
             }
 
+            SubterraneanSitesEPEntrance
+                .HandleZoneActivated(
+                    zoneActivatedEvent.Zone
+                );
+
             //Saftey first!
             //Skip if not safe... no site for you!
             //uninstall mod and play Animal Croissing if this happens
@@ -2731,46 +2736,6 @@ namespace SubterraneanSites
             );
         }
 
-        private string BuildMatrixDebugMessage(
-            SubterraneanMatrixCoord matrix,
-            string status,
-            string originZoneId,
-            string siteKind,
-            string pathMouth,
-            int layers,
-            List<string> rejectedSiteZones,
-            List<string> rejectedPathZones
-        )
-        {
-            StringBuilder text = new StringBuilder();
-
-            text.AppendLine("SubterraneanSites matrix");
-            text.AppendLine("matrix=" + matrix.ToId());
-            text.AppendLine("status=" + status);
-
-            if (siteKind != null && siteKind != "")
-            {
-                text.AppendLine("siteKind=" + siteKind);
-            }
-
-            if (originZoneId != null && originZoneId != "")
-            {
-                text.AppendLine("origin=" + originZoneId);
-            }
-
-            text.AppendLine("layers=" + layers.ToString());
-
-            if (pathMouth != null && pathMouth != "")
-            {
-                text.AppendLine("pathMouth=" + pathMouth);
-            }
-
-            AppendRejectedList(text, "rejectedSiteZones", rejectedSiteZones);
-            AppendRejectedList(text, "rejectedPathZones", rejectedPathZones);
-
-            return text.ToString();
-        }
-
         private void AppendRejectedList(
             StringBuilder text,
             string label,
@@ -2976,12 +2941,6 @@ namespace SubterraneanSites
                 out blockedReason
             ))
             {
-                The.ZoneManager.SetZoneName(
-                    blockedZoneId,
-                    "site out: " + blockedReason + " at " + blockedZoneId,
-                    Proper: false
-                );
-
                 return false;
             }
 
@@ -2993,12 +2952,6 @@ namespace SubterraneanSites
 
                 if (IsBlockedForSubterraneanGeneration(zoneId, out safetyReason))
                 {
-                    The.ZoneManager.SetZoneName(
-                        zoneId,
-                        "site out: " + safetyReason + " at " + zoneId,
-                        Proper: false
-                    );
-
                     return false;
                 }
 
@@ -3072,12 +3025,6 @@ namespace SubterraneanSites
 
             if (IsBlockedForSubterraneanGeneration(instruction.ZoneId,out safetyReason,pathSeedBase))
             {
-                The.ZoneManager.SetZoneName(
-                    instruction.ZoneId,
-                    "SubterraneanSites refused path builder: " + safetyReason,
-                    Proper: false
-                );
-
                 return;
             }
 
@@ -3099,11 +3046,6 @@ namespace SubterraneanSites
             {
                 siteAnchor = "";
             }
-
-            string clearAdjacent =
-                string.IsNullOrEmpty(siteAnchor)
-                    ? "true"
-                    : "false";
 
             The.ZoneManager.SetZoneProperty(instruction.ZoneId, OwnerProperty, "Yes");
             The.ZoneManager.SetZoneProperty(instruction.ZoneId, "SubterraneanSites_IsPath", "Yes");
@@ -3903,6 +3845,56 @@ namespace XRL.World.ZoneBuilders
             }
         }
 
+        private bool IsInsideSiteScar(
+            Zone Z,
+            Cell cell,
+            Location2D sitePoint
+        )
+        {
+            if (
+                Z == null ||
+                cell == null ||
+                sitePoint == null ||
+                SiteAnchor.IsNullOrEmpty()
+            )
+            {
+                return false;
+            }
+
+            int scarRadius = 11;
+
+            string scarRadiusText =
+                The.ZoneManager.GetZoneProperty(
+                    Z.ZoneID,
+                    "SubterraneanSites_EPEntranceScarRadius"
+                ) as string;
+
+            int parsedRadius;
+
+            if (
+                int.TryParse(
+                    scarRadiusText,
+                    out parsedRadius
+                ) &&
+                parsedRadius > 0
+            )
+            {
+                scarRadius = parsedRadius;
+            }
+
+            int dx =
+                cell.X - sitePoint.X;
+
+            int dy =
+                cell.Y - sitePoint.Y;
+
+            return
+                dx * dx +
+                dy * dy
+                <=
+                scarRadius * scarRadius;
+        }
+
         private Location2D GetSitePoint(Zone Z)
         {
             if (
@@ -3986,39 +3978,6 @@ namespace XRL.World.ZoneBuilders
                 return;
             }
 
-            bool narrowSiteApproach =
-                !SiteAnchor.IsNullOrEmpty();
-
-            List<Cell> pathSteps =
-                new List<Cell>();
-
-            foreach (Cell step in findPath.Steps)
-            {
-                pathSteps.Add(step);
-            }
-
-            int stepsToPaint =
-                pathSteps.Count;
-
-            //
-            // A site with a special anchor currently means an EP entrance.
-            //
-            // The EP entrance hole is centered on that anchor and has a radius
-            // of about 5 cells. Stop the broad Sub Sites path shortly before the
-            // center so it visually terminates at the edge of the hole instead
-            // of painting around/across it.
-            //
-            if (
-                !SiteAnchor.IsNullOrEmpty()
-            )
-            {
-                stepsToPaint =
-                    Math.Max(
-                        0,
-                        stepsToPaint - 5
-                    );
-            }
-
             Location2D sitePoint =
                 !SiteAnchor.IsNullOrEmpty()
                     ? GetSitePoint(Z)
@@ -4026,13 +3985,13 @@ namespace XRL.World.ZoneBuilders
 
             foreach (Cell step in findPath.Steps)
             {
-                bool nearSite =
-                    sitePoint != null &&
-                    Math.Abs(step.X - sitePoint.X) +
-                    Math.Abs(step.Y - sitePoint.Y)
-                        <= 5;
-
-                if (nearSite)
+                if (
+                    IsInsideSiteScar(
+                        Z,
+                        step,
+                        sitePoint
+                    )
+                )
                 {
                     ClearPathCell(
                         Z,
@@ -4054,13 +4013,13 @@ namespace XRL.World.ZoneBuilders
                         in step.GetLocalAdjacentCells()
                     )
                     {
-                        bool adjacentNearSite =
-                            sitePoint != null &&
-                            Math.Abs(adjacent.X - sitePoint.X) +
-                            Math.Abs(adjacent.Y - sitePoint.Y)
-                                <= 5;
-
-                        if (adjacentNearSite)
+                        if (
+                            IsInsideSiteScar(
+                                Z,
+                                adjacent,
+                                sitePoint
+                            )
+                        )
                         {
                             ClearPathCell(
                                 Z,

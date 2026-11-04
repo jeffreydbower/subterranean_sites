@@ -6567,7 +6567,7 @@ namespace XRL.World.ZoneBuilders
                     continue;
 
                 if (
-                    TryAddObject(
+                    TryAddEmptyObject(
                         destination,
                         CabinetBlueprint
                     )
@@ -7794,6 +7794,79 @@ namespace XRL.World.ZoneBuilders
                 );
 
             return true;
+        }
+
+        private bool TryAddEmptyObject(
+            Cell cell,
+            string blueprint
+        )
+        {
+            if (
+                cell == null ||
+                blueprint.IsNullOrEmpty()
+            )
+            {
+                return false;
+            }
+
+            GameObject obj =
+                GameObjectFactory.Factory
+                    .CreateObject(
+                        blueprint
+                    );
+
+            if (obj == null)
+                return false;
+
+            cell.AddObject(
+                obj
+            );
+
+            EmptyGeneratedInventory(
+                obj
+            );
+
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
+                .ClaimCell(
+                    cell.ParentZone,
+                    cell
+                );
+
+            return true;
+        }
+
+        private void EmptyGeneratedInventory(
+            GameObject obj
+        )
+        {
+            if (
+                obj == null ||
+                obj.Inventory == null
+            )
+            {
+                return;
+            }
+
+            for (
+                int i =
+                    obj.Inventory.Objects.Count - 1;
+                i >= 0;
+                i--
+            )
+            {
+                GameObject item =
+                    obj.Inventory.Objects[i];
+
+                if (item == null)
+                    continue;
+
+                obj.Inventory.RemoveObject(
+                    item
+                );
+
+                item.Obliterate();
+            }
         }
     }
 }

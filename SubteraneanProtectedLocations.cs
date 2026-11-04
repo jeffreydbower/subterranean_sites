@@ -1,4 +1,4 @@
-//v1.0.4
+//v1.0.10
 using System.Collections.Generic;
 
 namespace SubterraneanSites
@@ -107,6 +107,61 @@ namespace SubterraneanSites
                     1,
                     1,
                     10,
+                    14
+                ),
+
+                new ProtectedZoneColumn(
+                    "Waterlogged Tunnel 1-North of Joppa",
+                    "JoppaWorld",
+                    11, 
+                    22, 
+                    1, 
+                    0, 
+                    10, 
+                    14
+                ),
+
+                new ProtectedZoneColumn(
+                    "Waterlogged Tunnel 2-North of Joppa",
+                    "JoppaWorld", 
+                    11, 
+                    21, 
+                    1, 
+                    2, 
+                    10, 
+                    14
+                ),
+
+                new ProtectedZoneColumn(
+                    "Waterlogged Tunnel 3-North of Joppa ancient bones",
+                    "JoppaWorld", 
+                    11, 
+                    21, 
+                    1, 
+                    1, 
+                    10, 
+                    14
+                ),
+
+                new ProtectedZoneColumn(
+                    "Waterlogged Tunnel 4-North of Joppa",
+                    "JoppaWorld", 
+                    11, 
+                    21, 
+                    1, 
+                    0, 
+                    10, 
+                    14
+                ),
+
+                new ProtectedZoneColumn(
+                    "Waterlogged Tunnel 5-North of Joppa",
+                    "JoppaWorld", 
+                    11, 
+                    20, 
+                    1, 
+                    2, 
+                    10, 
                     14
                 ),
 

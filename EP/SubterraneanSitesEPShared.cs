@@ -1,4 +1,4 @@
-//v1.0.8
+//v1.0.9
 using System;
 using System.Collections.Generic;
 using Genkit;
@@ -9,7 +9,6 @@ using XRL.World;
 using XRL.World.AI;
 using XRL.World.Parts;
 using XRL.UI;
-
 
 namespace SubterraneanSites
 {
@@ -1731,6 +1730,9 @@ namespace SubterraneanSites
                     );
             }
 
+
+            decorationTheme.RegisterEntranceDecorations(entrance);
+
             //
             // The attunement stone is essential shared EP infrastructure.
             // Give it priority over entrance Category-5 decoration so dense
@@ -1742,8 +1744,6 @@ namespace SubterraneanSites
                 "EntranceMode", "1"
             );
 
-            decorationTheme.RegisterEntranceDecorations(entrance);
-
             //
             // Category-4 floor is substrate, not placement geometry.
             // Apply it once after all scar content has been registered so
@@ -1752,6 +1752,55 @@ namespace SubterraneanSites
             //
 
             floorTheme.RegisterEntranceFloor(entrance);
+        }
+
+       internal static void HandleZoneActivated(
+            Zone Z
+        )
+        {
+            if (Z == null)
+                return;
+
+            Location2D center;
+            int scarRadius;
+            int holeRadius;
+
+            //
+            // Only an EP origin layer has entrance-scar metadata.
+            //
+            if (
+                !TryGetSpec(
+                    Z,
+                    out center,
+                    out scarRadius,
+                    out holeRadius
+                )
+            )
+            {
+                return;
+            }
+
+            XRL.World.ZoneBuilders
+                .SubterraneanSitesEPAttunementStoneBuilder
+                stoneBuilder =
+                    new XRL.World.ZoneBuilders
+                        .SubterraneanSitesEPAttunementStoneBuilder();
+
+            stoneBuilder.EntranceMode = 1;
+
+            stoneBuilder.BuildZone(
+                Z
+            );
+
+            //
+            // The stone builder claims its two cells. During normal generation,
+            // the reservation-cleanup postbuilder removes those temporary claims.
+            // An activation-time repair occurs after that cleanup, so clear any
+            // reservation map recreated by the repair.
+            //
+            SubterraneanSitesEPReservations.Clear(
+                Z
+            );
         }
 
         internal static bool TryGetSpec(
@@ -2522,8 +2571,8 @@ namespace SubterraneanSites
                 "Tier", context.Tier.ToString(),
                 "PrimaryThemeKey", primaryTheme.ThemeKey,
                 "SecondaryThemeKey", secondaryTheme.ThemeKey,
-                "MinDenizensPerTheme", "1",
-                "MaxDenizensPerTheme", "3"
+                "MinDenizensPerTheme", "2",
+                "MaxDenizensPerTheme", "4"
             );
 
 
@@ -3886,27 +3935,6 @@ namespace SubterraneanSites
             }
 
             //
-            // Final origin-layer integrity check.
-            //
-            // Attunement is essential EP infrastructure. Normally the stone
-            // was already placed before entrance decoration. Run the same
-            // idempotent builder once more after the final destructive hole
-            // pass so any unexpected later overwrite is repaired.
-            //
-            if (
-                siteZoneIds.Count > 0 &&
-                !siteZoneIds[0].IsNullOrEmpty()
-            )
-            {
-                The.ZoneManager.AddZonePostBuilder(
-                    siteZoneIds[0],
-                    "SubterraneanSitesEPAttunementStoneBuilder",
-                    "EntranceMode", "1"
-                );
-            }
-
-
-            //
             // Reservations are build-time coordination only.
             //
             // Register cleanup on EVERY layer after all final hole builders have been
@@ -5160,35 +5188,47 @@ namespace XRL.World.ZoneBuilders
         public int EntranceMode = 0;
         public int TransitionExclusionRadius = 6;
         public int EntranceMinHolePadding = 2;
-        public int EntranceMaxHolePadding = 6;
+        public int EntranceMaxHolePadding = 3;
 
         public bool BuildZone(Zone Z)
         {
             if (Z == null)
                 return true;
-            
+
             if (HasCompleteStonePair(Z))
                 return true;
 
-            List<Cell> candidates = new List<Cell>();
+            List<Cell> candidates =
+                new List<Cell>();
 
             foreach (Cell left in Z.GetCells())
             {
                 if (left == null)
                     continue;
 
-                Cell right = left.GetCellFromDirection("E");
+                Cell right =
+                    left.GetCellFromDirection("E");
 
                 if (right == null)
                     continue;
 
                 if (
                     EntranceMode != 0
-                        ? IsValidEntrancePair(Z, left, right)
-                        : IsValidUndergroundPair(Z, left, right)
+                        ? IsValidEntrancePair(
+                            Z,
+                            left,
+                            right
+                        )
+                        : IsValidUndergroundPair(
+                            Z,
+                            left,
+                            right
+                        )
                 )
                 {
-                    candidates.Add(left);
+                    candidates.Add(
+                        left
+                    );
                 }
             }
 
@@ -5198,16 +5238,27 @@ namespace XRL.World.ZoneBuilders
             int seed =
                 XRLCore.Core.Game.GetWorldSeed(
                     "SubterraneanSites:EPAttunementStone:" +
-                    Z.ZoneID + ":Entrance:" + EntranceMode.ToString()
+                    Z.ZoneID +
+                    ":Entrance:" +
+                    EntranceMode.ToString()
                 );
 
-            System.Random rng = new System.Random(seed);
+            System.Random rng =
+                new System.Random(
+                    seed
+                );
 
             Cell chosenLeft =
-                candidates[rng.Next(candidates.Count)];
+                candidates[
+                    rng.Next(
+                        candidates.Count
+                    )
+                ];
 
             Cell chosenRight =
-                chosenLeft.GetCellFromDirection("E");
+                chosenLeft.GetCellFromDirection(
+                    "E"
+                );
 
             if (chosenRight == null)
                 return true;
@@ -5226,37 +5277,62 @@ namespace XRL.World.ZoneBuilders
                         .StoneRightBlueprint
                 );
 
-            if (leftStone != null)
+            //
+            // The stone is one two-cell piece of infrastructure.
+            // Never deliberately leave only one half.
+            //
+            if (
+                leftStone == null ||
+                rightStone == null
+            )
             {
-                chosenLeft.AddObject(
-                    leftStone
-                );
+                if (leftStone != null)
+                {
+                    leftStone.Destroy();
+                }
 
-                SubterraneanSites
-                    .SubterraneanSitesEPReservations
-                    .ClaimCell(
-                        Z,
-                        chosenLeft
-                    );
+                if (rightStone != null)
+                {
+                    rightStone.Destroy();
+                }
+
+                return true;
             }
 
-            if (rightStone != null)
+            //
+            // Entrance C1/C5 content has already been placed.
+            // These two cells now belong exclusively to the entrance stone.
+            //
+            if (EntranceMode != 0)
             {
-                chosenRight.AddObject(
-                    rightStone
+                chosenLeft.Clear();
+                chosenRight.Clear();
+            }
+
+            chosenLeft.AddObject(
+                leftStone
+            );
+
+            chosenRight.AddObject(
+                rightStone
+            );
+
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
+                .ClaimCell(
+                    Z,
+                    chosenLeft
                 );
 
-                SubterraneanSites
-                    .SubterraneanSitesEPReservations
-                    .ClaimCell(
-                        Z,
-                        chosenRight
-                    );
-            }
+            SubterraneanSites
+                .SubterraneanSitesEPReservations
+                .ClaimCell(
+                    Z,
+                    chosenRight
+                );
 
             return true;
         }
-
         private bool HasCompleteStonePair(Zone Z)
         {
             if (Z == null)
@@ -5314,20 +5390,6 @@ namespace XRL.World.ZoneBuilders
                         out scarRadius,
                         out holeRadius
                     )
-            )
-            {
-                return false;
-            }
-
-            if (
-                !BasicCellAvailable(
-                    Z,
-                    left
-                ) ||
-                !BasicCellAvailable(
-                    Z,
-                    right
-                )
             )
             {
                 return false;
